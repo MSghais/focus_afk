@@ -1,0 +1,339 @@
+// Basic variables
+$sidebar-width: 250px;
+$sidebar-width-right: 300px;
+$mobile-breakpoint: 768px;
+$desktop-breakpoint: 769px;
+$tablet-breakpoint: 1024px;
+$header-height: 50px;
+$bottom-height: 50px;
+
+// $button-primary-color: var(--primary-color, var(--primary-500));
+// $button-secondary-color: var(--secondary-color, #64748b);
+// $button-success-color: var(--success-color, var(--green-500));
+// $button-danger-color: var(--danger-color, var(--red-500));
+// $button-warning-color: var(--warning-color, var(--yellow-500));
+// $button-info-color: var(--info-color, var(--blue-500));
+
+// AFK Brand Colors
+$afk-black: #0E0E0E;
+$afk-charcoal: #1A1A1A;
+$afk-offwhite: #F9F9F9;
+$afk-electric-green: #00FF9C;
+$afk-cyber-cyan: #00F0FF;
+$afk-neon-magenta: #FF2EC4;
+$afk-slate-gray: #888888;
+$afk-white: #FFFFFF;
+$afk-black-text: #000000;
+
+// Semantic CSS variables
+:root {
+  --afk-bg-dark: #0E0E0E;
+  --afk-bg-panel: #1A1A1A;
+  --afk-bg-light: #F9F9F9;
+  --afk-accent-green: #00FF9C;
+  --afk-accent-cyan: #00F0FF;
+  --afk-accent-magenta: #FF2EC4;
+  --afk-muted: #888888;
+  --afk-text-dark: #110f0f;
+  --afk-text-light: #c0c0c0;
+  --afk-font-primary: 'IBM Plex Sans', Arial, sans-serif;
+  --afk-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+// AFK Brand Colors for dark mode
+.dark-mode {
+  --afk-bg-dark: #0E0E0E;
+  --afk-bg-panel: #1A1A1A;
+  --afk-bg-light: #F9F9F9;
+  --afk-accent-green: #00FF9C;
+  --afk-accent-cyan: #00F0FF;
+  --afk-accent-magenta: #FF2EC4;
+  --afk-muted: #888888;
+  --afk-text-dark: #FFFFFF;
+  --afk-text-light: #000000;
+  --afk-font-primary: 'IBM Plex Sans', Arial, sans-serif;
+  --afk-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+// Theme variables
+:root {
+  // Primary colors (grays)
+  --primary-50: #f8fafc;
+  --primary-100: #f1f5f9;
+  --primary-200: #e2e8f0;
+  --primary-300: #cbd5e1;
+  --primary-400: #94a3b8;
+  --primary-500: #64748b;
+  --primary-600: #475569;
+  --primary-700: #334155;
+  --primary-800: #1e293b;
+  --primary-900: #0f172a;
+  --primary-950: #020617;
+
+  // Shade colors for light mode
+  --shade-50: #f8f9fa;
+  --shade-100: #e9ecef;
+  --shade-200: #dee2e6;
+  --shade-300: #ced4da;
+  --shade-400: #adb5bd;
+  --shade-500: #6c757d;
+  --shade-600: #495057;
+  --shade-700: #343a40;
+  --shade-800: #212529;
+  --shade-900: #0f172a;
+  --shade-950: #020617;
+
+  // Main colors
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-200: #bbf7d0;
+  --green-300: #86efac;
+  --green-400: #4ade80;
+  --green-500: #22c55e;
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --green-800: #166534;
+  --green-900: #14532d;
+  
+  --red-50: #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+  
+  --yellow-50: #fefce8;
+  --yellow-100: #fef9c3;
+  --yellow-200: #fef08a;
+  --yellow-300: #fde047;
+  --yellow-400: #facc15;
+  --yellow-500: #eab308;
+  --yellow-600: #ca8a04;
+  --yellow-700: #a16207;
+  --yellow-800: #854d0e;
+  --yellow-900: #713f12;
+  
+  --purple-50: #faf5ff;
+  --purple-100: #f3e8ff;
+  --purple-200: #e9d5ff;
+  --purple-300: #d8b4fe;
+  --purple-400: #c084fc;
+  --purple-500: #a855f7;
+  --purple-600: #9333ea;
+  --purple-700: #7e22ce;
+  --purple-800: #6b21a8;
+  --purple-900: #581c87;
+
+
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  // Semantic colors
+  // --primary-color: var(--blue-600);
+  --primary-color: var(--green-600);
+  --primary-color-hover: var(--green-700);
+  --secondary-color: var(--primary-500);
+  --success-color: var(--green-500);
+  --danger-color: var(--red-500);
+  --warning-color: var(--yellow-500);
+  --info-color: var(--blue-500);
+
+  // Button colors
+  --button-primary-color: var(--primary-color);
+  --button-primary-color-hover: var(--primary-color-hover);
+  --button-secondary-color: var(--secondary-color);
+  --button-success-color: var(--success-color);
+  --button-danger-color: var(--danger-color);
+  --button-warning-color: var(--warning-color);
+  --button-info-color: var(--info-color);
+
+  // System colors
+  --background: var(--shade-50);
+  --foreground: var(--shade-900);
+  --border: var(--shade-200);
+  --sidebar-bg: var(--shade-50);
+  --header-bg: var(--shade-50);
+  --card-bg: var(--shade-50);
+  --contrast-background: var(--shade-50);
+
+  --contrast-50: #ffffff;
+  --contrast-100: #f8fafc;
+  --contrast-200: #f1f5f9;
+  --contrast-300: #e2e8f0;
+  --contrast-400: #cbd5e1;
+  --contrast-500: #94a3b8;
+  --contrast-600: #64748b;
+  --contrast-700: #475569;
+  --contrast-800: #1e293b;
+  --contrast-900: #0f172a;
+  --contrast-950: #020617;
+
+
+  --gray-50: #111827;
+  --gray-100: #1f2937;
+  --gray-200: #374151;
+  --gray-300: #4b5563;
+  --gray-400: #6b7280;
+  --gray-500: #9ca3af;
+  --gray-600: #d1d5db;
+  --gray-700: #d3d5d8;
+  --gray-800: #e2dede;
+  --gray-900: #f9fafb;
+}
+
+// Dark mode
+.dark-mode {
+  // Primary colors (grays)
+  --primary-50: #f8fafc;
+  --primary-100: #f1f5f9;
+  --primary-200: #e2e8f0;
+  --primary-300: #cbd5e1;
+  --primary-400: #94a3b8;
+  --primary-500: #64748b;
+  --primary-600: #475569;
+  --primary-700: #334155;
+  --primary-800: #1e293b;
+  --primary-900: #0f172a;
+  --primary-950: #020617;
+
+  // Invert shade colors for dark mode
+  --shade-50-bg: #0f172a;
+  --shade-50: #0f172a;
+  --shade-100: #1e293b;
+  --shade-200: #334155;
+  --shade-300: #475569;
+  --shade-400: #64748b;
+  --shade-500: #94a3b8;
+  --shade-600: #cbd5e1;
+  --shade-700: #e2e8f0;
+  --shade-800: #f1f5f9;
+  --shade-900: #ffffff;
+  --shade-950: #ffffff;
+
+  // Adjust main colors for dark mode
+  --primary-color: var(--blue-400);
+  --secondary-color: var(--primary-400);
+  --success-color: var(--green-400);
+  --danger-color: var(--red-400);
+  --warning-color: var(--yellow-400);
+  --info-color: var(--blue-400);
+
+
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  // System colors
+  --background: var(--shade-50);
+  // --foreground: #ffffff;
+  --foreground: var(--shade-900);
+  --border: var(--shade-200);
+  --sidebar-bg: var(--shade-50);
+  --header-bg: var(--shade-50);
+  // --card-bg: var(--shade-100);
+  // --card-bg: var(--afk-bg-dark);
+  --card-bg: var(--background);
+  --contrast-background: var(--shade-50);
+
+  --contrast-50: #020617;
+  --contrast-100: #0f172a;
+  --contrast-200: #1e293b;
+  --contrast-300: #475569;
+  --contrast-400: #64748b;
+  --contrast-500: #94a3b8;
+  --contrast-600: #cbd5e1;
+  --contrast-700: #e2e8f0;
+  --contrast-800: #f1f5f9;
+  --contrast-900: #f8fafc;
+  --contrast-950: #ffffff;
+}
+
+// Font stacks
+$font-primary: 'IBM Plex Sans', Arial, sans-serif;
+$font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+body {
+  font-family: $font-primary;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.code, .mono, pre, code {
+  font-family: $font-mono;
+}
+
+.btn-primary {
+  background: var(--afk-accent-green);
+  color: var(--afk-bg-dark);
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  box-shadow: 0 0 8px 0 rgba(0,255,156,0.3);
+  transition: box-shadow 0.2s, background 0.2s;
+  &:hover {
+    background: darken(#00FF9C, 10%);
+    box-shadow: 0 0 16px 2px #00FF9C;
+  }
+}
+.btn-secondary {
+  border: 1px solid var(--afk-accent-cyan);
+  color: var(--afk-accent-cyan);
+  background: transparent;
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  &:hover {
+    background: rgba(0,240,255,0.1);
+    box-shadow: 0 0 8px 0 #00F0FF;
+  }
+}
+
+input, textarea {
+  background: var(--afk-bg-panel);
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: var(--afk-text-dark);
+  &:focus {
+    border-color: var(--afk-accent-green);
+    outline: none;
+    box-shadow: 0 0 0 2px #00FF9C33;
+  }
+}
+body.light-mode input, body.light-mode textarea {
+  background: var(--afk-bg-light);
+  border: 1px solid #CCC;
+  color: var(--afk-text-light);
+}
+
+.mt-8 { margin-top: 8px; }
+.p-16 { padding: 16px; }
+.gap-24 { gap: 24px; }

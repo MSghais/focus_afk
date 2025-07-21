@@ -14,7 +14,12 @@
     "@repo/ui": "workspace:*",
     "next": "^15.3.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "sass": "^1.87.0",
+    "zustand": "^4.5.2",
+    "dexie": "^4.0.11",
+    "dexie-react-hooks": "^1.1.7"
+
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.3.0",

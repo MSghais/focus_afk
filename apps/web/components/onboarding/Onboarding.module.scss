@@ -1,0 +1,91 @@
+.onboardingContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #111216;
+  color: #fff;
+  padding: 0 1.5rem;
+}
+
+.heading {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.subtext {
+  font-size: 1.1rem;
+  color: #b0b3b8;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.button {
+  width: 100%;
+  max-width: 340px;
+  background: #3b5bfe;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.button:hover {
+  background: #2441c6;
+}
+
+.altButton {
+  width: 100%;
+  max-width: 340px;
+  background: #23242a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+}
+.altButton:hover {
+  background: #18191c;
+  border: 1px solid #3b5bfe;
+}
+
+.passcodeInput {
+  width: 180px;
+  font-size: 2.2rem;
+  letter-spacing: 1.2rem;
+  text-align: center;
+  background: #18191c;
+  color: #fff;
+  border: 1.5px solid #333;
+  border-radius: 8px;
+  padding: 0.7rem 0.5rem;
+  margin: 2rem 0 1.5rem 0;
+}
+
+@media (max-width: 480px) {
+  .onboardingContainer {
+    padding: 0 0.5rem;
+  }
+  .heading {
+    font-size: 1.5rem;
+  }
+  .button, .altButton {
+    font-size: 1rem;
+    padding: 0.8rem 0;
+  }
+  .passcodeInput {
+    font-size: 1.5rem;
+    width: 120px;
+  }
+} 
