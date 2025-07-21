@@ -28,22 +28,24 @@ export default function ClientLayout({
 
   return (
     <Providers>
-      {/* Remove <html> and <body> tags to avoid hydration errors */}
-      <>
+      <div className={`${geist.className} min-h-screen w-full bg-[var(--background)] text-[var(--foreground)]`}>
+        {/* Mobile Navbar */}
         <Navbar />
-        <div className={geist.className + " min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] mt-24 md:m-2"}>
-          <div className="flex flex-row min-h-screen w-full">
-            <LeftSidebar />
-            <main className="flex-1 w-full min-h-screen pb-16 md:pb-0 bg-[var(--background)] text-[var(--foreground)] flex justify-center items-stretch md:pl-64 md:pr-64">
-              <div className="w-full max-w-5xl mx-auto flex flex-col flex-1">
-                {children}
-              </div>
-            </main>
-            {/* <RightSidebar /> */}
+        
+        {/* Desktop Sidebar */}
+        <LeftSidebar />
+        
+        {/* Main Content */}
+        <main className="flex-1 w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-all duration-300 ease-in-out
+          md:ml-64 md:pt-0 pt-16 pb-16 md:pb-0">
+          <div className="w-full h-full max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
+            {children}
           </div>
-          <BottomBar />
-        </div>
-      </>
+        </main>
+        
+        {/* Mobile Bottom Bar */}
+        <BottomBar />
+      </div>
     </Providers>
   );
 }

@@ -1,25 +1,36 @@
 'use client';
-import Link from "next/link";
 import React from "react";
-import ToggleTheme from "./ToggleTheme";
-import { Icon, IconUser } from "../small/icons";
+import { useFocusAFKStore } from "../../lib/store";
 
+const BottomBar = () => {
+  const { ui, setCurrentModule } = useFocusAFKStore();
 
-const BottomBar = () => (
-  <nav className="fixed bottom-0 left-0 w-full h-16 border-t border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-around shadow md:hidden z-50">
-    {/* Placeholder content */}
+  const navigationItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'tasks', label: 'Tasks', icon: '📋' },
+    { id: 'timer', label: 'Timer', icon: '⏱️' },
+    { id: 'learning', label: 'Goals', icon: '🎯' },
+    { id: 'console', label: 'Settings', icon: '⚙️' },
+  ];
 
-    <Link href="/">
-      <div className="w-10 h-10 bg-[var(--background)] rounded-full flex items-center justify-center">
-        <Icon name="home" size={24} />
-      </div>
-    </Link>
-    <Link href="/profile">
-      <div className="w-10 h-10 bg-[var(--background)] rounded-full flex items-center justify-center">
-        <Icon name="user" size={24} />
-      </div>
-    </Link>
-  </nav>
-);
+  return (
+    <nav className="fixed bottom-0 left-0 w-full h-16 border-t border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-around shadow-lg md:hidden z-50 backdrop-blur-sm bg-opacity-95">
+      {navigationItems.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => setCurrentModule(item.id as any)}
+          className={`flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-110 ${
+            ui.currentModule === item.id
+              ? 'bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-black shadow-lg'
+              : 'hover:bg-[var(--border)]'
+          }`}
+        >
+          <span className="text-lg">{item.icon}</span>
+          <span className="text-xs font-medium mt-1">{item.label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+};
 
 export default BottomBar; 

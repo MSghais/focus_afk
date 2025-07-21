@@ -24,9 +24,15 @@ const LeftSidebar = () => {
   ];
 
   return (
-    <aside className="hidden md:fixed md:top-0 md:left-0 md:h-full md:w-64 bg-[var(--background)] text-[var(--foreground)] border-r border-[var(--border)] md:flex md:flex-col md:items-center md:justify-start md:shadow z-40">
-      <div className="w-full p-4">
-        <h1 className="text-xl font-bold text-center mb-8">Focus AFK</h1>
+    <aside className="hidden md:flex md:fixed md:top-0 md:left-0 md:h-full md:w-64 bg-[var(--background)] text-[var(--foreground)] border-r border-[var(--border)] flex-col items-center justify-start shadow-lg z-40 transition-all duration-300 ease-in-out">
+      <div className="w-full p-6">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-accent)] bg-clip-text text-transparent">
+            Focus AFK
+          </h1>
+          <p className="text-xs text-[var(--foreground)] opacity-70 mt-1">Productivity & Focus</p>
+        </div>
         
         {/* Navigation */}
         <nav className="space-y-2">
@@ -34,10 +40,10 @@ const LeftSidebar = () => {
             <button
               key={item.id}
               onClick={() => setCurrentModule(item.id as any)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 ${
                 ui.currentModule === item.id
-                  ? 'bg-[var(--brand-accent)] text-white'
-                  : 'hover:bg-[var(--border)]'
+                  ? 'bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-black font-semibold shadow-lg'
+                  : 'hover:bg-[var(--border)] hover:shadow-md'
               }`}
             >
               <span className="text-lg">{item.icon}</span>
@@ -47,9 +53,9 @@ const LeftSidebar = () => {
         </nav>
 
         {/* Theme Toggle */}
-        <div className="mt-8 pt-4 border-t border-[var(--border)]">
+        <div className="mt-8 pt-6 border-t border-[var(--border)]">
           <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[var(--border)] transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[var(--border)] transition-all duration-200 ease-in-out transform hover:scale-105"
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
