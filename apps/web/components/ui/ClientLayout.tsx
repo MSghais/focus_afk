@@ -31,7 +31,7 @@ export default function ClientLayout({
       {/* Remove <html> and <body> tags to avoid hydration errors */}
       <>
         <Navbar />
-        <div className={geist.className + " min-h-screen w-full bg-[var(--background)] text-[var(--foreground)]"}>
+        <div className={geist.className + " min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] mt-24 md:m-2"}>
           <div className="flex flex-row min-h-screen w-full">
             <LeftSidebar />
             <main className="flex-1 w-full min-h-screen pb-16 md:pb-0 bg-[var(--background)] text-[var(--foreground)] flex justify-center items-stretch md:pl-64 md:pr-64">
