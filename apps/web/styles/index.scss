@@ -1,69 +1,39 @@
 @import './variables.scss';
 
-// Use theme colors from the root variables
 :root {
-  --feed-bg: var(--background);
-  --feed-text: var(--foreground);
-  --feed-border: var(--border);
-  --feed-tab-active: var(--primary-500);
-  --feed-tab-inactive: var(--primary-400);
-  --feed-hover: var(--shade-100);
-  --form-bg: var(--background);
-  --form-text: var(--contrast-900);
-  --form-border: var(--border);
-  --form-focus: var(--primary-500);
-  --form-error: #ef4444;
-  --form-success: #22c55e;
-  --form-tag-bg: var(--card-bg);
-  --form-tag-text: var(--contrast-700);
-  --form-tag-hover: var(--shade-200);
-  --form-button-bg: var(--primary-600);
-  --form-button-text: var(--contrast-50);
-  --form-button-hover: var(--primary-700);
+  --brand-primary: #00FF9C; /* AFK Electric Green */
+  --brand-secondary: #00F0FF; /* AFK Cyber Cyan */
+  --brand-accent: #FF2EC4; /* AFK Neon Magenta */
+  --background: #F9F9F9; /* AFK Offwhite */
+  --foreground: #0E0E0E; /* AFK Black */
+  --border: #E5E7EB;
 }
 
-// Form variables for dark theme
-.dark-mode {
-  --feed-bg: var(--background);
-  --feed-text: var(--foreground);
-  --feed-border: var(--border);
-  --feed-tab-active: var(--primary-500);
-  --feed-tab-inactive: var(--primary-400);
-  --feed-hover: var(--shade-100);
-
-
-  --form-bg: var(--background);
-  --form-text: var(--contrast-900);
-  --form-border: var(--border);
-  --form-focus: var(--primary-400);
-  --form-error: #f87171;
-  --form-success: #4ade80;
-  --form-tag-bg: var(--card-bg);
-  --form-tag-text: var(--contrast-600);
-  --form-tag-hover: var(--shade-300);
-  --form-button-bg: var(--primary-500);
-  --form-button-text: var(--contrast-50);
-  --form-button-hover: var(--primary-600);
+body[data-theme='dark'] {
+  --brand-primary: #00FF9C;
+  --brand-secondary: #00F0FF;
+  --brand-accent: #FF2EC4;
+  --background: #0E0E0E;
+  --foreground: #F9F9F9;
+  --border: #333;
 }
 
-
-// AFK Global Styles
 body {
   font-family: var(--afk-font-primary, $font-primary);
-  color: var(--afk-text-dark);
-  background: var(--afk-bg-dark);
+  color: var(--foreground);
+  background: var(--background);
   line-height: 1.5;
 }
 
 body.blue-mode {
   font-family: var(--afk-font-primary, $font-primary);
-  color: var(--afk-text-dark);
-  background: var(--afk-bg-dark);
+  color: var(--foreground);
+  background: var(--background);
 }
 
 body.light-mode {
-  color: var(--afk-text-light);
-  background: var(--afk-bg-light);
+  color: var(--foreground);
+  background: var(--background);
 }
 
 .code, .mono, pre, code {

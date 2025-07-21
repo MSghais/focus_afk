@@ -3,21 +3,21 @@
 
 /* Global brand and theme variables */
 :root {
-  --brand-primary: #6366f1;
-  --brand-secondary: #a5b4fc;
-  --brand-accent: #f59e42;
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --brand-primary: #00FF9C; /* AFK Electric Green */
+  --brand-secondary: #00F0FF; /* AFK Cyber Cyan */
+  --brand-accent: #FF2EC4; /* AFK Neon Magenta */
+  --background: #F9F9F9; /* AFK Offwhite */
+  --foreground: #0E0E0E; /* AFK Black */
+  --border: #E5E7EB;
 }
 
 body[data-theme='dark'] {
-  --brand-primary: #818cf8;
-  --brand-secondary: #6366f1;
-  --brand-accent: #fbbf24;
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
+  --brand-primary: #00FF9C;
+  --brand-secondary: #00F0FF;
+  --brand-accent: #FF2EC4;
+  --background: #0E0E0E;
+  --foreground: #F9F9F9;
+  --border: #333;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,13 +29,8 @@ body[data-theme='dark'] {
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--foreground);
+  background: var(--background);
   min-height: 100vh;
   width: 100vw;
   margin: 0;

@@ -1,6 +1,4 @@
-import "../styles/index.css";
 import "../styles/index.scss";
-import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import BottomBar from "../components/ui/BottomBar";
@@ -8,6 +6,8 @@ import RightSidebar from "../components/ui/RightSidebar";
 import LeftSidebar from "../components/ui/LeftSidebar";
 import Navbar from "../components/ui/Navbar";
 import Providers from "../providers/Providers";
+import React from "react";
+import ClientLayout from "../components/ui/ClientLayout";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -22,26 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
 
-
   return (
-
-    <Providers> 
-
     <html lang="en">
-      <Navbar />
-      <body className={geist.className + " min-h-screen w-full bg-white dark:bg-gray-900 text-black dark:text-white"}>
-        <div className="flex flex-row min-h-screen w-full">
-          <LeftSidebar />
-          <main className="flex-1 w-full min-h-screen pb-16 md:pb-0 bg-white dark:bg-gray-900 text-black dark:text-white flex justify-center items-stretch md:pl-64 md:pr-64">
-            <div className="w-full max-w-5xl mx-auto flex flex-col flex-1">
-              {children}
-            </div>
-          </main>
-          {/* <RightSidebar /> */}
-        </div>
-        <BottomBar />
+      <body className={geist.className + " min-h-screen w-full bg-[var(--background)] text-[var(--foreground)]"}>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
-    </Providers>
   );
 }

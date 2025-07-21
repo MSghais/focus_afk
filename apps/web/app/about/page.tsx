@@ -1,5 +1,5 @@
 
-import Onboarding from "../components/onboarding/Onboarding";
+import Onboarding from "../../components/onboarding/Onboarding";
 // import { TurborepoLogo } from "@repo/ui/turborepo-logo";
 
 const LINKS = [
@@ -26,7 +26,7 @@ const LINKS = [
   },
 ];
 
-export default function Page() {
+export default function AboutPage() {
   return (
     <div>
       <Onboarding />
