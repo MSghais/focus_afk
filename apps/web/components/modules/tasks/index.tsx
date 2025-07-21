@@ -196,7 +196,7 @@ export default function Tasks() {
                             <div
                                 key={task.id}
                                 className={`p-4 border rounded-lg transition-all ${
-                                    task.completed ? 'bg-gray-50 opacity-75' : 'bg-white hover:shadow-md'
+                                    task.completed ? 'bg-gray-50 opacity-75' : 'hover:shadow-md'
                                 }`}
                             >
                                 {editingTask?.id === task.id ? (

@@ -42,7 +42,7 @@ const LeftSidebar = () => {
               onClick={() => setCurrentModule(item.id as any)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 ${
                 ui.currentModule === item.id
-                  ? 'bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] text-black font-semibold shadow-lg'
+                  ? 'bg-[var(--afk-bg-dark,#18181b)] text-[var(--foreground)] font-semibold shadow-lg border border-[var(--border)]'
                   : 'hover:bg-[var(--border)] hover:shadow-md'
               }`}
             >

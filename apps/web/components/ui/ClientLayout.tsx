@@ -7,6 +7,7 @@ import LeftSidebar from "./LeftSidebar";
 import Navbar from "./Navbar";
 import Providers from "../../providers/Providers";
 import React from "react";
+import RightSidebar from "./RightSidebar";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -38,10 +39,14 @@ export default function ClientLayout({
         {/* Main Content */}
         <main className="flex-1 w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-all duration-300 ease-in-out
           md:ml-64 md:pt-0 pt-16 pb-16 md:pb-0">
-          <div className="w-full h-full max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
-            {children}
+          <div className="w-full h-full container-responsive">
+            <div className="max-w-7xl mx-auto">
+              {children}
+            </div>
           </div>
         </main>
+
+        <RightSidebar />
         
         {/* Mobile Bottom Bar */}
         <BottomBar />

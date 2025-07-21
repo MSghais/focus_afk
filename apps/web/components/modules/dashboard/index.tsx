@@ -42,9 +42,13 @@ export default function Dashboard() {
     }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
 
     const formatTime = (minutes: number) => {
+        if (minutes === 0) return '0m';
         const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+        const mins = Math.floor(minutes % 60);
+        if (hours > 0) {
+            return `${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
+        }
+        return `${mins}m`;
     };
 
     const formatDate = (date: Date) => {
@@ -70,94 +74,94 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold mb-6 gradient-text">Dashboard</h1>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-[var(--foreground)] opacity-70">Total Tasks</p>
-                            <p className="text-2xl font-bold">{taskStats.total}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Total Tasks</p>
+                            <p className="text-xl md:text-2xl font-bold">{taskStats.total}</p>
                         </div>
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xl">📋</span>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
+                            <span className="text-white text-lg md:text-xl">📋</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-[var(--foreground)] opacity-70">Completed</p>
-                            <p className="text-2xl font-bold text-green-500">{taskStats.completed}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Completed</p>
+                            <p className="text-xl md:text-2xl font-bold text-green-500">{taskStats.completed}</p>
                         </div>
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xl">✅</span>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
+                            <span className="text-white text-lg md:text-xl">✅</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-[var(--foreground)] opacity-70">Focus Time</p>
-                            <p className="text-2xl font-bold text-purple-500">{formatTime(focusStats.totalMinutes)}</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Focus Time</p>
+                            <p className="text-xl md:text-2xl font-bold text-purple-500">{formatTime(focusStats.totalMinutes)}</p>
                         </div>
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xl">⏱️</span>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
+                            <span className="text-white text-lg md:text-xl">⏱️</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-[var(--foreground)] opacity-70">Productivity</p>
-                            <p className="text-2xl font-bold text-orange-500">{getProductivityScore()}%</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Productivity</p>
+                            <p className="text-xl md:text-2xl font-bold text-orange-500">{getProductivityScore()}%</p>
                         </div>
-                        <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xl">📈</span>
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
+                            <span className="text-white text-lg md:text-xl">📈</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <button
                     onClick={() => setCurrentModule('tasks')}
-                    className="p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="p-4 md:p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-semibold text-lg">Add Task</p>
-                            <p className="text-sm opacity-90">Create a new task</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-base md:text-lg text-ellipsis">Add Task</p>
+                            <p className="text-sm opacity-90 text-ellipsis">Create a new task</p>
                         </div>
-                        <span className="text-3xl">➕</span>
+                        <span className="text-2xl md:text-3xl ml-3 icon-container">➕</span>
                     </div>
                 </button>
 
                 <button
                     onClick={() => setCurrentModule('timer')}
-                    className="p-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="p-4 md:p-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-semibold text-lg">Start Focus</p>
-                            <p className="text-sm opacity-90">Begin a focus session</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-base md:text-lg text-ellipsis">Start Focus</p>
+                            <p className="text-sm opacity-90 text-ellipsis">Begin a focus session</p>
                         </div>
-                        <span className="text-3xl">🎯</span>
+                        <span className="text-2xl md:text-3xl ml-3 icon-container">🎯</span>
                     </div>
                 </button>
 
                 <button
                     onClick={() => setCurrentModule('learning')}
-                    className="p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="p-4 md:p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl sm:col-span-2 lg:col-span-1"
                 >
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-semibold text-lg">Set Goal</p>
-                            <p className="text-sm opacity-90">Create a new goal</p>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-base md:text-lg text-ellipsis">Set Goal</p>
+                            <p className="text-sm opacity-90 text-ellipsis">Create a new goal</p>
                         </div>
-                        <span className="text-3xl">🎯</span>
+                        <span className="text-2xl md:text-3xl ml-3 icon-container">🎯</span>
                     </div>
                 </button>
             </div>
@@ -165,9 +169,9 @@ export default function Dashboard() {
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Tasks */}
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">Recent Tasks</h2>
+                        <h2 className="text-lg md:text-xl font-semibold">Recent Tasks</h2>
                         <button
                             onClick={() => setCurrentModule('tasks')}
                             className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
@@ -180,24 +184,24 @@ export default function Dashboard() {
                     ) : (
                         <div className="space-y-3">
                             {recentTasks.map((task) => (
-                                <div key={task.id} className="flex items-center justify-between p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
-                                    <div className="flex items-center gap-3">
+                                <div key={task.id} className="flex items-center justify-between p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
                                         <input
                                             type="checkbox"
                                             checked={task.completed}
                                             readOnly
-                                            className="w-4 h-4 text-[var(--brand-primary)] rounded focus:ring-[var(--brand-primary)]"
+                                            className="w-4 h-4 text-[var(--brand-primary)] rounded focus:ring-[var(--brand-primary)] flex-shrink-0"
                                         />
-                                        <div>
-                                            <p className={`font-medium ${task.completed ? 'line-through text-[var(--foreground)] opacity-50' : ''}`}>
+                                        <div className="min-w-0 flex-1">
+                                            <p className={`font-medium text-ellipsis ${task.completed ? 'line-through text-[var(--foreground)] opacity-50' : ''}`}>
                                                 {task.title}
                                             </p>
                                             {task.category && (
-                                                <p className="text-xs text-[var(--foreground)] opacity-60">{task.category}</p>
+                                                <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">{task.category}</p>
                                             )}
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
                                         task.priority === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300' :
                                         task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300' :
                                         'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
@@ -211,9 +215,9 @@ export default function Dashboard() {
                 </div>
 
                 {/* Recent Goals */}
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">Active Goals</h2>
+                        <h2 className="text-lg md:text-xl font-semibold">Active Goals</h2>
                         <button
                             onClick={() => setCurrentModule('learning')}
                             className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
@@ -226,10 +230,10 @@ export default function Dashboard() {
                     ) : (
                         <div className="space-y-3">
                             {recentGoals.map((goal) => (
-                                <div key={goal.id} className="p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
+                                <div key={goal.id} className="p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
                                     <div className="flex items-center justify-between mb-2">
-                                        <h3 className="font-medium">{goal.title}</h3>
-                                        <span className="text-sm text-[var(--foreground)] opacity-70">{goal.progress}%</span>
+                                        <h3 className="font-medium text-ellipsis">{goal.title}</h3>
+                                        <span className="text-sm text-[var(--foreground)] opacity-70 flex-shrink-0 ml-2">{goal.progress}%</span>
                                     </div>
                                     <div className="w-full bg-[var(--border)] rounded-full h-2 mb-2">
                                         <div
@@ -238,7 +242,7 @@ export default function Dashboard() {
                                         ></div>
                                     </div>
                                     {goal.targetDate && (
-                                        <p className="text-xs text-[var(--foreground)] opacity-60">
+                                        <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">
                                             Target: {formatDate(goal.targetDate)}
                                         </p>
                                     )}
@@ -249,9 +253,9 @@ export default function Dashboard() {
                 </div>
 
                 {/* Focus Sessions */}
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold">Recent Focus Sessions</h2>
+                        <h2 className="text-lg md:text-xl font-semibold">Recent Focus Sessions</h2>
                         <button
                             onClick={() => setCurrentModule('timer')}
                             className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
@@ -264,14 +268,14 @@ export default function Dashboard() {
                     ) : (
                         <div className="space-y-3">
                             {recentSessions.map((session) => (
-                                <div key={session.id} className="flex items-center justify-between p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
-                                    <div>
+                                <div key={session.id} className="flex items-center justify-between p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
+                                    <div className="min-w-0 flex-1">
                                         <p className="font-medium">{formatTime(session.duration / 60)}</p>
-                                        <p className="text-xs text-[var(--foreground)] opacity-60">
+                                        <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">
                                             {formatDate(session.startTime)}
                                         </p>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
                                         session.completed ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300'
                                     }`}>
                                         {session.completed ? 'Completed' : 'In Progress'}
@@ -283,19 +287,19 @@ export default function Dashboard() {
                 </div>
 
                 {/* Weekly Focus Chart */}
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
-                    <h2 className="text-xl font-semibold mb-4">This Week's Focus</h2>
+                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
+                    <h2 className="text-lg md:text-xl font-semibold mb-4">This Week's Focus</h2>
                     {focusStats.sessionsByDay.length === 0 ? (
                         <p className="text-[var(--foreground)] opacity-50 text-center py-8">No focus data yet</p>
                     ) : (
                         <div className="space-y-3">
                             {focusStats.sessionsByDay.slice(0, 7).map((day) => (
                                 <div key={day.date} className="flex items-center justify-between">
-                                    <span className="text-sm text-[var(--foreground)] opacity-70">
+                                    <span className="text-sm text-[var(--foreground)] opacity-70 flex-shrink-0">
                                         {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
                                     </span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-24 bg-[var(--border)] rounded-full h-2">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1 ml-4">
+                                        <div className="w-20 md:w-24 bg-[var(--border)] rounded-full h-2 flex-1">
                                             <div
                                                 className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] h-2 rounded-full transition-all duration-300"
                                                 style={{ 
@@ -303,7 +307,7 @@ export default function Dashboard() {
                                                 }}
                                             ></div>
                                         </div>
-                                        <span className="text-xs text-[var(--foreground)] opacity-60 w-12 text-right">
+                                        <span className="text-xs text-[var(--foreground)] opacity-60 flex-shrink-0 w-12 text-right">
                                             {formatTime(day.minutes)}
                                         </span>
                                     </div>
