@@ -70,11 +70,11 @@ export default function Dashboard() {
     const recentSessions = timerSessions.slice(0, 5);
 
     return (
-        <div className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto fade-in">
+        <div className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto fade-in overflow-safe">
             <h1 className="text-3xl font-bold mb-6 gradient-text">Dashboard</h1>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
                     <div className="flex items-center justify-between">
                         <div className="min-w-0 flex-1">
@@ -167,7 +167,7 @@ export default function Dashboard() {
             </div>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="dashboard-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Tasks */}
                 <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
                     <div className="flex items-center justify-between mb-4">

@@ -38,7 +38,7 @@ export default function ClientLayout({
         
         {/* Main Content */}
         <main className="flex-1 w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-all duration-300 ease-in-out
-          md:ml-64 md:pt-0 pt-16 pb-16 md:pb-0">
+          md:ml-64 md:mr-64 md:pt-0 pt-16 pb-16 md:pb-0">
           <div className="w-full h-full container-responsive">
             <div className="max-w-7xl mx-auto">
               {children}
@@ -46,7 +46,7 @@ export default function ClientLayout({
           </div>
         </main>
 
-        <RightSidebar />
+        {/* <RightSidebar /> */}
         
         {/* Mobile Bottom Bar */}
         <BottomBar />

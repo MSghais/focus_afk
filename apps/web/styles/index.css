@@ -139,6 +139,7 @@ body[data-theme='dark'] .card:hover {
   max-width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -162,6 +163,15 @@ body[data-theme='dark'] .card:hover {
   }
 }
 
+/* Desktop layout with sidebars */
+@media (min-width: 768px) {
+  .main-content {
+    margin-left: 16rem; /* 256px for left sidebar */
+    margin-right: 16rem; /* 256px for right sidebar */
+    width: calc(100% - 32rem); /* Full width minus both sidebars */
+  }
+}
+
 /* Fix for text overflow and icon display */
 .text-ellipsis {
   overflow: hidden;
@@ -175,4 +185,23 @@ body[data-theme='dark'] .card:hover {
   justify-content: center;
   min-width: 1.5rem;
   min-height: 1.5rem;
+}
+
+/* Ensure content doesn't overflow on desktop */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Prevent horizontal overflow */
+.overflow-safe {
+  overflow-x: hidden;
+  max-width: 100%;
 }
