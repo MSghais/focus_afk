@@ -7,35 +7,14 @@ import Focus from "../components/modules/focus";
 import Tasks from "../components/modules/tasks";
 import Console from "../components/modules/console";
 import Dashboard from "../components/modules/dashboard";
-
-const LINKS = [
-  {
-    title: "Docs",
-    href: "https://turborepo.com/docs",
-    description: "Find in-depth information about Turborepo features and API.",
-  },
-  {
-    title: "Learn",
-    href: "https://turborepo.com/docs/handbook",
-    description: "Learn more about monorepos with our handbook.",
-  },
-  {
-    title: "Templates",
-    href: "https://turborepo.com/docs/getting-started/from-example",
-    description: "Choose from over 15 examples and deploy with a single click.",
-  },
-  {
-    title: "Deploy",
-    href: "https://vercel.com/new",
-    description:
-      "Instantly deploy your Turborepo to a shareable URL with Vercel.",
-  },
-];
+import Timer from "../components/modules/timer";
+import { useFocusAFKStore } from "../lib/store";
 
 export default function Page() {
-
   const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
+  const { ui } = useFocusAFKStore();
+
   useEffect(() => {
     if (ready && !authenticated) {
       router.push('/profile');
@@ -46,11 +25,28 @@ export default function Page() {
     return <div>Loading...</div>;
   }
 
+  const renderCurrentModule = () => {
+    switch (ui.currentModule) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'tasks':
+        return <Tasks />;
+      case 'timer':
+        return <Timer />;
+      case 'learning':
+        return <Console />; // Goals component is in learning module
+      case 'console':
+        return <Console />; // Settings component is in console module
+      case 'focus':
+        return <Focus />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
     <div className="page">
-      <Console /> 
-      {/* <Dashboard /> */}
+      {renderCurrentModule()}
     </div>
-
   );
 }

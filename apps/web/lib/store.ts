@@ -1,0 +1,448 @@
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
+import { Task, Goal, TimerSession, UserSettings, dbUtils } from './database';
+
+// Timer state interface
+interface TimerState {
+  isRunning: boolean;
+  secondsLeft: number;
+  totalSeconds: number;
+  currentSessionId?: number;
+  isBreak: boolean;
+  autoStartBreaks: boolean;
+  autoStartSessions: boolean;
+}
+
+// UI state interface
+interface UIState {
+  currentModule: 'dashboard' | 'tasks' | 'timer' | 'focus' | 'learning' | 'console';
+  sidebarOpen: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  notifications: boolean;
+}
+
+// Main store interface
+interface FocusAFKStore {
+  // Data
+  tasks: Task[];
+  goals: Goal[];
+  timerSessions: TimerSession[];
+  settings: UserSettings | null;
+  
+  // Timer state
+  timer: TimerState;
+  
+  // UI state
+  ui: UIState;
+  
+  // Loading states
+  loading: {
+    tasks: boolean;
+    goals: boolean;
+    sessions: boolean;
+    settings: boolean;
+  };
+  
+  // Actions - Tasks
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateTask: (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
+  deleteTask: (id: number) => Promise<void>;
+  toggleTaskComplete: (id: number) => Promise<void>;
+  loadTasks: () => Promise<void>;
+  
+  // Actions - Goals
+  addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateGoal: (id: number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>) => Promise<void>;
+  deleteGoal: (id: number) => Promise<void>;
+  updateGoalProgress: (id: number, progress: number) => Promise<void>;
+  loadGoals: () => Promise<void>;
+  
+  // Actions - Timer
+  startTimer: (duration: number, taskId?: number, goalId?: number) => Promise<void>;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  stopTimer: () => Promise<void>;
+  resetTimer: () => void;
+  setTimerDuration: (seconds: number) => void;
+  startBreak: (duration: number) => Promise<void>;
+  loadTimerSessions: () => Promise<void>;
+  
+  // Actions - Settings
+  updateSettings: (settings: Partial<Omit<UserSettings, 'id' | 'createdAt'>>) => Promise<void>;
+  loadSettings: () => Promise<void>;
+  
+  // Actions - UI
+  setCurrentModule: (module: UIState['currentModule']) => void;
+  toggleSidebar: () => void;
+  setTheme: (theme: UIState['theme']) => void;
+  setNotifications: (enabled: boolean) => void;
+  
+  // Actions - Loading
+  setLoading: (key: keyof FocusAFKStore['loading'], value: boolean) => void;
+  
+  // Statistics
+  getTaskStats: () => Promise<{
+    total: number;
+    completed: number;
+    pending: number;
+    overdue: number;
+  }>;
+  
+  getFocusStats: (days?: number) => Promise<{
+    totalSessions: number;
+    totalMinutes: number;
+    averageSessionLength: number;
+    sessionsByDay: { date: string; sessions: number; minutes: number }[];
+  }>;
+}
+
+// Default timer state
+const defaultTimerState: TimerState = {
+  isRunning: false,
+  secondsLeft: 25 * 60, // 25 minutes
+  totalSeconds: 25 * 60,
+  currentSessionId: undefined,
+  isBreak: false,
+  autoStartBreaks: false,
+  autoStartSessions: false,
+};
+
+// Default UI state
+const defaultUIState: UIState = {
+  currentModule: 'dashboard',
+  sidebarOpen: false,
+  theme: 'auto',
+  notifications: true,
+};
+
+// Create the store
+export const useFocusAFKStore = create<FocusAFKStore>()(
+  subscribeWithSelector((set, get) => ({
+    // Initial state
+    tasks: [],
+    goals: [],
+    timerSessions: [],
+    settings: null,
+    timer: defaultTimerState,
+    ui: defaultUIState,
+    loading: {
+      tasks: false,
+      goals: false,
+      sessions: false,
+      settings: false,
+    },
+
+    // Task actions
+    addTask: async (task) => {
+      const id = await dbUtils.addTask(task);
+      const newTask = { ...task, id, createdAt: new Date(), updatedAt: new Date() };
+      set((state) => ({
+        tasks: [newTask, ...state.tasks],
+      }));
+    },
+
+    updateTask: async (id, updates) => {
+      await dbUtils.updateTask(id, updates);
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, ...updates, updatedAt: new Date() } : task
+        ),
+      }));
+    },
+
+    deleteTask: async (id) => {
+      await dbUtils.deleteTask(id);
+      set((state) => ({
+        tasks: state.tasks.filter((task) => task.id !== id),
+      }));
+    },
+
+    toggleTaskComplete: async (id) => {
+      const task = get().tasks.find((t) => t.id === id);
+      if (task) {
+        await get().updateTask(id, { completed: !task.completed });
+      }
+    },
+
+    loadTasks: async () => {
+      set((state) => ({ loading: { ...state.loading, tasks: true } }));
+      try {
+        const tasks = await dbUtils.getTasks();
+        set({ tasks });
+      } catch (error) {
+        console.error('Failed to load tasks:', error);
+      } finally {
+        set((state) => ({ loading: { ...state.loading, tasks: false } }));
+      }
+    },
+
+    // Goal actions
+    addGoal: async (goal) => {
+      const id = await dbUtils.addGoal(goal);
+      const newGoal = { ...goal, id, createdAt: new Date(), updatedAt: new Date() };
+      set((state) => ({
+        goals: [newGoal, ...state.goals],
+      }));
+    },
+
+    updateGoal: async (id, updates) => {
+      await dbUtils.updateGoal(id, updates);
+      set((state) => ({
+        goals: state.goals.map((goal) =>
+          goal.id === id ? { ...goal, ...updates, updatedAt: new Date() } : goal
+        ),
+      }));
+    },
+
+    deleteGoal: async (id) => {
+      await dbUtils.deleteGoal(id);
+      set((state) => ({
+        goals: state.goals.filter((goal) => goal.id !== id),
+      }));
+    },
+
+    updateGoalProgress: async (id, progress) => {
+      const goal = get().goals.find((g) => g.id === id);
+      if (goal) {
+        const completed = progress >= 100;
+        await get().updateGoal(id, { progress, completed });
+      }
+    },
+
+    loadGoals: async () => {
+      set((state) => ({ loading: { ...state.loading, goals: true } }));
+      try {
+        const goals = await dbUtils.getGoals();
+        set({ goals });
+      } catch (error) {
+        console.error('Failed to load goals:', error);
+      } finally {
+        set((state) => ({ loading: { ...state.loading, goals: false } }));
+      }
+    },
+
+    // Timer actions
+    startTimer: async (duration, taskId, goalId) => {
+      const sessionId = await dbUtils.addTimerSession({
+        taskId,
+        goalId,
+        startTime: new Date(),
+        duration: 0,
+        completed: false,
+      });
+
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          isRunning: true,
+          secondsLeft: duration,
+          totalSeconds: duration,
+          currentSessionId: sessionId,
+          isBreak: false,
+        },
+      }));
+    },
+
+    pauseTimer: () => {
+      set((state) => ({
+        timer: { ...state.timer, isRunning: false },
+      }));
+    },
+
+    resumeTimer: () => {
+      set((state) => ({
+        timer: { ...state.timer, isRunning: true },
+      }));
+    },
+
+    stopTimer: async () => {
+      const { timer } = get();
+      if (timer.currentSessionId) {
+        const duration = timer.totalSeconds - timer.secondsLeft;
+        await dbUtils.updateTimerSession(timer.currentSessionId, {
+          endTime: new Date(),
+          duration,
+          completed: true,
+        });
+      }
+
+      set((state) => ({
+        timer: {
+          ...defaultTimerState,
+          autoStartBreaks: state.timer.autoStartBreaks,
+          autoStartSessions: state.timer.autoStartSessions,
+        },
+      }));
+    },
+
+    resetTimer: () => {
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          isRunning: false,
+          secondsLeft: state.timer.totalSeconds,
+        },
+      }));
+    },
+
+    setTimerDuration: (seconds) => {
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          secondsLeft: seconds,
+          totalSeconds: seconds,
+        },
+      }));
+    },
+
+    startBreak: async (duration) => {
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          isRunning: true,
+          secondsLeft: duration,
+          totalSeconds: duration,
+          currentSessionId: undefined,
+          isBreak: true,
+        },
+      }));
+    },
+
+    loadTimerSessions: async () => {
+      set((state) => ({ loading: { ...state.loading, sessions: true } }));
+      try {
+        const sessions = await dbUtils.getTimerSessions();
+        set({ timerSessions: sessions });
+      } catch (error) {
+        console.error('Failed to load timer sessions:', error);
+      } finally {
+        set((state) => ({ loading: { ...state.loading, sessions: false } }));
+      }
+    },
+
+    // Settings actions
+    updateSettings: async (settings) => {
+      await dbUtils.updateSettings(settings);
+      set((state) => ({
+        settings: state.settings ? { ...state.settings, ...settings, updatedAt: new Date() } : null,
+      }));
+    },
+
+    loadSettings: async () => {
+      set((state) => ({ loading: { ...state.loading, settings: true } }));
+      try {
+        const settings = await dbUtils.getSettings();
+        if (settings) {
+          set({ settings });
+          // Update timer state with settings
+          set((state) => ({
+            timer: {
+              ...state.timer,
+              autoStartBreaks: settings.autoStartBreaks,
+              autoStartSessions: settings.autoStartSessions,
+            },
+            ui: {
+              ...state.ui,
+              theme: settings.theme,
+              notifications: settings.notifications,
+            },
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      } finally {
+        set((state) => ({ loading: { ...state.loading, settings: false } }));
+      }
+    },
+
+    // UI actions
+    setCurrentModule: (module) => {
+      set((state) => ({
+        ui: { ...state.ui, currentModule: module },
+      }));
+    },
+
+    toggleSidebar: () => {
+      set((state) => ({
+        ui: { ...state.ui, sidebarOpen: !state.ui.sidebarOpen },
+      }));
+    },
+
+    setTheme: (theme) => {
+      set((state) => ({
+        ui: { ...state.ui, theme },
+      }));
+      get().updateSettings({ theme });
+    },
+
+    setNotifications: (enabled) => {
+      set((state) => ({
+        ui: { ...state.ui, notifications: enabled },
+      }));
+      get().updateSettings({ notifications: enabled });
+    },
+
+    // Loading actions
+    setLoading: (key, value) => {
+      set((state) => ({
+        loading: { ...state.loading, [key]: value },
+      }));
+    },
+
+    // Statistics
+    getTaskStats: async () => {
+      return await dbUtils.getTaskStats();
+    },
+
+    getFocusStats: async (days = 7) => {
+      return await dbUtils.getFocusStats(days);
+    },
+  }))
+);
+
+// Timer effect - handle countdown
+let timerInterval: NodeJS.Timeout | null = null;
+
+useFocusAFKStore.subscribe(
+  (state) => state.timer.isRunning,
+  (isRunning) => {
+    if (isRunning) {
+      timerInterval = setInterval(() => {
+        const { timer } = useFocusAFKStore.getState();
+        if (timer.secondsLeft > 0) {
+          useFocusAFKStore.setState((state) => ({
+            timer: { ...state.timer, secondsLeft: timer.secondsLeft - 1 },
+          }));
+        } else {
+          // Timer finished
+          clearInterval(timerInterval!);
+          useFocusAFKStore.getState().stopTimer();
+          
+          // Show notification if enabled
+          if (useFocusAFKStore.getState().ui.notifications) {
+            if (Notification.permission === 'granted') {
+              new Notification('Focus Session Complete!', {
+                body: timer.isBreak ? 'Break time is over!' : 'Great job! Take a break.',
+                icon: '/favicon.ico',
+              });
+            }
+          }
+        }
+      }, 1000);
+    } else if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+);
+
+// Initialize store on mount
+export const initializeStore = async () => {
+  const store = useFocusAFKStore.getState();
+  await Promise.all([
+    store.loadTasks(),
+    store.loadGoals(),
+    store.loadTimerSessions(),
+    store.loadSettings(),
+  ]);
+}; 

@@ -1,77 +1,168 @@
-# Cursor Rules & Getting Help
+# Focus AFK - Web Application
 
-- Use Cursor's navigation and semantic search to find components, styles, and logic quickly.
-- Make small, focused commits and document your changes.
-- Use semantic search to understand how theming and dark mode work.
-- The main app is in `apps/web`. Shared packages are in `packages/`.
-- For help or to contact the team, reach out via [team chat/email/Discord] (replace with your actual contact method).
-- To run locally: `pnpm install && pnpm dev` from the repo root.
-- For smart contract code, see the `contracts/` folder (if present) or ask in the team chat for details.
+A comprehensive focus and productivity application built with Next.js, featuring task management, goal tracking, and focus timer functionality.
 
----
+## Features
+
+### 🎯 Task Management
+- Create, edit, and delete tasks
+- Set priorities (low, medium, high)
+- Add categories and due dates
+- Track completion status
+- Estimate and track actual time spent
+
+### 🎯 Goal Tracking
+- Set long-term goals with progress tracking
+- Visual progress bars
+- Target dates and deadline tracking
+- Category organization
+- Link goals to tasks
+
+### ⏱️ Focus Timer
+- Customizable Pomodoro timer
+- Break timer functionality
+- Task and goal integration
+- Session tracking and statistics
+- Browser notifications
+
+### 📊 Dashboard
+- Overview of tasks, goals, and focus sessions
+- Productivity statistics
+- Recent activity tracking
+- Quick action buttons
+- Weekly focus charts
+
+### ⚙️ Settings
+- Timer duration preferences
+- Auto-start options
+- Notification settings
+- Theme customization (light/dark/auto)
+- Data management
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **State Management**: Zustand
+- **Database**: Dexie.js (IndexedDB)
+- **Styling**: Tailwind CSS, CSS Modules
+- **Authentication**: Privy
+- **UI Components**: Custom components with modern design
+
+## Database Schema
+
+### Tasks
+```typescript
+interface Task {
+  id?: number;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  category?: string;
+  dueDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  estimatedMinutes?: number;
+  actualMinutes?: number;
+}
+```
+
+### Goals
+```typescript
+interface Goal {
+  id?: number;
+  title: string;
+  description?: string;
+  targetDate?: Date;
+  completed: boolean;
+  progress: number; // 0-100
+  category?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  relatedTasks?: number[]; // Task IDs
+}
+```
+
+### Timer Sessions
+```typescript
+interface TimerSession {
+  id?: number;
+  taskId?: number;
+  goalId?: number;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  completed: boolean;
+  notes?: string;
+  createdAt: Date;
+}
+```
+
+### User Settings
+```typescript
+interface UserSettings {
+  id?: number;
+  defaultFocusDuration: number; // in minutes
+  defaultBreakDuration: number; // in minutes
+  autoStartBreaks: boolean;
+  autoStartSessions: boolean;
+  notifications: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  updatedAt: Date;
+}
+```
+
+## State Management
+
+The application uses Zustand for state management with the following structure:
+
+- **Tasks**: CRUD operations, filtering, statistics
+- **Goals**: CRUD operations, progress tracking
+- **Timer**: Session management, countdown logic
+- **Settings**: User preferences, theme management
+- **UI**: Navigation state, loading states
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-```bash
-yarn dev
-```
+2. Run the development server:
+   ```bash
+   pnpm dev
+   ```
 
-Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## Data Persistence
 
-To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3001/api/hello](http://localhost:3001/api/hello).
+All data is stored locally in the browser using IndexedDB (via Dexie.js). This means:
+- No server required
+- Data persists between sessions
+- Works offline
+- Data is private and secure
 
-## Learn More
+## Key Components
 
-To learn more about Next.js, take a look at the following resources:
+- **Database Layer** (`lib/database.ts`): Dexie configuration and utility functions
+- **Store** (`lib/store.ts`): Zustand store with all application state and actions
+- **Modules**: Feature-specific components (Tasks, Goals, Timer, Dashboard, Settings)
+- **Providers**: Store initialization and authentication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
+## Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+The application follows a modular architecture:
+- Each feature has its own module in `components/modules/`
+- Shared utilities in `lib/`
+- Database operations abstracted through `dbUtils`
+- State management centralized in Zustand store
 
-## Deploy on Vercel
+## Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-# Project Structure and Development Guide
-
-## Using Cursor for Development
-
-- **Cursor Rules:**
-  - Always use the built-in code navigation and search features to find components, styles, and logic.
-  - When editing, prefer making small, focused commits and documenting your changes.
-  - Use the semantic search to understand how components interact, especially for styling and theming.
-  - Follow the monorepo structure: shared packages are in `packages/`, main app in `apps/web/`.
-
-## Dark Mode, Styling, and Components
-
-### Dark Mode
-- Dark mode is managed via CSS variables and/or Tailwind CSS (if enabled in the project).
-- The global styles are defined in `apps/web/app/globals.css` and `apps/web/styles/`.
-- If using Tailwind, dark mode is typically toggled via a `dark` class on the `<html>` or `<body>` element.
-- Check for a context/provider or a toggle component in `components/ui/` or `providers/` for dark mode logic.
-
-### Styling
-- Styles are organized in `apps/web/styles/` (global, variables, and index files).
-- Component-specific styles may use CSS Modules (e.g., `Onboarding.module.scss`) or inline styles.
-- Shared styles for the monorepo may be in `packages/tailwind-config/shared-styles.css`.
-- Use semantic class names and prefer CSS Modules or Tailwind for new components.
-
-### Components
-- UI components are in `apps/web/components/`.
-  - `ui/` contains layout/navigation (Navbar, Sidebar, BottomBar).
-  - `small/` contains atomic elements (Card, Gradient, etc.).
-  - `onboarding/` and `privy/` are feature-specific.
-- Shared UI primitives may be in `packages/ui/src/`.
-- Compose components by importing from these folders, following the atomic design principle where possible.
-
-### Tips for Cursor Users
-- Use "Go to Definition" and "Find References" to trace component usage and styling.
-- Use the semantic search to answer questions like "How is dark mode toggled?" or "Where is the Card component styled?"
-- When in doubt, check the README or ask in the team chat for guidance.
+1. Follow the existing code structure
+2. Use TypeScript for type safety
+3. Follow the established naming conventions
+4. Test database operations thoroughly
+5. Ensure responsive design for mobile and desktop

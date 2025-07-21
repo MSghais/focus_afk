@@ -72,6 +72,16 @@ button {
   }
 }
 
+input {
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
 // // Button Styles
 // .btn-primary {
 //   background: var(--afk-accent-green);
