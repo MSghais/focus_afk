@@ -1,6 +1,11 @@
-
+'use client'
 import Onboarding from "../components/onboarding/Onboarding";
-// import { TurborepoLogo } from "@repo/ui/turborepo-logo";
+import { usePrivy } from "@privy-io/react-auth";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Focus from "../components/modules/focus";
+import Tasks from "../components/modules/tasks";
+import Console from "../components/modules/console";
 
 const LINKS = [
   {
@@ -27,10 +32,22 @@ const LINKS = [
 ];
 
 export default function Page() {
-  return (
-    <div>
-      <Onboarding />
 
+  const { ready, authenticated, user } = usePrivy();
+  const router = useRouter();
+  useEffect(() => {
+    if (ready && !authenticated) {
+      router.push('/profile');
+    }
+  }, [ready, authenticated, router]);
+
+  if (!ready) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="page">
+      <Console />
     </div>
 
   );

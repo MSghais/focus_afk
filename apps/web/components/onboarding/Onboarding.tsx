@@ -7,6 +7,7 @@ import LoginPrivy from './LoginPrivy';
 import LoginEmail from './LoginEmail';
 import LoginSms from './LoginSms';
 import LoginPasskey from './LoginPasskey';
+import Link from 'next/link';
   
 function LoginStep({ onNext }: { onNext: () => void }) {
   return (
@@ -50,11 +51,13 @@ function AllSetStep() {
     <div className={styles.onboardingContainer}>
       <h1 className={styles.heading}>You're All Set!</h1>
       <p className={styles.subtext}>You can now start using the app</p>
-      <button className={styles.button}>Go to App</button>
+
+      <button className={styles.button} >
+        <Link href="/">Go to App</Link>
+      </button>
     </div>
   );
 }
-
 const steps = [WelcomeStep,
   LoginStep,
   //  PasscodeStep, 
