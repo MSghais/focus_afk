@@ -1,6 +1,7 @@
 'use client';
 import React from "react";
 import { useFocusAFKStore } from "../../lib/store";
+import styles from "../../styles/components/navigation.module.scss";
 
 const LeftSidebar = () => {
   const { ui, setCurrentModule, setTheme } = useFocusAFKStore();
@@ -24,45 +25,41 @@ const LeftSidebar = () => {
   ];
 
   return (
-    <aside className="sidebar-fixed hidden md:flex md:fixed md:top-0 md:left-0 md:h-full md:w-64 bg-[var(--background)] text-[var(--foreground)] border-r border-[var(--border)] flex-col items-center justify-start shadow-lg transition-all duration-300 ease-in-out">
-      <div className="w-full p-6">
+    <aside className={styles.sidebar}>
+      <div className={styles.sidebarContent}>
         {/* Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-accent)] bg-clip-text text-transparent">
+        <div className={styles.sidebarBrand}>
+          <h1 className={styles.sidebarTitle}>
             Focus AFK
           </h1>
-          <p className="text-xs text-[var(--foreground)] opacity-70 mt-1">Productivity & Focus</p>
+          <p className={styles.sidebarSubtitle}>Productivity & Focus</p>
         </div>
         
         {/* Navigation */}
-        <nav className="space-y-2">
+        <nav className={styles.sidebarNav}>
           {navigationItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setCurrentModule(item.id as any)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 ${
-                ui.currentModule === item.id
-                  ? 'bg-[var(--afk-bg-dark,#18181b)] text-[var(--foreground)] font-semibold shadow-lg border border-[var(--border)]'
-                  : 'hover:bg-[var(--border)] hover:shadow-md'
-              }`}
+              className={`${styles.navItem} ${ui.currentModule === item.id ? styles.active : ''}`}
             >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
+              <span className={styles.navIcon}>{item.icon}</span>
+              <span className={styles.navLabel}>{item.label}</span>
             </button>
           ))}
         </nav>
 
         {/* Theme Toggle */}
-        <div className="mt-8 pt-6 border-t border-[var(--border)]">
+        <div className={styles.sidebarFooter}>
           <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-[var(--border)] transition-all duration-200 ease-in-out transform hover:scale-105"
+            className={styles.navItem}
             onClick={toggleTheme}
             aria-label="Toggle theme"
           >
-            <span className="text-lg">
+            <span className={styles.navIcon}>
               {ui.theme === 'dark' ? '☀️' : '🌙'}
             </span>
-            <span className="font-medium">
+            <span className={styles.navLabel}>
               {ui.theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
             </span>
           </button>

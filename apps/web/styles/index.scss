@@ -1,151 +1,380 @@
+@import "tailwindcss";
+@import "@repo/tailwind-config";
 @import './variables.scss';
 
-:root {
-  --brand-primary: #00FF9C; /* AFK Electric Green */
-  --brand-secondary: #00F0FF; /* AFK Cyber Cyan */
-  --brand-accent: #FF2EC4; /* AFK Neon Magenta */
-  --background: #F9F9F9; /* AFK Offwhite */
-  --foreground: #0E0E0E; /* AFK Black */
-  --border: #E5E7EB;
-}
+// ============================================================================
+// GLOBAL VARIABLES & THEMES
+// ============================================================================
 
-body[data-theme='dark'] {
+:root {
+  // Brand Colors
   --brand-primary: #00FF9C;
   --brand-secondary: #00F0FF;
   --brand-accent: #FF2EC4;
+  
+  // Light Theme
+  --background: #F9F9F9;
+  --foreground: #0E0E0E;
+  --border: #E5E7EB;
+  --card-bg: #FFFFFF;
+  --card-border: #E5E7EB;
+  --hover-bg: #F3F4F6;
+  
+  // Shadows
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  // Layout
+  --navbar-height: 4rem;
+  --bottom-bar-height: 4rem;
+  --sidebar-width: 16rem;
+  
+  // Z-index layers
+  --z-navbar: 50;
+  --z-bottom-bar: 50;
+  --z-sidebar: 40;
+  --z-modal: 100;
+  --z-tooltip: 200;
+}
+
+body[data-theme='dark'] {
   --background: #0E0E0E;
   --foreground: #F9F9F9;
-  --border: #333;
+  --border: #333333;
+  --card-bg: #1A1A1A;
+  --card-border: #333333;
+  --hover-bg: #2A2A2A;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+// ============================================================================
+// GLOBAL RESET & BASE STYLES
+// ============================================================================
+
+* {
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+html {
+  height: 100%;
+  overflow-x: hidden;
 }
 
 body {
-  font-family: var(--afk-font-primary, $font-primary);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100vw;
   color: var(--foreground);
   background: var(--background);
+  font-family: inherit;
   line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-body.blue-mode {
-  font-family: var(--afk-font-primary, $font-primary);
-  color: var(--foreground);
-  background: var(--background);
+// ============================================================================
+// LAYOUT CONTAINERS
+// ============================================================================
+
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
-body.light-mode {
-  color: var(--foreground);
-  background: var(--background);
-}
-
-.code, .mono, pre, code {
-  font-family: var(--afk-font-mono, $font-mono);
-}
-
-.border-primary {
-  border: 1px solid var(--afk-accent-green);
-}
-
-
-.page {
-    display: flex;
-    flex-direction: column;
-    // justify-content: center;
-    // align-items: center;
-    background: var(--background);
-    color: var(--foreground);
-    padding: 0 1.5rem;
-    width: 100vw;
-    height: 100vh;
+.main-content {
+  flex: 1;
+  width: 100%;
+  position: relative;
   
-}
-
-button {
-  background: var(--brand-primary);
-  color: var(--foreground);
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover {
-    background: darken($afk-electric-green, 10%);
-    box-shadow: 0 0 16px 2px $afk-electric-green;
+  // Mobile layout
+  padding-top: var(--navbar-height);
+  padding-bottom: var(--bottom-bar-height);
+  
+  // Desktop layout
+  @media (min-width: 768px) {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    padding-top: 0;
+    padding-bottom: 0;
   }
 }
 
-input {
+.content-container {
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - var(--navbar-height) - var(--bottom-bar-height));
+  
+  @media (min-width: 768px) {
+    min-height: 100vh;
+  }
+}
+
+// ============================================================================
+// RESPONSIVE CONTAINERS
+// ============================================================================
+
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+  
+  @media (min-width: 640px) {
+    padding: 0 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 0 2rem;
+  }
+  
+  @media (min-width: 1024px) {
+    padding: 0 3rem;
+  }
+  
+  @media (min-width: 1280px) {
+    padding: 0 4rem;
+  }
+  
+  @media (min-width: 1536px) {
+    max-width: 1440px;
+  }
+}
+
+// ============================================================================
+// FIXED ELEMENTS (NAVBAR, SIDEBAR, BOTTOM BAR)
+// ============================================================================
+
+.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--navbar-height);
+  z-index: var(--z-navbar);
   background: var(--background);
-  color: var(--foreground);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--background), 0.95);
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
-// // Button Styles
-// .btn-primary {
-//   background: var(--afk-accent-green);
-//   color: var(--afk-bg-dark);
-//   border-radius: 8px;
-//   text-transform: uppercase;
-//   font-weight: bold;
-//   font-family: var(--afk-font-primary, $font-primary);
-//   box-shadow: 0 0 8px 0 rgba(0,255,156,0.3);
-//   transition: box-shadow 0.2s, background 0.2s;
-//   &:hover {
-//     background: darken($afk-electric-green, 10%);
-//     box-shadow: 0 0 16px 2px $afk-electric-green;
-//   }
-// }
-
-// .btn-secondary {
-//   border: 1px solid var(--afk-accent-cyan);
-//   color: var(--afk-text-dark);
-//   background: transparent;
-//   border-radius: 8px;
-//   text-transform: uppercase;
-//   font-weight: bold;
-//   font-family: var(--afk-font-primary, $font-primary);
-//   &:hover {
-//     background: rgba(0,240,255,0.1);
-//     box-shadow: 0 0 8px 0 $afk-cyber-cyan;
-//   }
-// }
-
-// Basic custom scrollbar styles using CSS custom properties for theme support
-
-:root {
-  --scrollbar-thumb: var(--border);
-  --scrollbar-track: var(--background);
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: var(--z-sidebar);
+  background: var(--background);
+  border-right: 1px solid var(--border);
+  
+  @media (max-width: 767px) {
+    display: none;
+  }
 }
 
-body.dark-mode, [data-theme="dark"] {
-  --scrollbar-thumb: var(--afk-border, #444);
-  --scrollbar-track: var(--afk-bg-dark, #18181b);
+.bottom-bar-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--bottom-bar-height);
+  z-index: var(--z-bottom-bar);
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--background), 0.95);
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
 }
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+// ============================================================================
+// UTILITY CLASSES
+// ============================================================================
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-*::-webkit-scrollbar {
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+}
+
+.overflow-safe {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary), var(--brand-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+// ============================================================================
+// ANIMATIONS
+// ============================================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+// ============================================================================
+// SCROLLBAR STYLES
+// ============================================================================
+
+::-webkit-scrollbar {
   width: 8px;
   height: 8px;
-  background: var(--scrollbar-track);
 }
 
-*::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 8px;
+::-webkit-scrollbar-track {
+  background: var(--background);
 }
 
-*::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-  border-radius: 8px;
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  
+  &:hover {
+    background: var(--brand-primary);
+  }
 }
 
-.dark-mode {
-  --scrollbar-thumb: var(--afk-border, #444);
-  --scrollbar-track: var(--afk-bg-dark, #18181b);
+// ============================================================================
+// FOCUS & ACCESSIBILITY
+// ============================================================================
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
 }
+
+// ============================================================================
+// COMPONENT-SPECIFIC GRIDS
+// ============================================================================
+
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+.stats-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+// ============================================================================
+// PAGE LAYOUT
+// ============================================================================
+
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+// ============================================================================
+// CARD STYLES
+// ============================================================================
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+// ============================================================================
+// MOBILE-SPECIFIC FIXES
+// ============================================================================
+
+@media (max-width: 767px) {
+  // Ensure content doesn't get cut off
+  .page {
+    padding: 0;
+    margin: 0;
+  }
+  
+  // Fix for iOS Safari viewport issues
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  // Ensure bottom bar doesn't overlap content
+  .content-container {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+

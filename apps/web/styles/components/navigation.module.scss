@@ -1,0 +1,303 @@
+// ============================================================================
+// NAVIGATION MODULE STYLES
+// ============================================================================
+
+// ============================================================================
+// NAVBAR STYLES
+// ============================================================================
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--navbar-height);
+  z-index: var(--z-navbar);
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--background), 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.navbarBrand {
+  display: flex;
+  align-items: center;
+}
+
+.navbarTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary), var(--brand-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+.navbarActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.themeToggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  transform: scale(1);
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.themeIcon {
+  font-size: 1.125rem;
+}
+
+// ============================================================================
+// SIDEBAR STYLES
+// ============================================================================
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  z-index: var(--z-sidebar);
+  background: var(--background);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+  
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.sidebarContent {
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.sidebarBrand {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.sidebarTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary), var(--brand-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  margin-bottom: 0.25rem;
+}
+
+.sidebarSubtitle {
+  font-size: 0.75rem;
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  transform: scale(1);
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+  
+  &.active {
+    background: var(--afk-bg-dark, #18181b);
+    color: var(--foreground);
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+  }
+  
+  &:not(.active) {
+    &:hover {
+      background: var(--border);
+      box-shadow: var(--shadow);
+    }
+  }
+}
+
+.navIcon {
+  font-size: 1.125rem;
+}
+
+.navLabel {
+  font-weight: 500;
+}
+
+.sidebarFooter {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+// ============================================================================
+// BOTTOM BAR STYLES
+// ============================================================================
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--bottom-bar-height);
+  z-index: var(--z-bottom-bar);
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  background-color: rgba(var(--background), 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.bottomNavItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  transform: scale(1);
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+  
+  &.active {
+    background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+    color: black;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  &:not(.active) {
+    &:hover {
+      background: var(--border);
+    }
+  }
+}
+
+.bottomNavIcon {
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+
+.bottomNavLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+// ============================================================================
+// ANIMATIONS
+// ============================================================================
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+// ============================================================================
+// MOBILE OPTIMIZATIONS
+// ============================================================================
+
+@media (max-width: 767px) {
+  .navbar {
+    padding: 0 0.75rem;
+  }
+  
+  .navbarTitle {
+    font-size: 1.125rem;
+  }
+  
+  .themeToggle {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  
+  .bottomBar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .bottomNavItem {
+    width: 3.5rem;
+    height: 2.75rem;
+  }
+  
+  .bottomNavIcon {
+    font-size: 1rem;
+  }
+  
+  .bottomNavLabel {
+    font-size: 0.625rem;
+  }
+}
+
+// ============================================================================
+// SAFE AREA SUPPORT
+// ============================================================================
+
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  
+  .bottomBar {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  
+  .sidebar {
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+} 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../lib/store';
+import styles from '../../../styles/components/dashboard.module.scss';
 
 export default function Dashboard() {
     const { 
@@ -70,142 +71,146 @@ export default function Dashboard() {
     const recentSessions = timerSessions.slice(0, 5);
 
     return (
-        <div className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto fade-in overflow-safe">
-            <h1 className="text-3xl font-bold mb-6 gradient-text">Dashboard</h1>
+        <div className={styles.dashboard}>
+            <h1 className={styles.title}>Dashboard</h1>
 
             {/* Stats Overview */}
-            <div className="stats-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Total Tasks</p>
-                            <p className="text-xl md:text-2xl font-bold">{taskStats.total}</p>
+            <div className={styles.statsGrid}>
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Total Tasks</p>
+                            <p className={styles.statValue}>{taskStats.total}</p>
                         </div>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
-                            <span className="text-white text-lg md:text-xl">📋</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Completed</p>
-                            <p className="text-xl md:text-2xl font-bold text-green-500">{taskStats.completed}</p>
-                        </div>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
-                            <span className="text-white text-lg md:text-xl">✅</span>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #3B82F6, #1D4ED8)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>📋</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Focus Time</p>
-                            <p className="text-xl md:text-2xl font-bold text-purple-500">{formatTime(focusStats.totalMinutes)}</p>
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Completed</p>
+                            <p className={styles.statValue} style={{ color: '#10B981' }}>{taskStats.completed}</p>
                         </div>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
-                            <span className="text-white text-lg md:text-xl">⏱️</span>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #10B981, #059669)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>✅</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)] hover:shadow-[var(--shadow-lg)] transition-all duration-300 hover:scale-105">
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="text-sm text-[var(--foreground)] opacity-70 text-ellipsis">Productivity</p>
-                            <p className="text-xl md:text-2xl font-bold text-orange-500">{getProductivityScore()}%</p>
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Focus Time</p>
+                            <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes)}</p>
                         </div>
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg ml-3">
-                            <span className="text-white text-lg md:text-xl">📈</span>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>⏱️</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Productivity</p>
+                            <p className={styles.statValue} style={{ color: '#F59E0B' }}>{getProductivityScore()}%</p>
+                        </div>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #F59E0B, #D97706)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>📈</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div className={styles.actionsGrid}>
                 <button
                     onClick={() => setCurrentModule('tasks')}
-                    className="p-4 md:p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className={styles.actionButton}
+                    style={{ background: 'linear-gradient(to right, #3B82F6, #1D4ED8)', color: 'white' }}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-base md:text-lg text-ellipsis">Add Task</p>
-                            <p className="text-sm opacity-90 text-ellipsis">Create a new task</p>
+                    <div className={styles.actionContent}>
+                        <div className={styles.actionInfo}>
+                            <p className={styles.actionTitle}>Add Task</p>
+                            <p className={styles.actionDescription}>Create a new task</p>
                         </div>
-                        <span className="text-2xl md:text-3xl ml-3 icon-container">➕</span>
+                        <span className={styles.actionIcon}>➕</span>
                     </div>
                 </button>
 
                 <button
                     onClick={() => setCurrentModule('timer')}
-                    className="p-4 md:p-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className={styles.actionButton}
+                    style={{ background: 'linear-gradient(to right, #10B981, #059669)', color: 'white' }}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-base md:text-lg text-ellipsis">Start Focus</p>
-                            <p className="text-sm opacity-90 text-ellipsis">Begin a focus session</p>
+                    <div className={styles.actionContent}>
+                        <div className={styles.actionInfo}>
+                            <p className={styles.actionTitle}>Start Focus</p>
+                            <p className={styles.actionDescription}>Begin a focus session</p>
                         </div>
-                        <span className="text-2xl md:text-3xl ml-3 icon-container">🎯</span>
+                        <span className={styles.actionIcon}>🎯</span>
                     </div>
                 </button>
 
                 <button
                     onClick={() => setCurrentModule('learning')}
-                    className="p-4 md:p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl sm:col-span-2 lg:col-span-1"
+                    className={styles.actionButton}
+                    style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)', color: 'white' }}
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                            <p className="font-semibold text-base md:text-lg text-ellipsis">Set Goal</p>
-                            <p className="text-sm opacity-90 text-ellipsis">Create a new goal</p>
+                    <div className={styles.actionContent}>
+                        <div className={styles.actionInfo}>
+                            <p className={styles.actionTitle}>Set Goal</p>
+                            <p className={styles.actionDescription}>Create a new goal</p>
                         </div>
-                        <span className="text-2xl md:text-3xl ml-3 icon-container">🎯</span>
+                        <span className={styles.actionIcon}>🎯</span>
                     </div>
                 </button>
             </div>
 
             {/* Content Grid */}
-            <div className="dashboard-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className={styles.contentGrid}>
                 {/* Recent Tasks */}
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg md:text-xl font-semibold">Recent Tasks</h2>
+                <div className={styles.contentCard}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Recent Tasks</h2>
                         <button
                             onClick={() => setCurrentModule('tasks')}
-                            className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
+                            className={styles.viewAllButton}
                         >
                             View All
                         </button>
                     </div>
                     {recentTasks.length === 0 ? (
-                        <p className="text-[var(--foreground)] opacity-50 text-center py-8">No tasks yet</p>
+                        <p className={styles.emptyState}>No tasks yet</p>
                     ) : (
-                        <div className="space-y-3">
+                        <div className={styles.itemList}>
                             {recentTasks.map((task) => (
-                                <div key={task.id} className="flex items-center justify-between p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div key={task.id} className={styles.listItem}>
+                                    <div className={styles.itemContent}>
                                         <input
                                             type="checkbox"
                                             checked={task.completed}
                                             readOnly
-                                            className="w-4 h-4 text-[var(--brand-primary)] rounded focus:ring-[var(--brand-primary)] flex-shrink-0"
+                                            className={styles.itemCheckbox}
                                         />
-                                        <div className="min-w-0 flex-1">
-                                            <p className={`font-medium text-ellipsis ${task.completed ? 'line-through text-[var(--foreground)] opacity-50' : ''}`}>
+                                        <div className={styles.itemInfo}>
+                                            <p className={`${styles.itemTitle} ${task.completed ? styles.completed : ''}`}>
                                                 {task.title}
                                             </p>
                                             {task.category && (
-                                                <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">{task.category}</p>
+                                                <p className={styles.itemSubtitle}>{task.category}</p>
                                             )}
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
-                                        task.priority === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300' :
-                                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300' :
-                                        'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
-                                    }`}>
+                                    <span className={styles.itemBadge} style={{
+                                        backgroundColor: task.priority === 'high' ? '#FEE2E2' : 
+                                                       task.priority === 'medium' ? '#FEF3C7' : '#D1FAE5',
+                                        color: task.priority === 'high' ? '#DC2626' : 
+                                              task.priority === 'medium' ? '#D97706' : '#059669'
+                                    }}>
                                         {task.priority}
                                     </span>
                                 </div>
@@ -215,37 +220,44 @@ export default function Dashboard() {
                 </div>
 
                 {/* Recent Goals */}
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg md:text-xl font-semibold">Active Goals</h2>
+                <div className={styles.contentCard}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Active Goals</h2>
                         <button
                             onClick={() => setCurrentModule('learning')}
-                            className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
+                            className={styles.viewAllButton}
                         >
                             View All
                         </button>
                     </div>
                     {recentGoals.length === 0 ? (
-                        <p className="text-[var(--foreground)] opacity-50 text-center py-8">No goals yet</p>
+                        <p className={styles.emptyState}>No goals yet</p>
                     ) : (
-                        <div className="space-y-3">
+                        <div className={styles.itemList}>
                             {recentGoals.map((goal) => (
-                                <div key={goal.id} className="p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="font-medium text-ellipsis">{goal.title}</h3>
-                                        <span className="text-sm text-[var(--foreground)] opacity-70 flex-shrink-0 ml-2">{goal.progress}%</span>
+                                <div key={goal.id} className={styles.listItem}>
+                                    <div className={styles.itemContent}>
+                                        <div className={styles.itemInfo}>
+                                            <h3 className={styles.itemTitle}>{goal.title}</h3>
+                                            <div className={styles.progressBar}>
+                                                <div
+                                                    className={styles.progressFill}
+                                                    style={{ width: `${goal.progress}%` }}
+                                                ></div>
+                                            </div>
+                                            {goal.targetDate && (
+                                                <p className={styles.itemSubtitle}>
+                                                    Target: {formatDate(goal.targetDate)}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-[var(--border)] rounded-full h-2 mb-2">
-                                        <div
-                                            className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] h-2 rounded-full transition-all duration-300"
-                                            style={{ width: `${goal.progress}%` }}
-                                        ></div>
-                                    </div>
-                                    {goal.targetDate && (
-                                        <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">
-                                            Target: {formatDate(goal.targetDate)}
-                                        </p>
-                                    )}
+                                    <span className={styles.itemBadge} style={{
+                                        backgroundColor: '#D1FAE5',
+                                        color: '#059669'
+                                    }}>
+                                        {goal.progress}%
+                                    </span>
                                 </div>
                             ))}
                         </div>
@@ -253,31 +265,34 @@ export default function Dashboard() {
                 </div>
 
                 {/* Focus Sessions */}
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg md:text-xl font-semibold">Recent Focus Sessions</h2>
+                <div className={styles.contentCard}>
+                    <div className={styles.cardHeader}>
+                        <h2 className={styles.cardTitle}>Recent Focus Sessions</h2>
                         <button
                             onClick={() => setCurrentModule('timer')}
-                            className="text-[var(--brand-primary)] hover:text-[var(--brand-secondary)] text-sm font-medium transition-colors"
+                            className={styles.viewAllButton}
                         >
                             View All
                         </button>
                     </div>
                     {recentSessions.length === 0 ? (
-                        <p className="text-[var(--foreground)] opacity-50 text-center py-8">No focus sessions yet</p>
+                        <p className={styles.emptyState}>No focus sessions yet</p>
                     ) : (
-                        <div className="space-y-3">
+                        <div className={styles.itemList}>
                             {recentSessions.map((session) => (
-                                <div key={session.id} className="flex items-center justify-between p-3 md:p-4 bg-[var(--hover-bg)] rounded-lg hover:bg-[var(--border)] transition-colors">
-                                    <div className="min-w-0 flex-1">
-                                        <p className="font-medium">{formatTime(session.duration / 60)}</p>
-                                        <p className="text-xs text-[var(--foreground)] opacity-60 text-ellipsis">
-                                            {formatDate(session.startTime)}
-                                        </p>
+                                <div key={session.id} className={styles.listItem}>
+                                    <div className={styles.itemContent}>
+                                        <div className={styles.itemInfo}>
+                                            <p className={styles.itemTitle}>{formatTime(session.duration / 60)}</p>
+                                            <p className={styles.itemSubtitle}>
+                                                {formatDate(session.startTime)}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${
-                                        session.completed ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300'
-                                    }`}>
+                                    <span className={styles.itemBadge} style={{
+                                        backgroundColor: session.completed ? '#D1FAE5' : '#FEF3C7',
+                                        color: session.completed ? '#059669' : '#D97706'
+                                    }}>
                                         {session.completed ? 'Completed' : 'In Progress'}
                                     </span>
                                 </div>
@@ -287,27 +302,27 @@ export default function Dashboard() {
                 </div>
 
                 {/* Weekly Focus Chart */}
-                <div className="bg-[var(--card-bg)] p-4 md:p-6 rounded-xl border border-[var(--card-border)] shadow-[var(--shadow)]">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4">This Week's Focus</h2>
+                <div className={styles.contentCard}>
+                    <h2 className={styles.cardTitle}>This Week's Focus</h2>
                     {focusStats.sessionsByDay.length === 0 ? (
-                        <p className="text-[var(--foreground)] opacity-50 text-center py-8">No focus data yet</p>
+                        <p className={styles.emptyState}>No focus data yet</p>
                     ) : (
-                        <div className="space-y-3">
+                        <div className={styles.weeklyChart}>
                             {focusStats.sessionsByDay.slice(0, 7).map((day) => (
-                                <div key={day.date} className="flex items-center justify-between">
-                                    <span className="text-sm text-[var(--foreground)] opacity-70 flex-shrink-0">
+                                <div key={day.date} className={styles.chartRow}>
+                                    <span className={styles.chartDay}>
                                         {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
                                     </span>
-                                    <div className="flex items-center gap-3 min-w-0 flex-1 ml-4">
-                                        <div className="w-20 md:w-24 bg-[var(--border)] rounded-full h-2 flex-1">
+                                    <div className={styles.chartBar}>
+                                        <div className={styles.chartProgress}>
                                             <div
-                                                className="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-secondary)] h-2 rounded-full transition-all duration-300"
+                                                className={styles.progressFill}
                                                 style={{ 
                                                     width: `${Math.min(100, (day.minutes / 60) * 20)}%` 
                                                 }}
                                             ></div>
                                         </div>
-                                        <span className="text-xs text-[var(--foreground)] opacity-60 flex-shrink-0 w-12 text-right">
+                                        <span className={styles.chartTime}>
                                             {formatTime(day.minutes)}
                                         </span>
                                     </div>

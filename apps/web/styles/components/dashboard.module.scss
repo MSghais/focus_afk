@@ -1,69 +1,461 @@
-.dashboard-container {
-  margin-top: 1rem;
+// ============================================================================
+// DASHBOARD MODULE STYLES
+// ============================================================================
+
+.dashboard {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  width: 100%;
-  background: var(--background);
-  color: var(--foreground);
-  padding: 2rem 1rem 1rem 1rem;
+  padding: 1rem;
+  overflow-y: auto;
+  
+  @media (min-width: 640px) {
+    padding: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+  
+  @media (min-width: 1024px) {
+    padding: 3rem;
+  }
 }
 
-.dashboard-header {
+.title {
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: bold;
   margin-bottom: 1.5rem;
-  color: var(--brand-primary);
-  text-align: center;
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary), var(--brand-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 3rem;
+  }
 }
 
-.dashboard-content {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  background: var(--background);
-  border-radius: 18px;
-  box-shadow: 0 4px 32px 0 rgba(0,255,156,0.08);
-  padding: 2rem 1.5rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.dashboard-tabs {
+.statsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
-  width: 100%;
-  max-width: 320px;
+  grid-template-columns: 1fr;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-.dashboard-tab {
-  background: var(--background);
+.statCard {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
+  
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: scale(1.02);
+  }
+}
+
+.statContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 0.875rem;
   color: var(--foreground);
-  border: 2px solid var(--border);
-  border-radius: 10px;
-  padding: 0.75rem 0;
-  font-size: 1.1rem;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: bold;
+  
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 2rem;
+  }
+}
+
+.statIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.75rem;
+  flex-shrink: 0;
+  
+  @media (min-width: 768px) {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.actionsGrid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  grid-template-columns: 1fr;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.actionButton {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-align: left;
+  transition: all 0.3s ease;
+  transform: scale(1);
+  
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.actionContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actionInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.actionTitle {
   font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, border 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
+  font-size: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0.25rem;
+  
+  @media (min-width: 768px) {
+    font-size: 1.125rem;
+  }
 }
 
-.dashboard-tab:hover, .dashboard-tab:focus {
-  background: var(--brand-secondary);
-  color: var(--foreground);
-  border: 2px solid var(--brand-secondary);
-  outline: none;
+.actionDescription {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.console-tab.active {
-  background: var(--brand-primary);
+.actionIcon {
+  font-size: 1.5rem;
+  margin-left: 0.75rem;
+  flex-shrink: 0;
+  
+  @media (min-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.contentGrid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.contentCard {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  
+  @media (min-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
+
+.viewAllButton {
+  color: var(--brand-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: var(--brand-secondary);
+  }
+}
+
+.emptyState {
   color: var(--foreground);
-  border: 2px solid var(--brand-primary);
-  box-shadow: 0 4px 16px 0 rgba(0,255,156,0.15);
+  opacity: 0.5;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--hover-bg);
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease;
+  
+  @media (min-width: 768px) {
+    padding: 1rem;
+  }
+  
+  &:hover {
+    background: var(--border);
+  }
+}
+
+.itemContent {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemCheckbox {
+  width: 1rem;
+  height: 1rem;
+  color: var(--brand-primary);
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.itemTitle {
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  
+  &.completed {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+}
+
+.itemSubtitle {
+  font-size: 0.75rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemBadge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  background: var(--border);
+  border-radius: 9999px;
+  height: 0.5rem;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.weeklyChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chartRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chartDay {
+  font-size: 0.875rem;
+  color: var(--foreground);
+  opacity: 0.7;
+  flex-shrink: 0;
+  width: 2rem;
+}
+
+.chartBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.chartProgress {
+  width: 5rem;
+  background: var(--border);
+  border-radius: 9999px;
+  height: 0.5rem;
+  flex: 1;
+  overflow: hidden;
+  
+  @media (min-width: 768px) {
+    width: 6rem;
+  }
+}
+
+.chartTime {
+  font-size: 0.75rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  flex-shrink: 0;
+  width: 3rem;
+  text-align: right;
+}
+
+// ============================================================================
+// ANIMATIONS
+// ============================================================================
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+// ============================================================================
+// MOBILE OPTIMIZATIONS
+// ============================================================================
+
+@media (max-width: 767px) {
+  .dashboard {
+    padding: 0.75rem;
+  }
+  
+  .title {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .statsGrid {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .statCard {
+    padding: 0.75rem;
+  }
+  
+  .statValue {
+    font-size: 1.125rem;
+  }
+  
+  .statIcon {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .actionsGrid {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .actionButton {
+    padding: 0.75rem;
+  }
+  
+  .contentGrid {
+    gap: 1rem;
+  }
+  
+  .contentCard {
+    padding: 0.75rem;
+  }
 }
