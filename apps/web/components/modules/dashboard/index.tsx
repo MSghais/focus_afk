@@ -3,12 +3,12 @@ import styles from '../../../styles/components/dashboard.module.scss';
 export default function Dashboard() {
   return (
     <div className={styles.dashboardContainer}>
-      <div className={styles.dashboardHeader}>FOCUSFI</div>
-      <div style={{ color: 'var(--foreground)', fontWeight: 500, textAlign: 'center', marginBottom: '2rem' }}>
+      {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
+      <div style={{ color: 'var(--foreground)', fontWeight: 500, textAlign: 'center', marginBottom: '2rem', width: '100%' }}>
         Bet. Focus. Prove. Earn.
       </div>
 
-      <div className={styles.dashboardContent} style={{ marginBottom: '2rem' }}>
+      <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
           <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>
           <div style={{ fontSize: '1.1rem', marginBottom: 8 }}>Complete 20 Pomodoros<br />in a week</div>
@@ -40,7 +40,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className={styles.dashboardContent}>
+      <div className={styles.dashboardContent} style={{ width: '100%' }}>
         <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Social & Viral Mechanics</div>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--foreground)', background: 'rgba(255,255,255,0.01)' }}>
           <span style={{ fontSize: '1.5rem' }}>👥</span>

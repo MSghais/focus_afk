@@ -1,4 +1,3 @@
-
 .console-tabs {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -6,9 +5,9 @@
     margin-bottom: 2rem;
     width: 100%;
     max-width: 320px;
-  }
-  
-  .console-tab {
+}
+
+.console-tab {
     background: var(--background);
     color: var(--foreground);
     border: 2px solid var(--border);
@@ -18,12 +17,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, color 0.2s, border 0.2s;
-    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04);
-  }
-  
-  .console-tab.active {
+    box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+}
+
+.console-tab.active {
     background: var(--brand-primary);
     color: var(--foreground);
     border: 2px solid var(--brand-primary);
-    box-shadow: 0 4px 16px 0 rgba(0,255,156,0.15);
-  }
+    box-shadow: 0 4px 16px 0 rgba(0, 255, 156, 0.15);
+}

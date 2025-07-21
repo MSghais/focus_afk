@@ -3,7 +3,7 @@ import Focus from "../focus";
 import Learning from "../learning";
 import Timer from "../timer";
 import Tasks from "../tasks";
-import styles from "../../../styles/components/dashboard.module.scss";
+import styles from "../../../styles/components/console.module.scss";
 import Dashboard from "../dashboard";
 
 export default function Console() {
@@ -17,7 +17,7 @@ export default function Console() {
     return <div className="flex flex-col items-center justify-center">
 
         <div className={styles.consoleTabs}>
-            <button 
+            <button
                 className={`${styles.consoleTab}${activeTab === "dashboard" ? " active" : ""}`}
                 onClick={() => setActiveTab("dashboard")}>Dashboard</button>
             {/* <button 
@@ -29,15 +29,18 @@ export default function Console() {
             <button 
                 className={`${styles.consoleTab}${activeTab === "learning" ? " active" : ""}`}
                 onClick={() => setActiveTab("learning")}>Learning</button> */}
-            <button 
+            <button
                 className={`console-tab${activeTab === "timer" ? " active" : ""}`}
                 onClick={() => setActiveTab("timer")}>Timer</button>
         </div>
 
-        {activeTab === "dashboard" && <Dashboard />}
-        {activeTab === "focus" && <Focus />}
-        {activeTab === "tasks" && <Tasks />}
-        {activeTab === "learning" && <Learning />}
-        {activeTab === "timer" && <Timer />}
+        <div className="w-full h-full flex flex-col items-center justify-center">
+
+            {activeTab === "dashboard" && <Dashboard />}
+            {activeTab === "focus" && <Focus />}
+            {activeTab === "tasks" && <Tasks />}
+            {activeTab === "learning" && <Learning />}
+            {activeTab === "timer" && <Timer />}
+        </div>
     </div>;
 }

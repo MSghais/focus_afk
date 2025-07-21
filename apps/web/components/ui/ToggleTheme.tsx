@@ -30,7 +30,8 @@ const ToggleTheme: React.FC = () => {
 
   return (
     <button
-      className="px-3 py-1 rounded bg-[var(--brand-primary)] dark:bg-[var(--brand-accent)] text-white"
+      className="px-3 py-1 rounded"
+    //   className="px-3 py-1 rounded bg-[var(--brand-primary)] dark:bg-[var(--brand-accent)] text-white"
       onClick={toggleTheme}
       aria-label="Toggle dark mode"
     >
@@ -38,5 +39,4 @@ const ToggleTheme: React.FC = () => {
     </button>
   );
 };
-
 export default ToggleTheme; 
