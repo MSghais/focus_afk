@@ -5,7 +5,7 @@ import Timer from "../timer";
 import Tasks from "../tasks";
 import styles from "../../../styles/components/dashboard.module.scss";
 
-export default function Console() {
+export default function Dashboard() {
     const [messages, setMessages] = useState<string[]>([]);
 
     const handleMessage = (message: string) => {
@@ -26,7 +26,7 @@ export default function Console() {
                 className={`${styles.consoleTab}${activeTab === "learning" ? " active" : ""}`}
                 onClick={() => setActiveTab("learning")}>Learning</button>
             <button 
-                className={`console-tab${activeTab === "timer" ? " active" : ""}`}
+                className={`${styles.consoleTab}${activeTab === "timer" ? " active" : ""}`}
                 onClick={() => setActiveTab("timer")}>Timer</button>
         </div>
 

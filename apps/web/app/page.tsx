@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Focus from "../components/modules/focus";
 import Tasks from "../components/modules/tasks";
 import Console from "../components/modules/console";
+import Dashboard from "../components/modules/dashboard";
 
 const LINKS = [
   {
@@ -47,7 +48,7 @@ export default function Page() {
 
   return (
     <div className="page">
-      <Console />
+      <Dashboard />
     </div>
 
   );
