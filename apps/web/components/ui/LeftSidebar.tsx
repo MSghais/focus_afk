@@ -24,7 +24,7 @@ const LeftSidebar = () => {
   ];
 
   return (
-    <aside className="hidden md:flex md:fixed md:top-0 md:left-0 md:h-full md:w-64 bg-[var(--background)] text-[var(--foreground)] border-r border-[var(--border)] flex-col items-center justify-start shadow-lg z-40 transition-all duration-300 ease-in-out">
+    <aside className="sidebar-fixed hidden md:flex md:fixed md:top-0 md:left-0 md:h-full md:w-64 bg-[var(--background)] text-[var(--foreground)] border-r border-[var(--border)] flex-col items-center justify-start shadow-lg transition-all duration-300 ease-in-out">
       <div className="w-full p-6">
         {/* Brand */}
         <div className="text-center mb-8">

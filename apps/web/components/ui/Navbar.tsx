@@ -16,7 +16,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full h-16 border-b border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-between px-4 shadow-lg md:hidden z-50 backdrop-blur-sm bg-opacity-95">
+    <nav className="navbar-fixed fixed top-0 left-0 w-full h-16 border-b border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-between px-4 shadow-lg md:hidden backdrop-blur-sm bg-opacity-95">
       {/* Brand */}
       <div className="flex items-center">
         <h1 className="text-xl font-bold bg-gradient-to-r from-[var(--brand-primary)] via-[var(--brand-secondary)] to-[var(--brand-accent)] bg-clip-text text-transparent">

@@ -137,9 +137,14 @@ body[data-theme='dark'] .card:hover {
 .container-responsive {
   width: 100%;
   max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Mobile-first responsive padding */
+.container-responsive {
   padding-left: 1rem;
   padding-right: 1rem;
-  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -163,12 +168,33 @@ body[data-theme='dark'] .card:hover {
   }
 }
 
-/* Desktop layout with sidebars */
+@media (min-width: 1280px) {
+  .container-responsive {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+/* Layout structure fixes */
+.main-content {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Desktop layout adjustments */
 @media (min-width: 768px) {
   .main-content {
     margin-left: 16rem; /* 256px for left sidebar */
-    margin-right: 16rem; /* 256px for right sidebar */
-    width: calc(100% - 32rem); /* Full width minus both sidebars */
+    width: calc(100% - 16rem); /* Full width minus left sidebar */
+  }
+}
+
+/* Mobile layout adjustments */
+@media (max-width: 767px) {
+  .main-content {
+    padding-top: 4rem; /* 64px for mobile navbar */
+    padding-bottom: 4rem; /* 64px for mobile bottom bar */
   }
 }
 
@@ -204,4 +230,23 @@ body[data-theme='dark'] .card:hover {
 .overflow-safe {
   overflow-x: hidden;
   max-width: 100%;
+}
+
+/* Z-index management for fixed elements */
+.navbar-fixed {
+  z-index: 50;
+}
+
+.sidebar-fixed {
+  z-index: 40;
+}
+
+.bottom-bar-fixed {
+  z-index: 50;
+}
+
+/* Ensure proper stacking context */
+.layout-container {
+  position: relative;
+  z-index: 1;
 }

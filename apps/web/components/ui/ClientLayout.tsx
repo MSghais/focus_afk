@@ -29,26 +29,24 @@ export default function ClientLayout({
 
   return (
     <Providers>
-      <div className={`${geist.className} min-h-screen w-full bg-[var(--background)] text-[var(--foreground)]`}>
-        {/* Mobile Navbar */}
+      <div className={`${geist.className} min-h-screen w-full bg-[var(--background)] text-[var(--foreground)] flex flex-col`}>
+        {/* Mobile Navbar - Fixed at top */}
         <Navbar />
         
-        {/* Desktop Sidebar */}
+        {/* Desktop Sidebar - Fixed at left */}
         <LeftSidebar />
         
-        {/* Main Content */}
-        <main className="flex-1 w-full min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-all duration-300 ease-in-out
-          md:ml-64 md:mr-64 md:pt-0 pt-16 pb-16 md:pb-0">
-          <div className="w-full h-full container-responsive">
-            <div className="max-w-7xl mx-auto">
+        {/* Main Content Area */}
+        <main className="flex-1 w-full bg-[var(--background)] text-[var(--foreground)] transition-all duration-300 ease-in-out
+          md:ml-64 md:pt-0 pt-16 pb-16 md:pb-0">
+          <div className="w-full h-full min-h-screen">
+            <div className="container-responsive mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
               {children}
             </div>
           </div>
         </main>
 
-        {/* <RightSidebar /> */}
-        
-        {/* Mobile Bottom Bar */}
+        {/* Mobile Bottom Bar - Fixed at bottom */}
         <BottomBar />
       </div>
     </Providers>

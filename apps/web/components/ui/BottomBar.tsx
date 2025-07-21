@@ -9,12 +9,12 @@ const BottomBar = () => {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
-    { id: 'learning', label: 'Goals', icon: '🎯' },
+    // { id: 'learning', label: 'Goals', icon: '🎯' },
     { id: 'console', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full h-16 border-t border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-around shadow-lg md:hidden z-50 backdrop-blur-sm bg-opacity-95">
+    <nav className="bottom-bar-fixed fixed bottom-0 left-0 w-full h-16 border-t border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] flex items-center justify-around shadow-lg md:hidden backdrop-blur-sm bg-opacity-95">
       {navigationItems.map((item) => (
         <button
           key={item.id}
