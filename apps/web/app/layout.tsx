@@ -7,6 +7,7 @@ import BottomBar from "../components/ui/BottomBar";
 import RightSidebar from "../components/ui/RightSidebar";
 import LeftSidebar from "../components/ui/LeftSidebar";
 import Navbar from "../components/ui/Navbar";
+import Providers from "../providers/Providers";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -23,6 +24,9 @@ export default function RootLayout({
 
 
   return (
+
+    <Providers> 
+
     <html lang="en">
       <Navbar />
       <body className={geist.className + " min-h-screen w-full bg-white dark:bg-gray-900 text-black dark:text-white"}>
@@ -38,5 +42,6 @@ export default function RootLayout({
         <BottomBar />
       </body>
     </html>
+    </Providers>
   );
 }
