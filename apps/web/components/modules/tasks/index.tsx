@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../lib/store';
 import { Task } from '../../../lib/database';
+import Link from 'next/link';
 
 export default function Tasks() {
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete } = useFocusAFKStore();
@@ -203,21 +204,21 @@ export default function Tasks() {
                                     <form onSubmit={handleUpdateTask} className="space-y-3">
                                         <input
                                             type="text"
-                                            value={editingTask.title}
-                                            onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
+                                            value={editingTask?.title || ''}
+                                            onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
                                             className="w-full p-2 border rounded-md font-medium"
                                             required
                                         />
                                         <textarea
-                                            value={editingTask.description || ''}
-                                            onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value })}
+                                            value={editingTask?.description || ''}
+                                            onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
                                             className="w-full p-2 border rounded-md text-sm"
                                             rows={2}
                                         />
                                         <div className="flex gap-2">
                                             <select
-                                                value={editingTask.priority}
-                                                onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] })}
+                                                value={editingTask?.priority}
+                                                onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
                                                 className="p-2 border rounded-md text-sm"
                                             >
                                                 <option value="low">Low</option>
@@ -226,8 +227,10 @@ export default function Tasks() {
                                             </select>
                                             <input
                                                 type="text"
-                                                value={editingTask.category || ''}
-                                                onChange={(e) => setEditingTask({ ...editingTask, category: e.target.value })}
+                                                value={editingTask?.category || ''}
+                                                onChange={(e) =>
+                                                        setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                                }
                                                 className="p-2 border rounded-md text-sm"
                                                 placeholder="Category"
                                             />
@@ -284,6 +287,12 @@ export default function Tasks() {
                                             </div>
                                         </div>
                                         <div className="flex gap-2 ml-4">
+                                            <Link
+                                                href={`/deep/${task.id}`}
+                                                className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
+                                            >
+                                                Go DEEP
+                                            </Link>
                                             <button
                                                 onClick={() => setEditingTask(task)}
                                                 className="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-sm"
