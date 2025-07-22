@@ -221,6 +221,10 @@ export const dbUtils = {
     await db.timerSessions.update(id, updates);
   },
 
+  async updateTimerFocusSession(id: number, updates: Partial<Omit<TimerFocusSession, 'id' | 'createdAt'>>): Promise<void> {
+    await db.timerFocusSessions.update(id, updates);
+  },
+
   async getTimerSessions(filters?: {
     taskId?: number;
     goalId?: number;
@@ -444,14 +448,14 @@ export const dbUtils = {
     startDate.setDate(startDate.getDate() - days);
 
     const sessions = await this.getTimerFocusSessions({
-      completed: false,
+      completed: true,
       startDate
     });
 
     const totalMinutes = sessions.reduce((sum, session) => sum + session.duration / 60, 0);
     const averageSessionLength = sessions.length > 0 ? totalMinutes / sessions.length : 0;
 
-    console.log('deep focus sessions', sessions);
+
     // Group by day
     const sessionsByDay = sessions.reduce((acc, session) => {
       const date = session.startTime.toISOString().split('T')[0];

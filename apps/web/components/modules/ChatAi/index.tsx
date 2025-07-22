@@ -121,13 +121,13 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         }
     };
 
-    if (!task) {
-        return (
-            <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
-                <TimeLoading />
-            </div>
-        );
-    }
+    // if (!task) {
+    //     return (
+    //         <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
+    //             <TimeLoading />
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className=" w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6  bg-[var(--background)]">

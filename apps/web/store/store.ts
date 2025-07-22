@@ -63,7 +63,7 @@ interface FocusAFKStore {
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => Promise<void>;
-  stopTimeFocus: (completed?: boolean, taskId?: number, goalId?: number) => Promise<void>;
+  stopTimeFocus: (completed?: boolean, taskId?: number, goalId?: number, duration?: number) => Promise<void>;
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
   // Break
@@ -154,7 +154,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       const { settings } = get();
       const duration = (settings?.defaultFocusDuration || 25) * 60;
 
-      const sessionId = await dbUtils.addTimerSession({
+      const sessionId = await dbUtils.addTimeFocusSession({
         taskId,
         goalId: Number(goalId),
         startTime: new Date(),
@@ -318,13 +318,13 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }));
     },
 
-    stopTimeFocus: async (completed = false, taskId, goalId) => {
+    stopTimeFocus: async (completed = true, taskId, goalId, duration?: number) => {
       const { timer } = get();
       if (timer.currentSessionId) {
-        const duration = timer.totalSeconds - timer.secondsLeft;
-        await dbUtils.updateTimerSession(timer.currentSessionId, {
+        const sessionDuration = duration || (timer.totalSeconds - timer.secondsLeft);
+        await dbUtils.updateTimerFocusSession(timer.currentSessionId, {
           endTime: new Date(),
-          duration,
+          duration: sessionDuration,
           completed: completed,
           taskId,
           goalId,

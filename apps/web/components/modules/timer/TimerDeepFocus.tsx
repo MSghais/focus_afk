@@ -63,10 +63,9 @@ export default function TimerDeepFocus({
 
     // Stop timer
     const handleStop = () => {
-
         logClickedEvent('timer_deep_focus_end');
         setIsRunning(false);
-        stopTimeFocus(false, taskId, Number(goalId));
+        stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
         // TODO: Send the data to the backend
         if (intervalRef.current) clearInterval(intervalRef.current);
     };
