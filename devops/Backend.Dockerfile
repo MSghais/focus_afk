@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /workspace
 
 # Install pnpm globally
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.10.0
 
 # Copy only the package manager files first for better caching
 COPY pnpm-workspace.yaml ./
@@ -13,7 +13,7 @@ COPY package.json ./
 COPY pnpm-lock.yaml ./
 
 # Install dependencies (for all workspaces)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy the rest of the monorepo
 COPY . .
