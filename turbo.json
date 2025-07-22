@@ -1,6 +1,17 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "BACKEND_DATABASE_URL",
+    "PRIVY_APP_ID",
+    "NEXT_PUBLIC_PRIVY_APP_ID",
+    "PRIVY_CLIENT_ID",
+    "NEXT_PUBLIC_PRIVY_APP_ID",
+    "NEXT_PUBLIC_PRIVY_CLIENT_ID",
+    "NEXT_PUBLIC_BACKEND_URL",
+    "NEXT_PUBLIC_GOOGLE_ANALYTICS",
+    "FRONTEND_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
