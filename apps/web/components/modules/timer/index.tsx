@@ -10,7 +10,13 @@ function formatTime(seconds: number) {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-export default function Timer() {
+interface TimerProps {
+    isSetupEnabled: boolean;
+}
+
+export default function Timer({
+    isSetupEnabled = true,
+}) {
     const { 
         timer, 
         tasks, 
@@ -100,7 +106,7 @@ export default function Timer() {
             </div>
 
             {/* Task/Goal Selection */}
-            {!timer.isRunning && !timer.isBreak && (
+            {!timer.isRunning && !timer.isBreak && isSetupEnabled && (
                 <div className="w-full max-w-md mb-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-2">Select Task (Optional)</label>

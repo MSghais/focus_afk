@@ -4,8 +4,12 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useFocusAFKStore } from '../../../lib/store';
 import { Task } from '../../../lib/database';
+import { useRouter } from 'next/navigation';
+import Timer from '../../../components/modules/timer';
+import SimpleTimer from '../../../components/modules/timer/SimpleTimer';
 
 export default function DeepModePage() {
+    const router = useRouter();
     const params = useParams();
     const taskId = parseInt(params.taskId as string);
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
@@ -136,7 +140,7 @@ export default function DeepModePage() {
                             <div className="text-sm text-gray-600">{xp} XP</div>
                         </div>
                         <button
-                            onClick={() => window.history.back()}
+                            onClick={() => router.push('/')}
                             className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
                         >
                             Exit DEEP
@@ -173,33 +177,8 @@ export default function DeepModePage() {
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
-                    {/* Timer Section */}
-                    <div className="rounded-lg p-6 shadow-lg">
-                        <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Focus Timer</h3>
-                        <div className="text-center mb-4">
-                            <div className="text-4xl font-mono font-bold text-[var(--brand-primary)] mb-2">
-                                {formatTime(timerSeconds)}
-                            </div>
-                            <div className="text-sm text-gray-600">Time in DEEP mode</div>
-                        </div>
-                        <div className="flex gap-2">
-                            {!isTimerRunning ? (
-                                <button
-                                    onClick={handleStartTimer}
-                                    className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                                >
-                                    Start Focus Session
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleStopTimer}
-                                    className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
-                                >
-                                    End Session
-                                </button>
-                            )}
-                        </div>
-                    </div>
+
+                    <SimpleTimer isSetupEnabled={false} />
 
                     {/* Goal Setting */}
                     <div className="rounded-lg p-6 shadow-lg">
