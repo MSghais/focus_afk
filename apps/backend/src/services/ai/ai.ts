@@ -1,6 +1,6 @@
 import ApifyService from "../apify/apifiy";
 import { generateObject, generateText } from 'ai';
-import { object, z } from 'zod';
+import { object, z, ZodSchema } from 'zod';
 import { createOpenRouter, openrouter } from '@openrouter/ai-sdk-provider';
 import { ChatOllama } from "@langchain/ollama";
 import { OpenAI } from "@langchain/openai";
@@ -73,27 +73,28 @@ export class AiService {
         return llm;
     }
 
-    async generateObject(inputs: LlmInputsGenerationObject): Promise<{
-        object: any,
-        usage: any,
-    } | null | undefined> {
-        try {
-            const { object, usage } = await generateObject({
-                model: openrouter(inputs.model),
-                system: inputs.systemPrompt,
-                schema: inputs.schema,
-                prompt: inputs.prompt,
-            });
-            return {
-                object: object,
-                usage: usage,
-            };
-        } catch (error) {
-            console.error(error);
-            return null;
-        }
+    // async generateObject(inputs: LlmInputsGenerationObject): Promise<{
+    //     object: any,
+    //     usage: any,
+    // } | null | undefined> {
+    //     try {
+    //         const { object, usage } = await generateObject({
+    //             model: openrouter(inputs.model),
+    //             system: inputs.systemPrompt,
+    //             schema: inputs?.schema as ZodSchema,
+    //             mode: "json",
+    //             prompt: inputs.prompt,
+    //         });
+    //         return {
+    //             object: object,
+    //             usage: usage,
+    //         };
+    //     } catch (error) {
+    //         console.error(error);
+    //         return null;
+    //     }
 
-    }
+    // }
 
     async generateTextLlm(inputs: LlmInputsGeneration): Promise<{ text: string, sources: any, usage: any } | null | undefined> {
         try {

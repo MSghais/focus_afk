@@ -1,6 +1,7 @@
 import { Account, RpcProvider, TypedData, WeierstrassSignatureType } from 'starknet';
 
 import { NODE_URL, SN_CHAIN_ID } from '../../constants/contracts';
+import { ethers } from 'ethers';
 
 export class SignatureService {
   private provider: RpcProvider;
@@ -36,7 +37,7 @@ export class SignatureService {
       const dummyPrivateKey = '0x1';
       const account = new Account(this.provider, accountAddress, dummyPrivateKey);
 
-      return await account.verifyMessage(signedData, formattedSignature);
+      return await ethers.verifyMessage(JSON.stringify(signedData), formattedSignature as any);
     } catch (error) {
       console.log('verification failed:', error);
       throw Error('Error:' + error);
