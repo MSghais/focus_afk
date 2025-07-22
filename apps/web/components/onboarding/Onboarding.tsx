@@ -8,6 +8,7 @@ import LoginPrivy from './LoginPrivy';
 // import LoginSms from './LoginSms';
 // import LoginPasskey from './LoginPasskey';
 import Link from 'next/link';
+import LoginBackend from '../profile/LoginBackend';
   
 function LoginStep({ onNext }: { onNext: () => void }) {
   return (
@@ -60,6 +61,7 @@ function AllSetStep({ onNext }: { onNext?: () => void }) {
 }
 const steps = [WelcomeStep,
   LoginStep,
+  LoginBackend,
   //  PasscodeStep, 
   AllSetStep];
 

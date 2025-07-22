@@ -14,6 +14,9 @@ import fastifySession from '@fastify/session';
 import fastifyOauth2 from '@fastify/oauth2';
 import fastifyMultipart from '@fastify/multipart';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 // Type declarations
 declare module 'fastify' {
   interface FastifyInstance {
@@ -30,7 +33,7 @@ async function buildServer() {
 
   // CORS configuration
   await fastify.register(fastifyCors, {
-    origin: '*',
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

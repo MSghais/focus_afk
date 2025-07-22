@@ -3,10 +3,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import PrivyUser from "./PrivyUser";
 import Onboarding from "../onboarding/Onboarding";
 import LoginBackend from "./LoginBackend";
+import { useAuthStore } from "../../store/auth";
 
 export default function ProfileUser() {
 
     const { user } = usePrivy();
+
+    const { userConnected, token, jwtToken, evmAddress, starknetAddress, loginType } = useAuthStore();
     return (
         <div>
             <h1>Profile User</h1>
@@ -17,17 +20,26 @@ export default function ProfileUser() {
             )}
             {user && (
                 <div className="flex flex-col gap-4 my-4">
-                    <PrivyUser />   
+                    <PrivyUser />
 
-                    <LoginBackend />
-                    <div className="flex flex-col gap-2">
-                        <h3>Notifications</h3>
-                        <input type="checkbox" />
-                    </div>
+                    {userConnected && (
+                        <div className="flex flex-col gap-4">
+                            <h3>User Connected</h3>
+                            <p>{userConnected?.userAddress}</p>
+                            <p>{userConnected?.evmAddress}</p>
+                            <p>{userConnected?.starknetAddress}</p>
+                            <p>{userConnected?.loginType}</p>
+                        </div>
+                    )}
+
+                    {!userConnected && (
+                        <LoginBackend />
+                    )}
+
                 </div>
             )}
-            
-            
+
+
         </div>
     )
 }

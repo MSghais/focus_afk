@@ -1,17 +1,36 @@
 import React from "react";
 import { useEvmLogin } from "../../hooks/useEvmLogin";
 import { Icon } from "../small/icons";
+import { useUIStore } from "../../store/uiStore";
+import { useAuthStore } from "../../store/auth";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();
 
+    const { showModal, showToast } = useUIStore();
+
+    const { setUserConnected, setToken, setJwtToken, setEvmAddress, setStarknetAddress, setLoginType } = useAuthStore();
     const handleLogin = async () => {
         try {
             const result = await evmLogin();
-            // Handle success (e.g., store session, redirect)
-            alert("Login successful!");
+            console.log("result", result);
+
+            if (result?.success) {
+
+                setUserConnected(result.user);
+                setToken(result.token);
+                setJwtToken(result.jwtToken || result?.token);
+                setEvmAddress(result?.user?.evmAddress);
+                setStarknetAddress(result?.user?.starknetAddress);
+                setLoginType(result?.user?.loginType || "ethereum");
+                // Handle success (e.g., store session, redirect)
+                showToast({ message: "Login successful!", type: "success" });
+            }
+
+
+
         } catch (e) {
-            alert("Login failed: " + (e as Error).message);
+            showToast({ message: "Login failed: " + (e as Error).message, type: "error" });
         }
     };
 

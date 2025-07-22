@@ -13,13 +13,17 @@ export function useEvmLogin() {
             message: message,
         });
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/evm-login`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/evm-login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ address: user?.wallet?.address, signature: signature.signature, message }),
         });
 
+        
         if (!res.ok) throw new Error("Login failed");
-        return await res.json();
+
+        const data = await res.json();
+        console.log("data", data);
+        return data;
     }, []);
 }
