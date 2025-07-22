@@ -33,16 +33,16 @@ export default fp(async function (fastify: FastifyInstance) {
   });
 });
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
-    jwt: {
-      sign: (payload: object, options?: jwt.SignOptions) => string;
-      verify: (token: string) => UserJwtPayload;
-    };
-  }
+// declare module 'fastify' {
+//   interface FastifyInstance {
+//     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+//     jwt: {
+//       sign: (payload: object, options?: jwt.SignOptions) => string;
+//       verify: (token: string) => UserJwtPayload;
+//     };
+//   }
 
-  interface FastifyRequest {
-    user: UserJwtPayload;
-  }
-}
+//   interface FastifyRequest {
+//     user?: UserJwtPayload;
+//   }
+// }

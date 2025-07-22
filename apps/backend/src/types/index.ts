@@ -1,4 +1,21 @@
 import { Signature, TypedData } from 'starknet';
+import "fastify";
+import { PrismaClient } from "@prisma/client";
+
+declare module "fastify" {
+  interface FastifyInstance {
+    prisma: PrismaClient;
+    jwt: {
+      sign: (payload: object, options?: any) => string;
+      verify: (token: string) => any;
+    };
+    authenticate: any;
+  }
+  interface FastifyRequest {
+    user?: any;
+  }
+}
+
 export interface UserJwtPayload {
   id: string;
   userAddress: string;
