@@ -100,7 +100,7 @@ export default function Tasks() {
 
             {/* Add Task Form */}
             {showAddForm && (
-                <form onSubmit={handleAddTask} className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <form onSubmit={handleAddTask} className="mb-6 p-4  rounded-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Title *</label>

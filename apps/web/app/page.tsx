@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Focus from "../components/modules/focus";
 import Tasks from "../components/modules/tasks";
-import Console from "../components/modules/console";
+import Settings from "../components/modules/settings";
 import Dashboard from "../components/modules/dashboard";
 import Timer from "../components/modules/timer";
 import Mentor from "../components/modules/mentor";
@@ -39,8 +39,8 @@ export default function Page() {
         return <Learning />; // Learning paths component
       case 'mentor':
         return <Mentor />; // AI Mentor component
-      case 'console':
-        return <Console />; // Settings component is in console module
+      case 'settings':
+        return <Settings />; // Settings component is in console module
       case 'focus':
         return <Focus />;
       default:
