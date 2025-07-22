@@ -23,6 +23,8 @@ COPY . .
 RUN pwd && ls -la
 
 # Build the backend app
+RUN pnpm --filter ./apps/backend... build:prisma
+
 RUN pnpm --filter ./apps/backend... build
 
 # Expose backend port
