@@ -13,7 +13,7 @@ export default function DeepModePage() {
     const [goal, setGoal] = useState({
         title: '',
         description: '',
-        targetDate: '',
+        targetDate: new Date().toISOString().split('T')[0],
         category: ''
     });
     const [chatMessage, setChatMessage] = useState('');
@@ -32,7 +32,7 @@ export default function DeepModePage() {
                 setGoal({
                     title: `Complete: ${foundTask.title}`,
                     description: foundTask.description || '',
-                    targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : '',
+                    targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                     category: foundTask.category || ''
                 });
             }
@@ -75,7 +75,7 @@ export default function DeepModePage() {
                 "I'm here to support you. What would help you move forward?"
             ];
             const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            setChatHistory(prev => [...prev, { role: 'assistant', message: randomResponse }]);
+            setChatHistory(prev => [...prev, { role: 'assistant', message: randomResponse || '' }]);
         }, 1000);
     };
 
@@ -125,11 +125,11 @@ export default function DeepModePage() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col p-6 bg-gradient-to-br from-purple-50 to-indigo-50">
+        <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
             {/* Header */}
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-3xl font-bold text-purple-800">DEEP Mode</h1>
+                    <h1 className="text-3xl font-bold text-[var(--brand-primary)]">DEEP Mode</h1>
                     <div className="flex items-center gap-4">
                         <div className="text-center">
                             <div className="text-2xl font-bold text-purple-600">Level {level}</div>
@@ -137,7 +137,7 @@ export default function DeepModePage() {
                         </div>
                         <button
                             onClick={() => window.history.back()}
-                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                            className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
                         >
                             Exit DEEP
                         </button>
@@ -145,7 +145,7 @@ export default function DeepModePage() {
                 </div>
                 
                 {/* Task Card */}
-                <div className="bg-white rounded-lg p-6 shadow-lg border-l-4 border-purple-500">
+                <div className="rounded-lg p-6 shadow-lg border-l-4 border-[var(--brand-primary)]">
                     <h2 className="text-xl font-bold mb-2">{task.title}</h2>
                     {task.description && (
                         <p className="text-gray-600 mb-4">{task.description}</p>
@@ -169,16 +169,15 @@ export default function DeepModePage() {
                     </div>
                 </div>
             </div>
-
             {/* Main Content Grid */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
                     {/* Timer Section */}
-                    <div className="bg-white rounded-lg p-6 shadow-lg">
-                        <h3 className="text-lg font-bold mb-4 text-purple-800">Focus Timer</h3>
+                    <div className="rounded-lg p-6 shadow-lg">
+                        <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Focus Timer</h3>
                         <div className="text-center mb-4">
-                            <div className="text-4xl font-mono font-bold text-purple-600 mb-2">
+                            <div className="text-4xl font-mono font-bold text-[var(--brand-primary)] mb-2">
                                 {formatTime(timerSeconds)}
                             </div>
                             <div className="text-sm text-gray-600">Time in DEEP mode</div>
@@ -203,8 +202,8 @@ export default function DeepModePage() {
                     </div>
 
                     {/* Goal Setting */}
-                    <div className="bg-white rounded-lg p-6 shadow-lg">
-                        <h3 className="text-lg font-bold mb-4 text-purple-800">Set Your Goal</h3>
+                    <div className="rounded-lg p-6 shadow-lg">
+                        <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Set Your Goal</h3>
                         <div className="space-y-3">
                             <input
                                 type="text"
@@ -237,7 +236,7 @@ export default function DeepModePage() {
                             </div>
                             <button
                                 onClick={handleCreateGoal}
-                                className="w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+                                className="w-full py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-purple-700 transition font-medium"
                             >
                                 Create Goal
                             </button>
@@ -246,9 +245,9 @@ export default function DeepModePage() {
                 </div>
 
                 {/* Right Column - Mentor Chat */}
-                <div className="bg-white rounded-lg p-6 shadow-lg">
-                    <h3 className="text-lg font-bold mb-4 text-purple-800">Mentor AI Assistant</h3>
-                    <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3 bg-gray-50">
+                <div className="rounded-lg p-6 shadow-lg">
+                    <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
+                    <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
                         {chatHistory.length === 0 ? (
                             <div className="text-center text-gray-500 py-8">
                                 <p>Ask your mentor for guidance on this task!</p>
@@ -285,7 +284,7 @@ export default function DeepModePage() {
                         />
                         <button
                             onClick={handleSendMessage}
-                            className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                            className="px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-purple-700 transition"
                         >
                             Send
                         </button>
