@@ -24,11 +24,10 @@ export default function ProfileUser() {
 
                     {userConnected && (
                         <div className="flex flex-col gap-4">
-                            <h3>User Connected</h3>
-                            <p>{userConnected?.userAddress}</p>
-                            <p>{userConnected?.evmAddress}</p>
-                            <p>{userConnected?.starknetAddress}</p>
-                            <p>{userConnected?.loginType}</p>
+                            <h3>User session</h3>
+                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Evm: {userConnected?.evmAddress}</p>
+                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Starknet: {userConnected?.starknetAddress}</p>
+                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Login Type: {userConnected?.loginType}</p>
                         </div>
                     )}
 

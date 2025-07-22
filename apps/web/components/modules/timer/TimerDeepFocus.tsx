@@ -26,8 +26,14 @@ export default function TimerBreak({
         tasks, 
         goals, 
         settings,
-        startTimerBreak,
-        stopTimerBreak
+        startTimerFocus, 
+        pauseTimer, 
+        resumeTimer, 
+        stopTimer, 
+        stopTimeFocus, 
+        resetTimer, 
+        setTimerDuration,
+        loadSettings
     } = useFocusAFKStore();
     // Reset timer when component unmounts
     useEffect(() => {
@@ -40,7 +46,7 @@ export default function TimerBreak({
     const handleStart = () => {
         setElapsedSeconds(0);
         setIsRunning(true);
-        startTimerBreak();
+        startTimerFocus();
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
@@ -50,18 +56,7 @@ export default function TimerBreak({
     // Stop timer
     const handleStop = () => {
         setIsRunning(false);
-        stopTimerBreak(false, {
-            duration: elapsedSeconds,
-            completed: false,
-            startTime: new Date(),
-            endTime: new Date(),
-            createdAt: new Date(),
-            isHavingFun: false,
-            activities: [],
-            persons: [],
-            location: '',
-            weather: '',
-        });
+        stopTimeFocus(true);
         // TODO: Send the data to the backend
         if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -88,7 +83,7 @@ export default function TimerBreak({
             {/* Session Complete Message */}
             {sessionComplete && (
                 <div className="mt-6 text-green-600 font-bold text-lg animate-bounce">
-                    🎉 Break complete!
+                    🎉 Focus session complete!
                 </div>
             )}
 
@@ -98,7 +93,7 @@ export default function TimerBreak({
                     <div className="text-4xl font-mono font-bold text-[var(--brand-primary)] mb-2">
                         {formatTime(elapsedSeconds)}
                     </div>
-                    <div className="text-sm text-gray-600">Time to take a break</div>
+                    <div className="text-sm text-gray-600">Time in DEEP mode</div>
                 </div>
                 <div className="flex gap-2">
                     {!isRunning ? (
@@ -106,14 +101,14 @@ export default function TimerBreak({
                             onClick={handleStart}
                             className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                         >
-                            Start Break Session
+                            Start Focus Session
                         </button>
                     ) : (
                         <button
                             onClick={handleStop}
                             className="flex-1 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
                         >
-                            End Break Session
+                            End Session
                         </button>
                     )}
                 </div>

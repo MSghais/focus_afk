@@ -12,6 +12,7 @@ export default function Dashboard() {
         settings,
         getTaskStats, 
         getFocusStats,
+        getBreakStats,
         setCurrentModule 
     } = useFocusAFKStore();
     
@@ -29,14 +30,24 @@ export default function Dashboard() {
         sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
     });
 
+    const [breakStats, setBreakStats] = useState({
+        totalSessions: 0,
+        totalMinutes: 0,
+        averageSessionLength: 0,
+        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+    });
+
     useEffect(() => {
         const loadStats = async () => {
-            const [taskStatsData, focusStatsData] = await Promise.all([
+            const [taskStatsData, focusStatsData, breakStatsData] = await Promise.all([
                 getTaskStats(),
-                getFocusStats(7)
+                getFocusStats(7),
+                getBreakStats(7)
             ]);
             setTaskStats(taskStatsData);
             setFocusStats(focusStatsData);
+            console.log("breakStatsData", breakStatsData);
+            setBreakStats(breakStatsData);
         };
         
         loadStats();
@@ -46,10 +57,11 @@ export default function Dashboard() {
         if (minutes === 0) return '0m';
         const hours = Math.floor(minutes / 60);
         const mins = Math.floor(minutes % 60);
+        const secs = Math.floor((minutes * 60) % 60);
         if (hours > 0) {
             return `${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
         }
-        return `${mins}m`;
+        return `${mins}m ${secs > 0 ? `${secs}s` : ''}`.trim();
     };
 
     const formatDate = (date: Date) => {
@@ -105,6 +117,9 @@ export default function Dashboard() {
                         <div className={styles.statInfo}>
                             <p className={styles.statLabel}>Focus Time</p>
                             <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes)}</p>
+
+                            <p className={styles.statValue + "text-xs"} style={{ color: '#8B5CF6' }}>{formatTime(breakStats?.totalMinutes)}</p>
+
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>
                             <span style={{ color: 'white', fontSize: '1.25rem' }}>⏱️</span>

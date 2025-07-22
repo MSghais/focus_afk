@@ -65,3 +65,13 @@ model SocialAccount {
   @@unique([userId, platform])
   @@map("social_accounts")
 }
+
+
+model MentorPerUser {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String
+  name String?
+  knowledges String[]
+  about String?
+}

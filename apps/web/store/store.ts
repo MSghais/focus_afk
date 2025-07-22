@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { Task, Goal, TimerSession, UserSettings, dbUtils } from '../lib/database';
+import { Task, Goal, TimerSession, UserSettings, dbUtils, TimerBreakSession } from '../lib/database';
 
 // Timer state interface
 interface TimerState {
@@ -28,13 +28,13 @@ interface FocusAFKStore {
   goals: Goal[];
   timerSessions: TimerSession[];
   settings: UserSettings | null;
-  
+
   // Timer state
   timer: TimerState;
-  
+
   // UI state
   ui: UIState;
-  
+
   // Loading states
   loading: {
     tasks: boolean;
@@ -42,44 +42,55 @@ interface FocusAFKStore {
     sessions: boolean;
     settings: boolean;
   };
-  
+
   // Actions - Tasks
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateTask: (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
   toggleTaskComplete: (id: number) => Promise<void>;
   loadTasks: () => Promise<void>;
-  
+
   // Actions - Goals
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateGoal: (id: number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>) => Promise<void>;
   deleteGoal: (id: number) => Promise<void>;
   updateGoalProgress: (id: number, progress: number) => Promise<void>;
   loadGoals: () => Promise<void>;
-  
+
   // Actions - Timer
+  startTimerFocus: (taskId?: number, goalId?: number) => Promise<void>;
   startTimer: (duration: number, taskId?: number, goalId?: number) => Promise<void>;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => Promise<void>;
+  stopTimeFocus: (completed?: boolean) => Promise<void>;
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
-  startBreak: (duration: number) => Promise<void>;
-  loadTimerSessions: () => Promise<void>;
+  // Break
+  startTimerBreak: (duration?: number, taskId?: number, goalId?: number, timeBreak?: TimerBreakSession) => Promise<void>;
   
+  stopTimerBreak: (completed?: boolean, timeBreak?: TimerBreakSession) => Promise<void>;
+  loadTimerSessions: () => Promise<void>;
+
   // Actions - Settings
   updateSettings: (settings: Partial<Omit<UserSettings, 'id' | 'createdAt'>>) => Promise<void>;
   loadSettings: () => Promise<void>;
-  
+
   // Actions - UI
   setCurrentModule: (module: UIState['currentModule']) => void;
+  getBreakStats: (days?: number) => Promise<{
+    totalSessions: number;
+    totalMinutes: number;
+    averageSessionLength: number;
+    sessionsByDay: { date: string; sessions: number; minutes: number }[];
+  }>;
   toggleSidebar: () => void;
   setTheme: (theme: UIState['theme']) => void;
   setNotifications: (enabled: boolean) => void;
-  
+
   // Actions - Loading
   setLoading: (key: keyof FocusAFKStore['loading'], value: boolean) => void;
-  
+
   // Statistics
   getTaskStats: () => Promise<{
     total: number;
@@ -87,7 +98,7 @@ interface FocusAFKStore {
     pending: number;
     overdue: number;
   }>;
-  
+
   getFocusStats: (days?: number) => Promise<{
     totalSessions: number;
     totalMinutes: number;
@@ -131,6 +142,33 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       sessions: false,
       settings: false,
     },
+
+
+    // Timer actions
+    startTimerFocus: async (taskId, goalId) => {
+      const { settings } = get();
+      const duration = (settings?.defaultFocusDuration || 25) * 60;
+
+      const sessionId = await dbUtils.addTimerSession({
+        taskId,
+        goalId,
+        startTime: new Date(),
+        duration: 0,
+        completed: false,
+      });
+
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          isRunning: true,
+          secondsLeft: duration,
+          totalSeconds: duration,
+          currentSessionId: sessionId,
+          isBreak: false,
+        },
+      }));
+    },
+
 
     // Task actions
     addTask: async (task) => {
@@ -275,6 +313,53 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }));
     },
 
+    stopTimeFocus: async (completed = false) => {
+      const { timer } = get();
+      if (timer.currentSessionId) {
+        const duration = timer.totalSeconds - timer.secondsLeft;
+        await dbUtils.updateTimerSession(timer.currentSessionId, {
+          endTime: new Date(),
+          duration,
+          completed: completed,
+        });
+      }
+    },
+
+
+    startTimerBreak: async (duration = 0, taskId, goalId, timeBreak) => {
+      const sessionId = await dbUtils.addTimerBreakSession({
+        ...timeBreak,
+        taskId,
+        goalId,
+        startTime: new Date(),
+        duration: 0,
+        completed: false,
+      });
+
+      set((state) => ({
+        timer: {
+          ...state.timer,
+          isRunning: true,
+          secondsLeft: duration,
+          totalSeconds: duration,
+          currentSessionId: sessionId,
+          isBreak: false,
+        },
+      }));
+    },
+
+    stopTimerBreak: async (completed = false, timeBreak) => {
+      const { timer } = get();
+      if (timer.currentSessionId) {
+        const duration = timer.totalSeconds - timer.secondsLeft;
+        await dbUtils.updateTimerBreakSession(timer.currentSessionId, {
+          endTime: new Date(),
+          duration,
+          completed: completed,
+        });
+      }
+    },
+
     resetTimer: () => {
       set((state) => ({
         timer: {
@@ -295,18 +380,6 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }));
     },
 
-    startBreak: async (duration) => {
-      set((state) => ({
-        timer: {
-          ...state.timer,
-          isRunning: true,
-          secondsLeft: duration,
-          totalSeconds: duration,
-          currentSessionId: undefined,
-          isBreak: true,
-        },
-      }));
-    },
 
     loadTimerSessions: async () => {
       set((state) => ({ loading: { ...state.loading, sessions: true } }));
@@ -327,7 +400,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         settings: state.settings ? { ...state.settings, ...settings, updatedAt: new Date() } : null,
       }));
     },
-    
+
 
     loadSettings: async () => {
       set((state) => ({ loading: { ...state.loading, settings: true } }));
@@ -398,6 +471,10 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     getFocusStats: async (days = 7) => {
       return await dbUtils.getFocusStats(days);
     },
+
+    getBreakStats: async (days = 7) => {
+      return await dbUtils.getBreakStats(days);
+    },
   }))
 );
 
@@ -418,7 +495,7 @@ useFocusAFKStore.subscribe(
           // Timer finished
           clearInterval(timerInterval!);
           useFocusAFKStore.getState().stopTimer();
-          
+
           // Show notification if enabled
           if (useFocusAFKStore.getState().ui.notifications) {
             if (Notification.permission === 'granted') {

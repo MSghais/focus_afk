@@ -40,6 +40,39 @@ export interface TimerSession {
   createdAt: Date;
 }
 
+export interface TimerFocusSession {
+  id?: number;
+  taskId?: number;
+  goalId?: number;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  completed: boolean;
+  notes?: string;
+  createdAt: Date;
+}
+
+export interface TimerBreakSession {
+  id?: number;
+  taskId?: number;
+  goalId?: number;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  completed: boolean;
+  createdAt: Date;
+  isHavingFun?: boolean;
+  activities?: string[];
+  persons?: string[];
+  location?: string;
+  weather?: string;
+  mood?: string;
+  energyLevel?: string;
+  productivityLevel?: string;
+  notes?: string;
+}
+
+
 export interface UserSettings {
   id?: number;
   defaultFocusDuration: number; // in minutes
@@ -56,15 +89,19 @@ export class FocusAFKDatabase extends Dexie {
   tasks!: Table<Task>;
   goals!: Table<Goal>;
   timerSessions!: Table<TimerSession>;
+  timerFocusSessions!: Table<TimerFocusSession>;
+  timerBreakSessions!: Table<TimerBreakSession>;
   userSettings!: Table<UserSettings>;
 
   constructor() {
     super('FocusAFKDatabase');
-    
+
     this.version(1).stores({
       tasks: '++id, title, completed, priority, category, dueDate, createdAt',
       goals: '++id, title, completed, category, targetDate, createdAt',
       timerSessions: '++id, taskId, goalId, startTime, endTime, completed, createdAt',
+      timerFocusSessions: '++id, taskId, goalId, startTime, endTime, completed, createdAt',
+      timerBreakSessions: '++id, taskId, goalId, startTime, endTime, completed, createdAt',
       userSettings: '++id, updatedAt'
     });
   }
@@ -102,7 +139,7 @@ export const dbUtils = {
     category?: string;
   }): Promise<Task[]> {
     let collection = db.tasks.toCollection();
-    
+
     if (filters?.completed !== undefined) {
       collection = collection.filter(task => task.completed === filters.completed);
     }
@@ -112,7 +149,7 @@ export const dbUtils = {
     if (filters?.category) {
       collection = collection.filter(task => task.category === filters.category);
     }
-    
+
     return await collection.reverse().sortBy('createdAt');
   },
 
@@ -142,20 +179,39 @@ export const dbUtils = {
     category?: string;
   }): Promise<Goal[]> {
     let collection = db.goals.toCollection();
-    
+
     if (filters?.completed !== undefined) {
       collection = collection.filter(goal => goal.completed === filters.completed);
     }
     if (filters?.category) {
       collection = collection.filter(goal => goal.category === filters.category);
     }
-    
+
     return await collection.reverse().sortBy('createdAt');
   },
 
   // Timer session operations
   async addTimerSession(session: Omit<TimerSession, 'id' | 'createdAt'>): Promise<number> {
     return await db.timerSessions.add({
+      ...session,
+      createdAt: new Date()
+    });
+  },
+
+  async addTimerBreakSession(session: Omit<TimerBreakSession, 'id' | 'createdAt'>): Promise<number> {
+    return await db.timerBreakSessions.add({
+      ...session,
+      createdAt: new Date()
+    });
+  },
+
+  async updateTimerBreakSession(id: number, updates: Partial<Omit<TimerBreakSession, 'id' | 'createdAt'>>): Promise<void> {
+    await db.timerBreakSessions.update(id, updates);
+  },
+
+  // Timer session operations
+  async addTimeFocusSession(session: Omit<TimerFocusSession, 'id' | 'createdAt'>): Promise<number> {
+    return await db.timerFocusSessions.add({
       ...session,
       createdAt: new Date()
     });
@@ -173,7 +229,7 @@ export const dbUtils = {
     endDate?: Date;
   }): Promise<TimerSession[]> {
     let collection = db.timerSessions.toCollection();
-    
+
     if (filters?.taskId) {
       collection = collection.filter(session => session.taskId === filters.taskId);
     }
@@ -189,7 +245,7 @@ export const dbUtils = {
     if (filters?.endDate) {
       collection = collection.filter(session => session.startTime <= filters.endDate!);
     }
-    
+
     return await collection.reverse().sortBy('startTime');
   },
 
@@ -228,7 +284,7 @@ export const dbUtils = {
   }> {
     const tasks = await db.tasks.toArray();
     const now = new Date();
-    
+
     return {
       total: tasks.length,
       completed: tasks.filter(t => t.completed).length,
@@ -245,15 +301,15 @@ export const dbUtils = {
   }> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
-    
+
     const sessions = await this.getTimerSessions({
       completed: true,
       startDate
     });
-    
+
     const totalMinutes = sessions.reduce((sum, session) => sum + session.duration / 60, 0);
     const averageSessionLength = sessions.length > 0 ? totalMinutes / sessions.length : 0;
-    
+
     // Group by day
     const sessionsByDay = sessions.reduce((acc, session) => {
       const date = session.startTime.toISOString().split('T')[0];
@@ -270,7 +326,78 @@ export const dbUtils = {
       }
       return acc;
     }, [] as { date: string; sessions: number; minutes: number }[]);
-    
+
+    return {
+      totalSessions: sessions.length,
+      totalMinutes,
+      averageSessionLength,
+      sessionsByDay
+    };
+  },
+
+
+  async getTimerBreakSessions(filters?: {
+    taskId?: number;
+    goalId?: number;
+    completed?: boolean;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<TimerBreakSession[]> {
+    let collection = db.timerBreakSessions.toCollection();
+
+    if (filters?.taskId) {
+      collection = collection.filter(session => session.taskId === filters.taskId);
+    }
+    if (filters?.goalId) {
+      collection = collection.filter(session => session.goalId === filters.goalId);
+    }
+    if (filters?.completed !== undefined) {
+      collection = collection.filter(session => session.completed === filters.completed);
+    }
+    if (filters?.startDate) {
+      collection = collection.filter(session => session.startTime >= filters.startDate!);
+    }
+    if (filters?.endDate) {
+      collection = collection.filter(session => session.startTime <= filters.endDate!);
+    }
+
+    return await collection.reverse().sortBy('startTime');
+  },
+
+  async getBreakStats(days: number = 7): Promise<{
+    totalSessions: number;
+    totalMinutes: number;
+    averageSessionLength: number;
+    sessionsByDay: { date: string; sessions: number; minutes: number }[];
+  }> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const sessions = await this.getTimerBreakSessions({
+      completed: true,
+      startDate
+    });
+
+    const totalMinutes = sessions.reduce((sum, session) => sum + session.duration / 60, 0);
+    const averageSessionLength = sessions.length > 0 ? totalMinutes / sessions.length : 0;
+
+    // Group by day
+    const sessionsByDay = sessions.reduce((acc, session) => {
+      const date = session.startTime.toISOString().split('T')[0];
+      const existing = acc.find(item => item.date === date);
+      if (existing) {
+        existing.sessions++;
+        existing.minutes += session.duration / 60;
+          } else {
+        acc.push({
+          date: date!,
+          sessions: 1,
+          minutes: session.duration / 60
+        });
+      }
+      return acc;
+    }, [] as { date: string; sessions: number; minutes: number }[]);
+
     return {
       totalSessions: sessions.length,
       totalMinutes,
