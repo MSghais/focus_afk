@@ -1,0 +1,648 @@
+.learning {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .learningGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+  }
+
+  .recommendationsCard,
+  .enrolledCard,
+  .allPathsCard {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .cardTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+  }
+
+  .cardDescription {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  // Recommendations Card
+  .recommendationsCard {
+    .recommendationsList {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .recommendation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(4px);
+      }
+
+      .recommendationInfo {
+        flex: 1;
+
+        .recommendationTitle {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #e2e8f0;
+          margin-bottom: 0.25rem;
+        }
+
+        .recommendationDescription {
+          font-size: 0.875rem;
+          color: #94a3b8;
+          margin-bottom: 0.5rem;
+          line-height: 1.4;
+        }
+
+        .recommendationMeta {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+
+          span {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+
+            &.difficulty {
+              background: rgba(59, 130, 246, 0.2);
+              color: #60a5fa;
+            }
+
+            &.hours {
+              background: rgba(16, 185, 129, 0.2);
+              color: #34d399;
+            }
+
+            &.category {
+              background: rgba(168, 85, 247, 0.2);
+              color: #a78bfa;
+            }
+          }
+        }
+      }
+
+      .enrollButton {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    }
+  }
+
+  // Enrolled Card
+  .enrolledCard {
+    .emptyState {
+      text-align: center;
+      padding: 2rem;
+      color: #94a3b8;
+
+      p {
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+    }
+
+    .enrolledPaths {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .enrolledPath {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+
+      .pathHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+
+        .pathTitle {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #e2e8f0;
+        }
+
+        .progress {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #10b981;
+        }
+      }
+
+      .progressBar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+
+        .progressFill {
+          height: 100%;
+          background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+          border-radius: 3px;
+          transition: width 0.3s ease;
+        }
+      }
+
+      .lessonsList {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .lessonItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+
+        .lessonInfo {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .lessonTitle {
+            font-size: 0.875rem;
+            color: #e2e8f0;
+            font-weight: 500;
+          }
+
+          .lessonDuration {
+            font-size: 0.75rem;
+            color: #94a3b8;
+          }
+        }
+
+        .lessonStatus {
+          .completed {
+            font-size: 1.25rem;
+          }
+
+          .startButton {
+            padding: 0.5rem 1rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            color: #60a5fa;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(59, 130, 246, 0.3);
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // All Paths Card
+  .allPathsCard {
+    .pathsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .pathCard {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+      }
+
+      .pathContent {
+        margin-bottom: 1rem;
+
+        .pathTitle {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #e2e8f0;
+          margin-bottom: 0.5rem;
+        }
+
+        .pathDescription {
+          font-size: 0.875rem;
+          color: #94a3b8;
+          line-height: 1.4;
+          margin-bottom: 0.75rem;
+        }
+
+        .pathMeta {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+          flex-wrap: wrap;
+
+          span {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+
+            &.difficulty {
+              background: rgba(59, 130, 246, 0.2);
+              color: #60a5fa;
+            }
+
+            &.hours {
+              background: rgba(16, 185, 129, 0.2);
+              color: #34d399;
+            }
+
+            &.category {
+              background: rgba(168, 85, 247, 0.2);
+              color: #a78bfa;
+            }
+          }
+        }
+
+        .pathStats {
+          display: flex;
+          gap: 1rem;
+          font-size: 0.75rem;
+          color: #94a3b8;
+        }
+      }
+
+      .pathActions {
+        .enrollButton,
+        .continueButton {
+          width: 100%;
+          padding: 0.75rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: scale(1.02);
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
+        }
+
+        .enrollButton {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+        }
+
+        .continueButton {
+          background: rgba(59, 130, 246, 0.2);
+          color: #60a5fa;
+          border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+      }
+    }
+  }
+
+  // Lesson View
+  .lessonView {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+
+    .lessonHeader {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      .backButton {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .lessonTitle {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+      }
+    }
+
+    .lessonContent {
+      .lessonInfo {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+
+        .duration {
+          font-size: 0.875rem;
+          color: #60a5fa;
+          font-weight: 500;
+        }
+
+        .description {
+          font-size: 0.875rem;
+          color: #94a3b8;
+        }
+      }
+
+      .content {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+
+        p {
+          color: #e2e8f0;
+          line-height: 1.6;
+          font-size: 1rem;
+        }
+      }
+
+      .lessonActions {
+        display: flex;
+        gap: 1rem;
+
+        .quizButton,
+        .completeButton {
+          padding: 0.75rem 1.5rem;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+
+          &:active {
+            transform: scale(0.95);
+          }
+        }
+
+        .quizButton {
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          color: white;
+        }
+
+        .completeButton {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+        }
+      }
+    }
+  }
+
+  // Quiz View
+  .quizView {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+
+    .quizHeader {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      .backButton {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+      }
+
+      .quizTitle {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e2e8f0;
+      }
+    }
+
+    .quizContent {
+      .question {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+
+        .questionText {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #e2e8f0;
+          margin-bottom: 1rem;
+        }
+
+        .options {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-bottom: 1rem;
+
+          .option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.05);
+            }
+
+            input[type="radio"] {
+              width: 18px;
+              height: 18px;
+              accent-color: #8b5cf6;
+            }
+
+            span {
+              color: #e2e8f0;
+              font-size: 0.875rem;
+            }
+          }
+        }
+
+        .explanation {
+          padding: 0.75rem;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          line-height: 1.5;
+
+          &.correct {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+          }
+
+          &.incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+          }
+        }
+      }
+
+      .quizActions {
+        text-align: center;
+
+        .submitButton {
+          padding: 0.75rem 2rem;
+          background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+          border: none;
+          border-radius: 8px;
+          color: white;
+          font-size: 1rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover:not(:disabled) {
+            transform: scale(1.05);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+
+        .results {
+          .continueButton {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .learning {
+    padding: 1rem;
+
+    .learningGrid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .allPathsCard .pathsGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .lessonView,
+    .quizView {
+      padding: 1rem;
+    }
+
+    .lessonActions {
+      flex-direction: column;
+    }
+  }
+} 

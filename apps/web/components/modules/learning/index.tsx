@@ -1,344 +1,528 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../lib/store';
-import { Goal, Task } from '../../../lib/database';
+import styles from '../../../styles/components/learning.module.scss';
 
-export default function Goals() {
-    const { goals, tasks, loading, addGoal, updateGoal, deleteGoal, updateGoalProgress } = useFocusAFKStore();
-    const [newGoal, setNewGoal] = useState({
-        title: '',
-        description: '',
-        targetDate: '',
-        category: '',
-        progress: 0
-    });
-    const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
-    const [showAddForm, setShowAddForm] = useState(false);
+interface LearningPath {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  estimatedHours: number;
+  lessons: Lesson[];
+  progress: number;
+  isEnrolled: boolean;
+}
 
-    const handleAddGoal = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newGoal.title.trim()) return;
+interface Lesson {
+  id: string;
+  title: string;
+  description: string;
+  duration: number; // in minutes
+  content: string;
+  quiz: Quiz;
+  completed: boolean;
+}
 
-        await addGoal({
-            title: newGoal.title,
-            description: newGoal.description || undefined,
-            targetDate: newGoal.targetDate ? new Date(newGoal.targetDate) : undefined,
+interface Quiz {
+  id: string;
+  questions: QuizQuestion[];
+  passingScore: number;
+}
+
+interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+export default function Learning() {
+  const { goals, addGoal, updateGoalProgress } = useFocusAFKStore();
+  const [learningPaths, setLearningPaths] = useState<LearningPath[]>([]);
+  const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
+  const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
+  const [quizResults, setQuizResults] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    loadLearningPaths();
+  }, []);
+
+  const loadLearningPaths = () => {
+    // Sample learning paths with AI-generated content
+    const paths: LearningPath[] = [
+      {
+        id: 'crypto-basics',
+        title: 'Crypto Fundamentals',
+        description: 'Master the basics of blockchain, cryptocurrencies, and DeFi',
+        category: 'Technology',
+        difficulty: 'beginner',
+        estimatedHours: 8,
+        progress: 0,
+        isEnrolled: false,
+        lessons: [
+          {
+            id: 'crypto-1',
+            title: 'What is Blockchain?',
+            description: 'Understanding the foundation of cryptocurrency',
+            duration: 25,
+            content: 'Blockchain is a distributed ledger technology that enables secure, transparent, and tamper-proof record-keeping...',
             completed: false,
-            progress: newGoal.progress,
-            category: newGoal.category || undefined,
-            relatedTasks: []
-        });
+            quiz: {
+              id: 'quiz-1',
+              passingScore: 70,
+              questions: [
+                {
+                  id: 'q1',
+                  question: 'What is the main purpose of blockchain technology?',
+                  options: [
+                    'To make transactions faster',
+                    'To create a decentralized, secure ledger',
+                    'To reduce transaction costs',
+                    'To enable anonymous transactions'
+                  ],
+                  correctAnswer: 1,
+                  explanation: 'Blockchain creates a decentralized, secure ledger that cannot be tampered with.'
+                }
+              ]
+            }
+          },
+          {
+            id: 'crypto-2',
+            title: 'Understanding Bitcoin',
+            description: 'Learn about the first and most popular cryptocurrency',
+            duration: 30,
+            content: 'Bitcoin was created in 2009 by an anonymous person or group known as Satoshi Nakamoto...',
+            completed: false,
+            quiz: {
+              id: 'quiz-2',
+              passingScore: 70,
+              questions: [
+                {
+                  id: 'q2',
+                  question: 'Who created Bitcoin?',
+                  options: [
+                    'Elon Musk',
+                    'Satoshi Nakamoto',
+                    'Vitalik Buterin',
+                    'Mark Zuckerberg'
+                  ],
+                  correctAnswer: 1,
+                  explanation: 'Bitcoin was created by the pseudonymous Satoshi Nakamoto in 2009.'
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: 'productivity-mastery',
+        title: 'Productivity Mastery',
+        description: 'Learn proven techniques to boost your productivity and focus',
+        category: 'Personal Development',
+        difficulty: 'intermediate',
+        estimatedHours: 6,
+        progress: 0,
+        isEnrolled: false,
+        lessons: [
+          {
+            id: 'prod-1',
+            title: 'The Pomodoro Technique',
+            description: 'Master time management with focused work sessions',
+            duration: 20,
+            content: 'The Pomodoro Technique is a time management method developed by Francesco Cirillo...',
+            completed: false,
+            quiz: {
+              id: 'quiz-3',
+              passingScore: 70,
+              questions: [
+                {
+                  id: 'q3',
+                  question: 'How long is a typical Pomodoro session?',
+                  options: [
+                    '15 minutes',
+                    '25 minutes',
+                    '45 minutes',
+                    '60 minutes'
+                  ],
+                  correctAnswer: 1,
+                  explanation: 'A typical Pomodoro session is 25 minutes of focused work.'
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        id: 'web-development',
+        title: 'Web Development Basics',
+        description: 'Build your first website with HTML, CSS, and JavaScript',
+        category: 'Programming',
+        difficulty: 'beginner',
+        estimatedHours: 12,
+        progress: 0,
+        isEnrolled: false,
+        lessons: [
+          {
+            id: 'web-1',
+            title: 'HTML Fundamentals',
+            description: 'Learn the structure of web pages',
+            duration: 35,
+            content: 'HTML (HyperText Markup Language) is the standard markup language for creating web pages...',
+            completed: false,
+            quiz: {
+              id: 'quiz-4',
+              passingScore: 70,
+              questions: [
+                {
+                  id: 'q4',
+                  question: 'What does HTML stand for?',
+                  options: [
+                    'HyperText Markup Language',
+                    'High Tech Modern Language',
+                    'Home Tool Markup Language',
+                    'Hyperlink and Text Markup Language'
+                  ],
+                  correctAnswer: 0,
+                  explanation: 'HTML stands for HyperText Markup Language.'
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ];
 
-        setNewGoal({
-            title: '',
-            description: '',
-            targetDate: '',
-            category: '',
-            progress: 0
-        });
-        setShowAddForm(false);
-    };
+    setLearningPaths(paths);
+  };
 
-    const handleUpdateGoal = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingGoal || !editingGoal.id) return;
+  const enrollInPath = (pathId: string) => {
+    setLearningPaths(prev => prev.map(path => 
+      path.id === pathId ? { ...path, isEnrolled: true } : path
+    ));
+    
+    // Create a goal for this learning path
+    const path = learningPaths.find(p => p.id === pathId);
+    if (path) {
+      addGoal({
+        title: `Complete ${path.title}`,
+        description: path.description,
+        targetDate: new Date(Date.now() + path.estimatedHours * 60 * 60 * 1000), // estimated completion
+        progress: 0,
+        completed: false,
+        category: 'learning'
+      });
+    }
+  };
 
-        await updateGoal(editingGoal.id, {
-            title: editingGoal.title,
-            description: editingGoal.description,
-            targetDate: editingGoal.targetDate,
-            progress: editingGoal.progress,
-            category: editingGoal.category
-        });
+  const startLesson = (lesson: Lesson) => {
+    setCurrentLesson(lesson);
+    setShowQuiz(false);
+    setQuizAnswers([]);
+    setQuizResults([]);
+  };
 
-        setEditingGoal(null);
-    };
+  const completeLesson = () => {
+    if (!currentLesson || !selectedPath) return;
 
-    const handleDeleteGoal = async (id: number) => {
-        if (confirm('Are you sure you want to delete this goal?')) {
-            await deleteGoal(id);
-        }
-    };
-
-    const handleProgressChange = async (goalId: number, progress: number) => {
-        await updateGoalProgress(goalId, progress);
-    };
-
-    const formatDate = (date: Date) => {
-        return new Date(date).toLocaleDateString();
-    };
-
-    const getProgressColor = (progress: number) => {
-        if (progress >= 80) return 'bg-green-500';
-        if (progress >= 60) return 'bg-blue-500';
-        if (progress >= 40) return 'bg-yellow-500';
-        return 'bg-red-500';
-    };
-
-    const getDaysUntilTarget = (targetDate: Date) => {
-        const today = new Date();
-        const target = new Date(targetDate);
-        const diffTime = target.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return diffDays;
-    };
-
-    if (loading.goals) {
-        return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="text-lg">Loading goals...</div>
-            </div>
+    // Mark lesson as completed
+    setLearningPaths(prev => prev.map(path => {
+      if (path.id === selectedPath.id) {
+        const updatedLessons = path.lessons.map(lesson => 
+          lesson.id === currentLesson.id ? { ...lesson, completed: true } : lesson
         );
+        const progress = (updatedLessons.filter(l => l.completed).length / updatedLessons.length) * 100;
+        return { ...path, lessons: updatedLessons, progress };
+      }
+      return path;
+    }));
+
+    // Update goal progress
+    const path = learningPaths.find(p => p.id === selectedPath.id);
+    if (path) {
+      const completedLessons = path.lessons.filter(l => l.completed).length + 1;
+      const progress = (completedLessons / path.lessons.length) * 100;
+      // Find and update the corresponding goal
+      const goal = goals.find(g => g.title.includes(path.title));
+      if (goal) {
+        updateGoalProgress(goal?.id!, progress);
+      }
     }
 
-    return (
-        <div className="w-full h-full flex flex-col p-6">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Goals</h1>
-                <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                >
-                    {showAddForm ? 'Cancel' : 'Add Goal'}
-                </button>
-            </div>
+    setCurrentLesson(null);
+  };
 
-            {/* Add Goal Form */}
-            {showAddForm && (
-                <form onSubmit={handleAddGoal} className="mb-6 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Title *</label>
-                            <input
-                                type="text"
-                                value={newGoal.title}
-                                onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                                placeholder="Goal title"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Category</label>
-                            <input
-                                type="text"
-                                value={newGoal.category}
-                                onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                                placeholder="Work, Personal, etc."
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Target Date</label>
-                            <input
-                                type="date"
-                                value={newGoal.targetDate}
-                                onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Initial Progress (%)</label>
-                            <input
-                                type="number"
-                                value={newGoal.progress}
-                                onChange={(e) => setNewGoal({ ...newGoal, progress: parseInt(e.target.value) || 0 })}
-                                className="w-full p-2 border rounded-md"
-                                min="0"
-                                max="100"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium mb-1">Description</label>
-                            <textarea
-                                value={newGoal.description}
-                                onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                                rows={3}
-                                placeholder="Goal description (optional)"
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                        >
-                            Add Goal
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setShowAddForm(false)}
-                            className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            )}
+  const startQuiz = () => {
+    if (!currentLesson) return;
+    setShowQuiz(true);
+    setQuizAnswers(new Array(currentLesson.quiz.questions.length).fill(-1));
+  };
 
-            {/* Goals List */}
-            <div className="flex-1 overflow-y-auto">
-                {goals.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                        <p className="text-lg mb-2">No goals yet</p>
-                        <p className="text-sm">Create your first goal to start tracking progress!</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {goals.map((goal) => (
-                            <div
-                                key={goal.id}
-                                className={`p-4 border rounded-lg transition-all ${
-                                    goal.completed ? 'bg-green-50 border-green-200' : 'bg-white hover:shadow-md'
-                                }`}
-                            >
-                                {editingGoal?.id === goal.id ? (
-                                    <form onSubmit={handleUpdateGoal} className="space-y-3">
-                                        <input
-                                            type="text"
-                                            value={editingGoal.title}
-                                            onChange={(e) => setEditingGoal({ ...editingGoal, title: e.target.value })}
-                                            className="w-full p-2 border rounded-md font-medium"
-                                            required
-                                        />
-                                        <textarea
-                                            value={editingGoal.description || ''}
-                                            onChange={(e) => setEditingGoal({ ...editingGoal, description: e.target.value })}
-                                            className="w-full p-2 border rounded-md text-sm"
-                                            rows={2}
-                                        />
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={editingGoal.category || ''}
-                                                onChange={(e) => setEditingGoal({ ...editingGoal, category: e.target.value })}
-                                                className="p-2 border rounded-md text-sm"
-                                                placeholder="Category"
-                                            />
-                                            <input
-                                                type="date"
-                                                value={editingGoal.targetDate ? new Date(editingGoal.targetDate).toISOString().split('T')[0] : ''}
-                                                onChange={(e) => setEditingGoal({ ...editingGoal, targetDate: e.target.value ? new Date(e.target.value) : undefined })}
-                                                className="p-2 border rounded-md text-sm"
-                                            />
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="submit"
-                                                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setEditingGoal(null)}
-                                                className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <div className="space-y-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h3 className={`font-medium ${goal.completed ? 'line-through' : ''}`}>
-                                                        {goal.title}
-                                                    </h3>
-                                                    {goal.category && (
-                                                        <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs">
-                                                            {goal.category}
-                                                        </span>
-                                                    )}
-                                                    {goal.completed && (
-                                                        <span className="px-2 py-1 bg-green-100 text-green-600 rounded-full text-xs">
-                                                            Completed
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {goal.description && (
-                                                    <p className="text-gray-600 text-sm mb-2">{goal.description}</p>
-                                                )}
-                                                <div className="flex items-center gap-4 text-xs text-gray-500">
-                                                    {goal.targetDate && (
-                                                        <span>
-                                                            Target: {formatDate(goal.targetDate)}
-                                                            {getDaysUntilTarget(goal.targetDate) > 0 && (
-                                                                <span className="ml-1 text-orange-600">
-                                                                    ({getDaysUntilTarget(goal.targetDate)} days left)
-                                                                </span>
-                                                            )}
-                                                            {getDaysUntilTarget(goal.targetDate) < 0 && (
-                                                                <span className="ml-1 text-red-600">
-                                                                    (Overdue)
-                                                                </span>
-                                                            )}
-                                                        </span>
-                                                    )}
-                                                    <span>Created: {formatDate(goal.createdAt)}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex gap-2 ml-4">
-                                                <button
-                                                    onClick={() => setEditingGoal(goal)}
-                                                    className="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-sm"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteGoal(goal.id!)}
-                                                    className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
+  const submitQuiz = () => {
+    if (!currentLesson) return;
 
-                                        {/* Progress Bar */}
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm font-medium">Progress</span>
-                                                <span className="text-sm text-gray-600">{goal.progress}%</span>
-                                            </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div
-                                                    className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(goal.progress)}`}
-                                                    style={{ width: `${goal.progress}%` }}
-                                                ></div>
-                                            </div>
-                                            {!goal.completed && (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleProgressChange(goal.id!, Math.max(0, goal.progress - 10))}
-                                                        className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
-                                                    >
-                                                        -10%
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleProgressChange(goal.id!, Math.min(100, goal.progress + 10))}
-                                                        className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
-                                                    >
-                                                        +10%
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleProgressChange(goal.id!, 100)}
-                                                        className="px-2 py-1 text-xs bg-green-200 hover:bg-green-300 rounded text-green-700"
-                                                    >
-                                                        Complete
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
+    const results = currentLesson.quiz.questions.map((question, index) => 
+      quizAnswers[index] === question.correctAnswer
     );
+    
+    setQuizResults(results);
+    
+    const score = (results.filter(r => r).length / results.length) * 100;
+    const passed = score >= currentLesson.quiz.passingScore;
+
+    if (passed) {
+      completeLesson();
+    }
+  };
+
+  const getRecommendedPaths = () => {
+    // AI recommendation logic based on user's current goals and progress
+    const userInterests = goals.map(g => g.category).filter(Boolean);
+    return learningPaths
+      .filter(path => !path.isEnrolled)
+      .sort((a, b) => {
+        // Prioritize paths matching user interests
+        const aMatch = userInterests.includes(a.category) ? 1 : 0;
+        const bMatch = userInterests.includes(b.category) ? 1 : 0;
+        return bMatch - aMatch;
+      })
+      .slice(0, 3);
+  };
+
+  const recommendedPaths = getRecommendedPaths();
+
+  if (currentLesson && !showQuiz) {
+    return (
+      <div className={styles.lessonView}>
+        <div className={styles.lessonHeader}>
+          <button onClick={() => setCurrentLesson(null)} className={styles.backButton}>
+            ← Back to Path
+          </button>
+          <h1 className={styles.lessonTitle}>{currentLesson.title}</h1>
+        </div>
+        
+        <div className={styles.lessonContent}>
+          <div className={styles.lessonInfo}>
+            <span className={styles.duration}>⏱️ {currentLesson.duration} minutes</span>
+            <span className={styles.description}>{currentLesson.description}</span>
+          </div>
+          
+          <div className={styles.content}>
+            <p>{currentLesson.content}</p>
+            {/* Here you would render the full lesson content */}
+          </div>
+          
+          <div className={styles.lessonActions}>
+            <button onClick={startQuiz} className={styles.quizButton}>
+              🧠 Take Quiz
+            </button>
+            <button onClick={completeLesson} className={styles.completeButton}>
+              ✅ Mark Complete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showQuiz && currentLesson) {
+    return (
+      <div className={styles.quizView}>
+        <div className={styles.quizHeader}>
+          <button onClick={() => setShowQuiz(false)} className={styles.backButton}>
+            ← Back to Lesson
+          </button>
+          <h1 className={styles.quizTitle}>Quiz: {currentLesson.title}</h1>
+        </div>
+        
+        <div className={styles.quizContent}>
+          {currentLesson.quiz.questions.map((question, index) => (
+            <div key={question.id} className={styles.question}>
+              <h3 className={styles.questionText}>
+                {index + 1}. {question.question}
+              </h3>
+              <div className={styles.options}>
+                {question.options.map((option, optionIndex) => (
+                  <label key={optionIndex} className={styles.option}>
+                    <input
+                      type="radio"
+                      name={`question-${index}`}
+                      value={optionIndex}
+                      checked={quizAnswers[index] === optionIndex}
+                      onChange={() => {
+                        const newAnswers = [...quizAnswers];
+                        newAnswers[index] = optionIndex;
+                        setQuizAnswers(newAnswers);
+                      }}
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+              {quizResults.length > 0 && (
+                <div className={`${styles.explanation} ${quizResults[index] ? styles.correct : styles.incorrect}`}>
+                  {quizResults[index] ? '✅ Correct!' : '❌ Incorrect.'} {question.explanation}
+                </div>
+              )}
+            </div>
+          ))}
+          
+          <div className={styles.quizActions}>
+            {quizResults.length === 0 ? (
+              <button 
+                onClick={submitQuiz} 
+                className={styles.submitButton}
+                disabled={quizAnswers.includes(-1)}
+              >
+                Submit Quiz
+              </button>
+            ) : (
+              <div className={styles.results}>
+                <p>Quiz completed! Score: {quizResults.filter(r => r).length}/{quizResults.length}</p>
+                <button onClick={() => setShowQuiz(false)} className={styles.continueButton}>
+                  Continue
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.learning}>
+      <h1 className={styles.title}>Learning Paths</h1>
+
+      <div className={styles.learningGrid}>
+        {/* AI Recommendations */}
+        <div className={styles.recommendationsCard}>
+          <h2 className={styles.cardTitle}>🤖 AI Recommendations</h2>
+          <p className={styles.cardDescription}>
+            Based on your goals and progress, here are some learning paths that might interest you:
+          </p>
+          <div className={styles.recommendationsList}>
+            {recommendedPaths.map((path) => (
+              <div key={path.id} className={styles.recommendation}>
+                <div className={styles.recommendationInfo}>
+                  <h3 className={styles.recommendationTitle}>{path.title}</h3>
+                  <p className={styles.recommendationDescription}>{path.description}</p>
+                  <div className={styles.recommendationMeta}>
+                    <span className={styles.difficulty}>{path.difficulty}</span>
+                    <span className={styles.hours}>{path.estimatedHours}h</span>
+                    <span className={styles.category}>{path.category}</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => enrollInPath(path.id)}
+                  className={styles.enrollButton}
+                >
+                  Enroll
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Enrolled Paths */}
+        <div className={styles.enrolledCard}>
+          <h2 className={styles.cardTitle}>My Learning Paths</h2>
+          {learningPaths.filter(p => p.isEnrolled).length === 0 ? (
+            <div className={styles.emptyState}>
+              <p>You haven't enrolled in any learning paths yet.</p>
+              <p>Check out the AI recommendations above to get started!</p>
+            </div>
+          ) : (
+            <div className={styles.enrolledPaths}>
+              {learningPaths.filter(p => p.isEnrolled).map((path) => (
+                <div key={path.id} className={styles.enrolledPath}>
+                  <div className={styles.pathHeader}>
+                    <h3 className={styles.pathTitle}>{path.title}</h3>
+                    <span className={styles.progress}>{Math.round(path.progress)}%</span>
+                  </div>
+                  <div className={styles.progressBar}>
+                    <div 
+                      className={styles.progressFill}
+                      style={{ width: `${path.progress}%` }}
+                    ></div>
+                  </div>
+                  <div className={styles.lessonsList}>
+                    {path.lessons.map((lesson) => (
+                      <div key={lesson.id} className={styles.lessonItem}>
+                        <div className={styles.lessonInfo}>
+                          <span className={styles.lessonTitle}>{lesson.title}</span>
+                          <span className={styles.lessonDuration}>{lesson.duration}m</span>
+                        </div>
+                        <div className={styles.lessonStatus}>
+                          {lesson.completed ? (
+                            <span className={styles.completed}>✅</span>
+                          ) : (
+                            <button 
+                              onClick={() => {
+                                setSelectedPath(path);
+                                startLesson(lesson);
+                              }}
+                              className={styles.startButton}
+                            >
+                              Start
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* All Available Paths */}
+        <div className={styles.allPathsCard}>
+          <h2 className={styles.cardTitle}>All Learning Paths</h2>
+          <div className={styles.pathsGrid}>
+            {learningPaths.map((path) => (
+              <div key={path.id} className={styles.pathCard}>
+                <div className={styles.pathContent}>
+                  <h3 className={styles.pathTitle}>{path.title}</h3>
+                  <p className={styles.pathDescription}>{path.description}</p>
+                  <div className={styles.pathMeta}>
+                    <span className={styles.difficulty}>{path.difficulty}</span>
+                    <span className={styles.hours}>{path.estimatedHours}h</span>
+                    <span className={styles.category}>{path.category}</span>
+                  </div>
+                  <div className={styles.pathStats}>
+                    <span>{path.lessons.length} lessons</span>
+                    <span>{path.lessons.reduce((sum, l) => sum + l.duration, 0)}m total</span>
+                  </div>
+                </div>
+                <div className={styles.pathActions}>
+                  {path.isEnrolled ? (
+                    <button 
+                      onClick={() => setSelectedPath(path)}
+                      className={styles.continueButton}
+                    >
+                      Continue
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => enrollInPath(path.id)}
+                      className={styles.enrollButton}
+                    >
+                      Enroll
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

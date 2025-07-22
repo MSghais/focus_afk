@@ -8,7 +8,9 @@ import Tasks from "../components/modules/tasks";
 import Console from "../components/modules/console";
 import Dashboard from "../components/modules/dashboard";
 import Timer from "../components/modules/timer";
+import Mentor from "../components/modules/mentor";
 import { useFocusAFKStore } from "../lib/store";
+import Learning from "../components/modules/learning";
 
 export default function Page() {
   const { ready, authenticated, user } = usePrivy();
@@ -34,7 +36,9 @@ export default function Page() {
       case 'timer':
         return <Timer />;
       case 'learning':
-        return <Console />; // Goals component is in learning module
+        return <Learning />; // Learning paths component
+      case 'mentor':
+        return <Mentor />; // AI Mentor component
       case 'console':
         return <Console />; // Settings component is in console module
       case 'focus':

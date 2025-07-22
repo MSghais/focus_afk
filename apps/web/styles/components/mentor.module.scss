@@ -1,0 +1,333 @@
+.mentor {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .mentorGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+  }
+
+  .feedbackCard,
+  .insightsCard,
+  .chatCard,
+  .actionsCard {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .cardTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+  }
+
+  // Feedback Card
+  .feedbackCard {
+    .rating {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1rem;
+
+      .star {
+        font-size: 1.5rem;
+        opacity: 0.3;
+        transition: all 0.2s ease;
+
+        &.filled {
+          opacity: 1;
+          color: #fbbf24;
+        }
+      }
+    }
+
+    .feedbackMessage {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .tips {
+      h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+          padding: 0.5rem 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          color: #e2e8f0;
+          font-size: 0.875rem;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &::before {
+            content: "💡";
+            margin-right: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+
+  // Insights Card
+  .insightsCard {
+    .insightsGrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .insight {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+
+      .insightValue {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #60a5fa;
+        margin-bottom: 0.25rem;
+      }
+
+      .insightLabel {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    }
+  }
+
+  // Chat Card
+  .chatCard {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+
+    .chatMessages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      padding-right: 0.5rem;
+
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+      }
+    }
+
+    .message {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+
+      &.user {
+        align-items: flex-end;
+
+        .messageContent {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border-radius: 18px 18px 4px 18px;
+          padding: 0.75rem 1rem;
+          max-width: 80%;
+          word-wrap: break-word;
+        }
+      }
+
+      &.ai {
+        align-items: flex-start;
+
+        .messageContent {
+          background: rgba(255, 255, 255, 0.1);
+          color: #e2e8f0;
+          border-radius: 18px 18px 18px 4px;
+          padding: 0.75rem 1rem;
+          max-width: 80%;
+          word-wrap: break-word;
+        }
+      }
+
+      .messageTime {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+    }
+
+    .typingIndicator {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px 18px 18px 4px;
+      width: fit-content;
+
+      span {
+        width: 8px;
+        height: 8px;
+        background: #94a3b8;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out;
+
+        &:nth-child(1) { animation-delay: -0.32s; }
+        &:nth-child(2) { animation-delay: -0.16s; }
+      }
+    }
+
+    .chatInput {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+
+      .input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e2e8f0;
+        font-size: 0.875rem;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+      }
+
+      .sendButton {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: scale(1.05);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    }
+  }
+
+  // Actions Card
+  .actionsCard {
+    .actionButtons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .actionButton {
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .mentor {
+    padding: 1rem;
+
+    .mentorGrid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .insightsCard .insightsGrid {
+      grid-template-columns: 1fr;
+    }
+
+    .actionsCard .actionButtons {
+      grid-template-columns: 1fr;
+    }
+
+    .chatCard {
+      height: 400px;
+    }
+  }
+} 
