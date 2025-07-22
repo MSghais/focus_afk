@@ -82,6 +82,13 @@ interface FocusAFKStore {
     averageSessionLength: number;
     sessionsByDay: { date: string; sessions: number; minutes: number }[];
   }>;
+  
+  getDeepFocusStats: (days?: number) => Promise<{
+    totalSessions: number;
+    totalMinutes: number;
+    averageSessionLength: number;
+    sessionsByDay: { date: string; sessions: number; minutes: number }[];
+  }>;
   toggleSidebar: () => void;
   setTheme: (theme: UIState['theme']) => void;
   setNotifications: (enabled: boolean) => void;
@@ -439,9 +446,13 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       return await dbUtils.getFocusStats(days);
     },
 
-    getBreakStats: async (days = 7) => {
-      return await dbUtils.getBreakStats(days);
-    },
+      getBreakStats: async (days = 7) => {
+    return await dbUtils.getBreakStats(days);
+  },
+
+  getDeepFocusStats: async (days = 7) => {
+    return await dbUtils.getDeepFocusStats(days);
+  },
 
     // startTimerBreak: async (duration = 0, taskId, goalId, timeBreak) => {
     //   const sessionId = await dbUtils.addTimerBreakSession({

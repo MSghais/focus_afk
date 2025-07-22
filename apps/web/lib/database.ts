@@ -364,6 +364,34 @@ export const dbUtils = {
     return await collection.reverse().sortBy('startTime');
   },
 
+  async getTimerFocusSessions(filters?: {
+    taskId?: number;
+    goalId?: number;
+    completed?: boolean;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<TimerFocusSession[]> {
+    let collection = db.timerFocusSessions.toCollection();
+
+    if (filters?.taskId) {
+      collection = collection.filter(session => session.taskId === filters.taskId);
+    }
+    if (filters?.goalId) {
+      collection = collection.filter(session => session.goalId === filters.goalId);
+    }
+    if (filters?.completed !== undefined) {
+      collection = collection.filter(session => session.completed === filters.completed);
+    }
+    if (filters?.startDate) {
+      collection = collection.filter(session => session.startTime >= filters.startDate!);
+    }
+    if (filters?.endDate) {
+      collection = collection.filter(session => session.startTime <= filters.endDate!);
+    }
+
+    return await collection.reverse().sortBy('startTime');
+  },
+
   async getBreakStats(days: number = 7): Promise<{
     totalSessions: number;
     totalMinutes: number;
@@ -389,6 +417,48 @@ export const dbUtils = {
         existing.sessions++;
         existing.minutes += session.duration / 60;
           } else {
+        acc.push({
+          date: date!,
+          sessions: 1,
+          minutes: session.duration / 60
+        });
+      }
+      return acc;
+    }, [] as { date: string; sessions: number; minutes: number }[]);
+
+    return {
+      totalSessions: sessions.length,
+      totalMinutes,
+      averageSessionLength,
+      sessionsByDay
+    };
+  },
+
+  async getDeepFocusStats(days: number = 7): Promise<{
+    totalSessions: number;
+    totalMinutes: number;
+    averageSessionLength: number;
+    sessionsByDay: { date: string; sessions: number; minutes: number }[];
+  }> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const sessions = await this.getTimerFocusSessions({
+      completed: true,
+      startDate
+    });
+
+    const totalMinutes = sessions.reduce((sum, session) => sum + session.duration / 60, 0);
+    const averageSessionLength = sessions.length > 0 ? totalMinutes / sessions.length : 0;
+
+    // Group by day
+    const sessionsByDay = sessions.reduce((acc, session) => {
+      const date = session.startTime.toISOString().split('T')[0];
+      const existing = acc.find(item => item.date === date);
+      if (existing) {
+        existing.sessions++;
+        existing.minutes += session.duration / 60;
+      } else {
         acc.push({
           date: date!,
           sessions: 1,

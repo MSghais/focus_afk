@@ -52,7 +52,7 @@ const LeftSidebar = () => {
             <button
               key={item.id}
               onClick={() => {
-                setCurrentModule(item.id as any)
+                // setCurrentModule(item.id as any)
                 router.push(`/${item.id}`)
               }}
               className={`${styles.navItem} ${ui.currentModule === item.id ? styles.active : ''}`}
