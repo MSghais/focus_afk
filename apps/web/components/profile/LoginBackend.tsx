@@ -4,6 +4,7 @@ import { Icon } from "../small/icons";
 import { useUIStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/auth";
 import { logClickedEvent } from "../../lib/analytics";
+import { ButtonPrimary } from "../ui/Buttons";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();
@@ -30,8 +31,6 @@ export default function LoginBackend() {
                 showToast({ message: "Login successful!", type: "success" });
             }
 
-
-
         } catch (e) {
             logClickedEvent('login_backend_failed');
             showToast({ message: "Login failed: " + (e as Error).message, type: "error" });
@@ -40,10 +39,10 @@ export default function LoginBackend() {
 
     return (
         <div className="flex items-center justify-center gap-2">
-            <button className="bg-[var(--brand-primary)] border-radius border-2 border-[var(--brand-primary)] p-4 flex items-center gap-2" onClick={handleLogin}>
+            <ButtonPrimary onClick={handleLogin}>
                 <Icon name="login" />
-                <p>Login</p>
-            </button>
+                <p>Sign</p>
+            </ButtonPrimary>
         </div>
     );
 }

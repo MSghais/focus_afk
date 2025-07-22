@@ -140,20 +140,17 @@
   transform: scale(1);
   
   &:hover {
-    transform: scale(1.02);
+    transform: scale(1.03);
   }
   
   &.active {
-    background: var(--afk-bg-dark, #18181b);
-    color: var(--foreground);
     font-weight: 600;
     box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border);
+    border: 1px solid var(--brand-primary);
   }
   
   &:not(.active) {
     &:hover {
-      background: var(--border);
       box-shadow: var(--shadow);
     }
   }
@@ -167,12 +164,22 @@
   font-weight: 500;
 }
 
+// .sidebarFooter {
+//   margin-top: 2rem;
+//   padding-top: 1.5rem;
+//   border-top: 1px solid var(--border);
+// }
 .sidebarFooter {
-  margin-top: 2rem;
+  margin-top: 1rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  justify-content: start;
+  gap: 0.5rem;
 }
-
 // ============================================================================
 // BOTTOM BAR STYLES
 // ============================================================================
@@ -202,8 +209,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 3rem;
+  // width: 4rem;
+  // height: 3rem;
   border-radius: 0.75rem;
   transition: all 0.2s ease;
   transform: scale(1);
@@ -213,9 +220,12 @@
   }
   
   &.active {
-    border: 1px solid var(--border);
-    color: black;
+    // border: 1px solid var(--border);
     box-shadow: var(--shadow-lg);
+  }
+
+  &.active {
+    color: var(--foreground);
   }
   
   &:not(.active) {
@@ -271,8 +281,8 @@
   }
   
   .bottomNavItem {
-    width: 3.5rem;
-    height: 2.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
   }
   
   .bottomNavIcon {

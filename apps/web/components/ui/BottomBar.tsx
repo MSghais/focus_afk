@@ -29,7 +29,7 @@ const BottomBar = () => {
           className={`${styles.bottomNavItem} ${ui.currentModule === item.id ? styles.active : ''}`}
         >
           <span className={styles.bottomNavIcon}>{item.icon}</span>
-          <span className={styles.bottomNavLabel}>{item.label}</span>
+          {/* <span className={styles.bottomNavLabel}>{item.label}</span> */}
         </button>
       ))}
     </nav>

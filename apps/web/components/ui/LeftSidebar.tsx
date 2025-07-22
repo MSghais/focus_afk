@@ -7,6 +7,7 @@ import { useEvmLogin } from "../../hooks/useEvmLogin";
 import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
 import { useRouter } from "next/navigation";
+import ToggleTheme from "./ToggleTheme";
 
 const LeftSidebar = () => {
   const { ui, setCurrentModule, setTheme } = useFocusAFKStore();
@@ -64,27 +65,22 @@ const LeftSidebar = () => {
 
         {/* Theme Toggle */}
         <div className={styles.sidebarFooter}>
-          <button
-            className={styles.navItem}
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-          >
-            <span className={styles.navIcon}>
-              {ui.theme === 'dark' ? '☀️' : '🌙'}
-            </span>
-            <span className={styles.navLabel}>
-              {ui.theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </span>
-          </button>
+
+          <ToggleTheme
+          />
+          <div >
+            <button 
+            
+            className="px-4"onClick={() => {
+              showModal(<ProfileUser />);
+            }}>  <Icon name="user" /></button>
+
+          </div>
         </div>
-      </div>
-
-      <div>
-        <button onClick={() => {
-          showModal(<ProfileUser />);
-        }}>  <Icon name="user" /></button>
 
       </div>
+
+
     </aside>
   );
 };

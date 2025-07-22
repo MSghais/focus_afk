@@ -5,7 +5,7 @@
   align-items: center;
   background: var(--background);
   color: var(--foreground);
-  padding: 0 1.5rem;
+  padding: 0 0.5rem;
 }
 
 .heading {
@@ -18,7 +18,7 @@
 .subtext {
   font-size: 1.1rem;
   color: var(--feed-text, var(--foreground));
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 

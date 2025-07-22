@@ -1,4 +1,6 @@
+import Link from 'next/link';
 import styles from '../../../styles/components/dashboard.module.scss';
+import { Icon } from '../../small/icons';
 
 export default function Dashboard() {
   return (
@@ -7,6 +9,25 @@ export default function Dashboard() {
       <div style={{ color: 'var(--foreground)', fontWeight: 500, textAlign: 'center', marginBottom: '2rem', width: '100%' }}>
         Bet. Focus. Prove. Earn.
       </div>
+
+
+      <div className={styles.dashboardButtonsContainer}>
+
+        <button className={styles.buttonLink}>
+          <Link href="/settings" className={styles.buttonLink}>
+            <Icon name="settings" />
+          </Link>
+
+        </button>
+
+
+        <Link href="/settings">
+            <Icon name="settings" />
+
+            <span>Got a goal? Stake it!</span>
+          </Link>
+      </div>
+
 
       <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>

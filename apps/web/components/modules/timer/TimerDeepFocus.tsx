@@ -12,14 +12,14 @@ function formatTime(seconds: number) {
 }
 
 interface TimerProps {
-    isSetupEnabled: boolean;
+    isSetupEnabled?: boolean;
     taskId?: number;
     goalId?: string;
     task?: Task;
     goal?: Goal;
 }
 
-export default function TimerBreak({
+export default function TimerDeepFocus({
     isSetupEnabled = true,
     taskId,
     goalId,
