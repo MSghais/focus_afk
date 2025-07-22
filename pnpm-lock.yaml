@@ -83,6 +83,9 @@ importers:
       apollo-server:
         specifier: ^3.13.0
         version: 3.13.0(encoding@0.1.13)(graphql@16.11.0)
+      axios:
+        specifier: ^1.10.0
+        version: 1.10.0(debug@4.4.1)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
