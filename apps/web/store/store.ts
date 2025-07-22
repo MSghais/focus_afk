@@ -67,9 +67,7 @@ interface FocusAFKStore {
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
   // Break
-  startTimerBreak: (duration?: number, taskId?: number, goalId?: number, timeBreak?: TimerBreakSession) => Promise<void>;
   
-  stopTimerBreak: (completed?: boolean, timeBreak?: TimerBreakSession) => Promise<void>;
   loadTimerSessions: () => Promise<void>;
 
   // Actions - Settings
@@ -326,39 +324,6 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
 
-    startTimerBreak: async (duration = 0, taskId, goalId, timeBreak) => {
-      const sessionId = await dbUtils.addTimerBreakSession({
-        ...timeBreak,
-        taskId,
-        goalId,
-        startTime: new Date(),
-        duration: 0,
-        completed: false,
-      });
-
-      set((state) => ({
-        timer: {
-          ...state.timer,
-          isRunning: true,
-          secondsLeft: duration,
-          totalSeconds: duration,
-          currentSessionId: sessionId,
-          isBreak: false,
-        },
-      }));
-    },
-
-    stopTimerBreak: async (completed = false, timeBreak) => {
-      const { timer } = get();
-      if (timer.currentSessionId) {
-        const duration = timer.totalSeconds - timer.secondsLeft;
-        await dbUtils.updateTimerBreakSession(timer.currentSessionId, {
-          endTime: new Date(),
-          duration,
-          completed: completed,
-        });
-      }
-    },
 
     resetTimer: () => {
       set((state) => ({
@@ -475,6 +440,40 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     getBreakStats: async (days = 7) => {
       return await dbUtils.getBreakStats(days);
     },
+
+    // startTimerBreak: async (duration = 0, taskId, goalId, timeBreak) => {
+    //   const sessionId = await dbUtils.addTimerBreakSession({
+    //     ...timeBreak,
+    //     taskId,
+    //     goalId,
+    //     startTime: new Date(),
+    //     duration: 0,
+    //     completed: false,
+    //   });
+
+    //   set((state) => ({
+    //     timer: {
+    //       ...state.timer,
+    //       isRunning: true,
+    //       secondsLeft: duration,
+    //       totalSeconds: duration,
+    //       currentSessionId: sessionId,
+    //       isBreak: false,
+    //     },
+    //   }));
+    // },
+
+    // stopTimerBreak: async (completed = false, timeBreak) => {
+    //   const { timer } = get();
+    //   if (timer.currentSessionId) {
+    //     const duration = timer.totalSeconds - timer.secondsLeft;
+    //     await dbUtils.updateTimerBreakSession(timer.currentSessionId, {
+    //       endTime: new Date(),
+    //       duration,
+    //       completed: completed,
+    //     });
+    //   }
+    // },
   }))
 );
 

@@ -112,6 +112,22 @@
   }
 }
 
+.statSubValue {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--gray-500);
+  opacity: 0.7;
+  
+  @media (min-width: 768px) {
+    font-size: 0.875rem;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 0.875rem;
+  }
+}
+
+
 .statIcon {
   width: 2.5rem;
   height: 2.5rem;
@@ -133,12 +149,14 @@
   gap: 1rem;
   margin-bottom: 2rem;
   grid-template-columns: 1fr;
+  overflow-x: auto;
   
   @media (min-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
   }
   
   @media (min-width: 1024px) {
+    // grid-template-columns: repeat(2, 1fr);
     grid-template-columns: repeat(3, 1fr);
   }
 }

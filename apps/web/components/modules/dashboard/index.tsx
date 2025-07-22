@@ -118,7 +118,7 @@ export default function Dashboard() {
                             <p className={styles.statLabel}>Focus Time</p>
                             <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes)}</p>
 
-                            <p className={styles.statValue + "text-xs"} style={{ color: '#8B5CF6' }}>{formatTime(breakStats?.totalMinutes)}</p>
+                            <p className={styles.statSubValue}>Break: {formatTime(breakStats?.totalMinutes)}. {breakStats?.totalSessions} sessions</p>
 
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>

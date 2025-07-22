@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
+import { dbUtils } from '../../../lib/database';
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -20,14 +21,15 @@ export default function TimerBreak({
     // Local timer state: count up from 0
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
+    const [breakSessionId, setBreakSessionId] = useState<number | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const { 
-        timer, 
-        tasks, 
-        goals, 
-        settings,
-        startTimerBreak,
-        stopTimerBreak
+        // timer, 
+        // tasks, 
+        // goals, 
+        // settings,
+        // startTimerBreak,
+        // stopTimerBreak
     } = useFocusAFKStore();
     // Reset timer when component unmounts
     useEffect(() => {
@@ -37,33 +39,39 @@ export default function TimerBreak({
     }, []);
 
     // Start timer: count up from 0
-    const handleStart = () => {
+    const handleStart = async () => {
         setElapsedSeconds(0);
         setIsRunning(true);
-        startTimerBreak();
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
         }, 1000);
-    };
-
-    // Stop timer
-    const handleStop = () => {
-        setIsRunning(false);
-        stopTimerBreak(false, {
-            duration: elapsedSeconds,
-            completed: false,
+        // Create a new break session in the DB
+        const sessionId = await dbUtils.addTimerBreakSession({
             startTime: new Date(),
-            endTime: new Date(),
-            createdAt: new Date(),
+            duration: 0,
+            completed: false,
             isHavingFun: false,
             activities: [],
             persons: [],
             location: '',
             weather: '',
         });
-        // TODO: Send the data to the backend
+        setBreakSessionId(sessionId);
+    };
+
+    // Stop timer
+    const handleStop = async () => {
+        setIsRunning(false);
         if (intervalRef.current) clearInterval(intervalRef.current);
+        // Update the break session in the DB
+        if (breakSessionId !== null) {
+            await dbUtils.updateTimerBreakSession(breakSessionId, {
+                endTime: new Date(),
+                duration: elapsedSeconds,
+                completed: true,
+            });
+        }
     };
 
     // Optionally, add pause/resume if needed
