@@ -12,11 +12,17 @@ function formatTime(seconds: number) {
 
 interface TimerProps {
     isSetupEnabled: boolean;
+    taskId?: number;
+    goalId?: string;
+    task?: Task;
+    goal?: Goal;
 }
 
 export default function TimerBreak({
     isSetupEnabled = true,
-}) {
+    taskId,
+    goalId,
+}:TimerProps) {
     // Local timer state: count up from 0
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
@@ -46,7 +52,7 @@ export default function TimerBreak({
     const handleStart = () => {
         setElapsedSeconds(0);
         setIsRunning(true);
-        startTimerFocus();
+        startTimerFocus(taskId, goalId);
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
@@ -56,7 +62,7 @@ export default function TimerBreak({
     // Stop timer
     const handleStop = () => {
         setIsRunning(false);
-        stopTimeFocus(true);
+        stopTimeFocus(false, taskId, Number(goalId));
         // TODO: Send the data to the backend
         if (intervalRef.current) clearInterval(intervalRef.current);
     };

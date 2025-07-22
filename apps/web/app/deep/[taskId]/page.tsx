@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Timer from '../../../components/modules/timer';
 import SimpleTimer from '../../../components/modules/timer/TimerBreak';
 import TimeLoading from '../../../components/small/loading/time-loading';
+import TimerMain from '../../../components/modules/timer';
 
 export default function DeepModePage() {
     const router = useRouter();
@@ -16,6 +17,8 @@ export default function DeepModePage() {
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
+        id: '',
+        taskId: '',
         title: '',
         description: '',
         targetDate: new Date().toISOString().split('T')[0],
@@ -35,6 +38,8 @@ export default function DeepModePage() {
                 setTask(foundTask);
                 // Initialize goal with task info
                 setGoal({
+                    id: foundTask?.id?.toString() || '',
+                    taskId: foundTask?.id?.toString() || '',
                     title: `Complete: ${foundTask.title}`,
                     description: foundTask.description || '',
                     targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
@@ -55,7 +60,7 @@ export default function DeepModePage() {
         const minutesSpent = Math.floor(timerSeconds / 60);
         const xpGained = minutesSpent * 10;
         setXp(prev => prev + xpGained);
-        
+
         // Level up logic
         const newLevel = Math.floor(xp / 100) + 1;
         if (newLevel > level) {
@@ -65,11 +70,11 @@ export default function DeepModePage() {
 
     const handleSendMessage = () => {
         if (!chatMessage.trim()) return;
-        
+
         const userMessage = chatMessage;
         setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
         setChatMessage('');
-        
+
         // Simulate AI response
         setTimeout(() => {
             const responses = [
@@ -86,7 +91,7 @@ export default function DeepModePage() {
 
     const handleCreateGoal = async () => {
         if (!goal.title.trim()) return;
-        
+
         await addGoal({
             title: goal.title,
             description: goal.description,
@@ -96,8 +101,10 @@ export default function DeepModePage() {
             category: goal.category,
             relatedTasks: taskId ? [taskId] : undefined
         });
-        
+
         setGoal({
+            id: '',
+            taskId: '',
             title: '',
             description: '',
             targetDate: '',
@@ -148,7 +155,7 @@ export default function DeepModePage() {
                         </button>
                     </div>
                 </div>
-                
+
                 {/* Task Card */}
                 <div className="rounded-lg p-6 shadow-lg border-l-4 border-[var(--brand-primary)]">
                     <h2 className="text-xl font-bold mb-2">{task.title}</h2>
@@ -156,11 +163,10 @@ export default function DeepModePage() {
                         <p className="text-gray-600 mb-4">{task.description}</p>
                     )}
                     <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className={`px-2 py-1 rounded-full ${
-                            task.priority === 'high' ? 'bg-red-100 text-red-600' :
-                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                            'bg-green-100 text-green-600'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full ${task.priority === 'high' ? 'bg-red-100 text-red-600' :
+                                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                                    'bg-green-100 text-green-600'
+                            }`}>
                             {task.priority} priority
                         </span>
                         {task.category && (
@@ -179,7 +185,10 @@ export default function DeepModePage() {
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
 
-                    <SimpleTimer isSetupEnabled={false} />
+                    <TimerMain timerTypeProps="deep" isSetupEnabled={false} taskId={taskId}
+                    // goalId={goal?.} 
+
+                    />
 
                     {/* Goal Setting */}
                     <div className="rounded-lg p-6 shadow-lg">
@@ -240,11 +249,10 @@ export default function DeepModePage() {
                                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div
-                                            className={`max-w-xs p-3 rounded-lg ${
-                                                msg.role === 'user'
+                                            className={`max-w-xs p-3 rounded-lg ${msg.role === 'user'
                                                     ? 'bg-purple-600 text-white'
                                                     : 'bg-gray-200 text-gray-800'
-                                            }`}
+                                                }`}
                                         >
                                             {msg.message}
                                         </div>

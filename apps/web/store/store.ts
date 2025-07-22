@@ -58,12 +58,12 @@ interface FocusAFKStore {
   loadGoals: () => Promise<void>;
 
   // Actions - Timer
-  startTimerFocus: (taskId?: number, goalId?: number) => Promise<void>;
+  startTimerFocus: (taskId?: number, goalId?: string) => Promise<void>;
   startTimer: (duration: number, taskId?: number, goalId?: number) => Promise<void>;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => Promise<void>;
-  stopTimeFocus: (completed?: boolean) => Promise<void>;
+  stopTimeFocus: (completed?: boolean, taskId?: number, goalId?: number) => Promise<void>;
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
   // Break
@@ -149,7 +149,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
 
       const sessionId = await dbUtils.addTimerSession({
         taskId,
-        goalId,
+        goalId: Number(goalId),
         startTime: new Date(),
         duration: 0,
         completed: false,
@@ -311,7 +311,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }));
     },
 
-    stopTimeFocus: async (completed = false) => {
+    stopTimeFocus: async (completed = false, taskId, goalId) => {
       const { timer } = get();
       if (timer.currentSessionId) {
         const duration = timer.totalSeconds - timer.secondsLeft;
@@ -319,6 +319,8 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           endTime: new Date(),
           duration,
           completed: completed,
+          taskId,
+          goalId,
         });
       }
     },

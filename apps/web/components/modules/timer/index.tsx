@@ -15,17 +15,27 @@ function formatTime(seconds: number) {
 
 interface TimerProps {
     isSetupEnabled: boolean;
+    timerTypeProps?: 'focus' | 'break' | 'deep';
+    taskId?: number;
+    goalId?: string;
+    task?: Task;
+    goal?: Goal;
 }
 
 export default function TimerMain({
     isSetupEnabled = true,
-}) {
+    timerTypeProps = 'break',
+    taskId,
+    goalId,
+    task,
+    goal,
+}:TimerProps) {
 
 
-    const [timerType, setTimerType] = useState<'focus' | 'break' | 'deep'>('break');
+    const [timerType, setTimerType] = useState<'focus' | 'break' | 'deep'>(timerTypeProps as 'focus' | 'break' | 'deep');
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center p-6">
+        <div className="w-full flex flex-col items-center justify-center px-6">
 
 
             <div className="flex flex-row items-center justify-center gap-4">
@@ -42,19 +52,30 @@ export default function TimerMain({
 
             {timerType === 'focus' && (
                 <div className="flex flex-col items-center justify-center">
-                    <TimerGoal isSetupEnabled={true} />
+                    <TimerGoal isSetupEnabled={true}
+                        taskId={taskId}
+                        goalId={goalId}
+                        task={task}
+                        goal={goal}
+                    />
                 </div>
             )}
 
             {timerType === 'deep' && (
                 <div className="flex flex-col items-center justify-center">
-                    <TimerDeepFocus isSetupEnabled={true} />
+                    <TimerDeepFocus isSetupEnabled={true}
+                        taskId={taskId}
+                        goalId={goalId}
+                        task={task}
+                        goal={goal}
+                    />
                 </div>
             )}
 
 
             {timerType === 'break' && (
-                <div className="flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center py-8">
+                    <p className="text-sm text-gray-500 italic">Take a break to be productive after.</p>
                     <TimerBreak isSetupEnabled={true} />
                 </div>
             )}

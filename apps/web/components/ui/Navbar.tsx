@@ -5,6 +5,7 @@ import styles from "../../styles/components/navigation.module.scss";
 import { useUIStore } from "../../store/uiStore";
 import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
+import Link from "next/link";
 
 const Navbar = () => {
   const { setTheme, ui } = useFocusAFKStore();
@@ -24,9 +25,11 @@ const Navbar = () => {
     <nav className={styles.navbar}>
       {/* Brand */}
       <div className={styles.navbarBrand}>
-        <h1 className={styles.navbarTitle}>
-          Focus AFK
-        </h1>
+        <Link href="/" className="flex flex-row items-center justify-center cursor-pointer">
+          <h1 className={styles.navbarTitle}>
+            Focus AFK
+          </h1>
+        </Link>
       </div>
 
       {/* Actions */}

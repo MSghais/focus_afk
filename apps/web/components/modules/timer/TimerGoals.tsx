@@ -12,11 +12,17 @@ function formatTime(seconds: number) {
 
 interface TimerProps {
     isSetupEnabled: boolean;
+    taskId?: number;
+    goalId?: string;
+    task?: Task;
+    goal?: Goal;
 }
 
 export default function TimerGoal({
     isSetupEnabled = true,
-}) {
+    taskId,
+    goalId,
+}:TimerProps) {
     const { 
         timer, 
         tasks, 
@@ -28,7 +34,6 @@ export default function TimerGoal({
         stopTimer, 
         resetTimer, 
         setTimerDuration,
-        startBreak,
         loadSettings
     } = useFocusAFKStore();
 
@@ -73,11 +78,6 @@ export default function TimerGoal({
 
     const handleStop = async () => {
         await stopTimer();
-    };
-
-    const handleBreak = async () => {
-        const breakDuration = (settings?.defaultBreakDuration || 5) * 60;
-        await startBreak(breakDuration);
     };
 
     const handleTimerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,15 +255,6 @@ export default function TimerGoal({
                 )}
             </div>
 
-            {/* Break Button */}
-            {!timer.isRunning && !timer.isBreak && (
-                <button
-                    className="px-6 py-3 rounded-lg bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition mb-4"
-                    onClick={handleBreak}
-                >
-                    Start Break
-                </button>
-            )}
 
             {/* Session Complete Message */}
             {timer.secondsLeft === 0 && (

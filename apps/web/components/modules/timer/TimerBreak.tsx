@@ -92,7 +92,7 @@ export default function TimerBreak({
     const sessionComplete = !isRunning && elapsedSeconds > 0;
 
     return (
-        <div className="w-full flex flex-col items-center justify-center p-6">
+        <div className="w-full px-2">
             {/* Session Complete Message */}
             {sessionComplete && (
                 <div className="mt-6 text-green-600 font-bold text-lg animate-bounce">
