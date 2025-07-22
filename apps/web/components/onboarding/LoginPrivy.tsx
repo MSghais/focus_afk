@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from './Onboarding.module.scss';
 import { useLogin, useLoginWithEmail, usePrivy } from '@privy-io/react-auth';
+import { logClickedEvent } from "../../lib/analytics";
 
 export default function LoginPrivy({ onNext }: { onNext: () => void }) {
   const [email, setEmail] = useState("");
@@ -11,6 +12,7 @@ export default function LoginPrivy({ onNext }: { onNext: () => void }) {
 
   useEffect(() => {
     if (ready && authenticated) {
+      logClickedEvent('login_privy_success');
       onNext();
     }
   }, [ready, authenticated, onNext]);
@@ -22,7 +24,10 @@ export default function LoginPrivy({ onNext }: { onNext: () => void }) {
       {/* <input onChange={(e) => setEmail(e.currentTarget.value)} value={email} /> */}
       <button
         className={styles.button}
-        onClick={() => login()}>Login</button>
+        onClick={() => {
+          logClickedEvent('try_login_privy');
+          login();
+        }}>Login</button>
     </div>
   );
 }

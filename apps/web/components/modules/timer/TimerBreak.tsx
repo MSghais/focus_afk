@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
 import { dbUtils } from '../../../lib/database';
+import { logClickedEvent } from "../../../lib/analytics";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -40,6 +41,7 @@ export default function TimerBreak({
 
     // Start timer: count up from 0
     const handleStart = async () => {
+        logClickedEvent('timer_break_start');
         setElapsedSeconds(0);
         setIsRunning(true);
         if (intervalRef.current) clearInterval(intervalRef.current);
@@ -62,6 +64,7 @@ export default function TimerBreak({
 
     // Stop timer
     const handleStop = async () => {
+        logClickedEvent('timer_break_end');
         setIsRunning(false);
         if (intervalRef.current) clearInterval(intervalRef.current);
         // Update the break session in the DB

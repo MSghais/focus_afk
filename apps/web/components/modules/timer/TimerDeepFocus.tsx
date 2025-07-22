@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
+import { logClickedEvent } from "../../../lib/analytics";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -50,6 +51,7 @@ export default function TimerBreak({
 
     // Start timer: count up from 0
     const handleStart = () => {
+        logClickedEvent('timer_deep_focus_start');
         setElapsedSeconds(0);
         setIsRunning(true);
         startTimerFocus(taskId, goalId);
@@ -61,6 +63,8 @@ export default function TimerBreak({
 
     // Stop timer
     const handleStop = () => {
+
+        logClickedEvent('timer_deep_focus_end');
         setIsRunning(false);
         stopTimeFocus(false, taskId, Number(goalId));
         // TODO: Send the data to the backend

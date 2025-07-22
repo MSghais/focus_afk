@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
+import { logClickedEvent } from "../../../lib/analytics";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -60,6 +61,7 @@ export default function TimerGoal({
     }, [settings]);
 
     const handleStart = async () => {
+        logClickedEvent('timer_goals_start');
         const duration = customDuration * 60; // Convert to seconds
         await startTimer(duration, selectedTaskId, selectedGoalId);
     };
@@ -77,6 +79,7 @@ export default function TimerGoal({
     };
 
     const handleStop = async () => {
+        logClickedEvent('timer_goals_end');
         await stopTimer();
     };
 

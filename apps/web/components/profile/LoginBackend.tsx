@@ -3,6 +3,7 @@ import { useEvmLogin } from "../../hooks/useEvmLogin";
 import { Icon } from "../small/icons";
 import { useUIStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/auth";
+import { logClickedEvent } from "../../lib/analytics";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();
@@ -12,11 +13,13 @@ export default function LoginBackend() {
     const { setUserConnected, setToken, setJwtToken, setEvmAddress, setStarknetAddress, setLoginType } = useAuthStore();
     const handleLogin = async () => {
         try {
+
+            logClickedEvent('try_login_backend');
             const result = await evmLogin();
             console.log("result", result);
 
             if (result?.success) {
-
+                logClickedEvent('login_backend_success');
                 setUserConnected(result.user);
                 setToken(result.token);
                 setJwtToken(result.jwtToken || result?.token);
@@ -30,6 +33,7 @@ export default function LoginBackend() {
 
 
         } catch (e) {
+            logClickedEvent('login_backend_failed');
             showToast({ message: "Login failed: " + (e as Error).message, type: "error" });
         }
     };

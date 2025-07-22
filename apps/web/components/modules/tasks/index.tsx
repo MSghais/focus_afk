@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import { Task } from '../../../lib/database';
 import Link from 'next/link';
+import { logClickedEvent } from '../../../lib/analytics';
 
 export default function Tasks() {
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete } = useFocusAFKStore();
@@ -22,6 +23,8 @@ export default function Tasks() {
         e.preventDefault();
         if (!newTask.title.trim()) return;
 
+
+        logClickedEvent('task_add');
         await addTask({
             title: newTask.title,
             description: newTask.description || undefined,
@@ -47,6 +50,7 @@ export default function Tasks() {
         e.preventDefault();
         if (!editingTask || !editingTask.id) return;
 
+        logClickedEvent('task_update');
         await updateTask(editingTask.id, {
             title: editingTask.title,
             description: editingTask.description,
@@ -61,6 +65,7 @@ export default function Tasks() {
 
     const handleDeleteTask = async (id: number) => {
         if (confirm('Are you sure you want to delete this task?')) {
+            logClickedEvent('task_delete');
             await deleteTask(id);
         }
     };

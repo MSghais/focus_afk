@@ -9,6 +9,7 @@ import LoginPrivy from './LoginPrivy';
 // import LoginPasskey from './LoginPasskey';
 import Link from 'next/link';
 import LoginBackend from '../profile/LoginBackend';
+import { logClickedEvent } from '../../lib/analytics';
   
 function LoginStep({ onNext }: { onNext: () => void }) {
   return (
@@ -54,7 +55,9 @@ function AllSetStep({ onNext }: { onNext?: () => void }) {
       <p className={styles.subtext}>You can now start using the app</p>
 
       <button className={styles.button} >
-        <Link href="/">Go to App</Link>
+        <Link href="/"
+          onClick={() => logClickedEvent('go_to_app')}
+        >Go to App</Link>
       </button>
     </div>
   );

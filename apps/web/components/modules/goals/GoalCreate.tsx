@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { logClickedEvent } from '../../../lib/analytics';
 
 export interface Task {
   id: number | string;
@@ -39,6 +40,7 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel }: GoalCreat
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) return;
+    logClickedEvent('goal_create');
     onCreate && onCreate({ name, type, description, targetDate, linkedTaskIds });
   };
 

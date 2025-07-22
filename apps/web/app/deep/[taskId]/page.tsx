@@ -9,6 +9,7 @@ import Timer from '../../../components/modules/timer';
 import SimpleTimer from '../../../components/modules/timer/TimerBreak';
 import TimeLoading from '../../../components/small/loading/time-loading';
 import TimerMain from '../../../components/modules/timer';
+import { logClickedEvent } from '../../../lib/analytics';
 
 export default function DeepModePage() {
     const router = useRouter();
@@ -75,6 +76,8 @@ export default function DeepModePage() {
         setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
         setChatMessage('');
 
+        logClickedEvent('send_message_deep_mode');
+
         // Simulate AI response
         setTimeout(() => {
             const responses = [
@@ -92,6 +95,7 @@ export default function DeepModePage() {
     const handleCreateGoal = async () => {
         if (!goal.title.trim()) return;
 
+        logClickedEvent('create_goal');
         await addGoal({
             title: goal.title,
             description: goal.description,
