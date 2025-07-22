@@ -1,11 +1,10 @@
 .onboardingContainer {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #111216;
-  color: #fff;
+  background: var(--background);
+  color: var(--foreground);
   padding: 0 1.5rem;
 }
 
@@ -18,7 +17,7 @@
 
 .subtext {
   font-size: 1.1rem;
-  color: #b0b3b8;
+  color: var(--feed-text, var(--foreground));
   margin-bottom: 2.5rem;
   text-align: center;
 }
@@ -26,8 +25,8 @@
 .button {
   width: 100%;
   max-width: 340px;
-  background: #3b5bfe;
-  color: #fff;
+  background: var(--brand-primary);
+  color: var(--foreground);
   border: none;
   border-radius: 10px;
   padding: 1rem 0;
@@ -38,15 +37,15 @@
   transition: background 0.2s;
 }
 .button:hover {
-  background: #2441c6;
+  background: var(--brand-secondary);
 }
 
 .altButton {
   width: 100%;
   max-width: 340px;
-  background: #23242a;
-  color: #fff;
-  border: 1px solid #444;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 1rem 0;
   font-size: 1.1rem;
@@ -56,8 +55,8 @@
   transition: background 0.2s, border 0.2s;
 }
 .altButton:hover {
-  background: #18191c;
-  border: 1px solid #3b5bfe;
+  background: var(--feed-hover, var(--brand-secondary));
+  border: 1px solid var(--brand-primary);
 }
 
 .passcodeInput {
@@ -65,9 +64,9 @@
   font-size: 2.2rem;
   letter-spacing: 1.2rem;
   text-align: center;
-  background: #18191c;
-  color: #fff;
-  border: 1.5px solid #333;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   padding: 0.7rem 0.5rem;
   margin: 2rem 0 1.5rem 0;

@@ -1,0 +1,255 @@
+.modal {
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: auto;
+    // No strong contrast, just a subtle dark overlay for both light and dark mode
+    &--visible {
+      opacity: 1;
+    }
+  }
+
+  &__container {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    // z-index: 50;
+    z-index: 900;
+    padding: 0.25rem;
+
+    @media (max-width: 640px) {
+      padding: 0;
+      z-index: 900;
+      width: 100%;
+    }
+  }
+
+  &__content {
+    display: flex;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+    // padding: 1rem;
+    text-align: center;
+  }
+
+  &__panel {
+    width: calc(100% - 20px);
+    max-width: none;
+    margin-left: 10px;
+    margin-right: 10px;
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    background: var(--background) !important;
+    box-shadow: 0 4px 32px 0 rgba(0,0,0,0.10);
+    border-radius: 8px;
+    margin: 0 auto;
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    color: var(--text);
+    overflow-x: hidden;
+
+    .dark & {
+      color: var(--text);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+    }
+
+    &--visible {
+      // transform: scale(1);
+      background: var(--background) !important;
+      opacity: 1;
+    }
+
+    // Responsive mobile styles
+    @media (max-width: 640px) {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: 80vh;
+      max-height: 90vh;
+      border-radius: 0.5rem;
+      padding: 0;
+      box-shadow: none;
+      overflow-x: hidden;
+      overflow-y: auto;
+      margin-left: 0;
+      margin-right: 0;
+    }
+
+    // Size variants
+    &--sm {
+      max-width: 24rem;
+    }
+
+    &--md {
+      max-width: 32rem;
+    }
+
+    &--lg {
+      max-width: 48rem;
+    }
+
+    &--xl {
+      max-width: 64rem;
+    }
+
+    &--full {
+      max-width: 100%;
+      height: 100vh;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    // Height variants
+    &--h-auto {
+      height: auto;
+    }
+
+    &--h-sm {
+      height: 25vh;
+    }
+
+    &--h-md {
+      height: 50vh;
+    }
+
+    &--h-lg {
+      height: 75vh;
+    }
+
+    &--h-full {
+      height: 100vh;
+    }
+
+    // Scroll behavior
+    &--scroll-auto {
+      overflow-y: auto;
+    }
+
+    &--scroll-hidden {
+      overflow-y: hidden;
+    }
+
+    // Position variants
+    &--top {
+      margin-top: 0;
+      margin-bottom: auto;
+    }
+
+    &--center {
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    &--bottom {
+      margin-top: auto;
+      margin-bottom: 0;
+    }
+  }
+
+  // Custom scrollbar styling
+  &__panel::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &__panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+
+    .dark & {
+      background: #2a2a2a;
+    }
+  }
+
+  &__panel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+
+    .dark & {
+      background: #555;
+    }
+  }
+
+  &__panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+
+    .dark & {
+      background: #777;
+    }
+  }
+
+  &__content-container {
+    padding-top: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background: var(--background) !important;
+    @media (max-width: 640px) {
+      padding-top: 0.5rem;
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+    // background: var(--gray-100);
+    // padding: 1.5rem;
+    // border-radius: 1rem;
+    // box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    // max-height: calc(100vh - 2rem);
+    // overflow-y: auto;
+  }
+
+  &__card {
+    background: var(--background);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin: 2rem auto 0 auto;
+    width: 100%;
+    max-width: 28rem;
+
+    @media (max-width: 640px) {
+      border-radius: 0;
+      padding: 0.5rem;
+      box-shadow: none;
+      max-width: 100vw;
+      margin-top: 1rem;
+    }
+  }
+
+  // Close button styling
+  &__close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #6b7280;
+    transition: color 0.2s ease-in-out;
+    z-index: 10;
+
+    &:hover {
+      color: #374151;
+    }
+
+    .dark & {
+      color: #9ca3af;
+
+      &:hover {
+        color: #d1d5db;
+      }
+    }
+
+    @media (max-width: 640px) {
+      top: 0.5rem;
+      right: 0.5rem;
+      svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+    }
+  }
+}

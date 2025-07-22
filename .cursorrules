@@ -1,0 +1,33 @@
+
+# Cursor LLM Project Rules for Focus AFK
+
+## Features & Capabilities
+- Task management, goal tracking, Pomodoro focus timer, dashboard, settings, and offline-first experience.
+- Modular, atomic UI with custom components and responsive design.
+- All data is local (IndexedDB via Dexie.js); no backend required for core features.
+
+## Stack
+- Next.js 15, React 19, TypeScript
+- Zustand for state management
+- Dexie.js for IndexedDB
+- Tailwind CSS, CSS Modules, SCSS, and CSS variables for styling
+- Privy for authentication
+
+## Architecture
+- Monorepo: shared packages in `packages/`, main app in `apps/web/`
+- Feature modules in `components/modules/`
+- UI primitives in `components/small/` and `components/ui/`
+- State in `store/`, database in `lib/database.ts`
+- Theming via CSS variables and Tailwind, toggled with `data-theme` on `<body>`
+
+## Best Practices
+- Use semantic search and code navigation to explore modules and UI components.
+- Follow atomic design and modular structure for new features.
+- Reference `apps/web/index.md` for a high-level overview.
+- For styling, prefer Tailwind and CSS Modules; use CSS variables for theming.
+- Persist state in Zustand and Dexie.js.
+- Use Providers in `providers/` for app-wide context.
+
+## References
+- See `apps/web/index.md` for a summary of features, stack, and architecture.
+- See `apps/web/README.md` for detailed documentation and database schema.

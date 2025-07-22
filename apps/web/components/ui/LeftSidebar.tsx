@@ -1,26 +1,92 @@
 'use client';
 import React from "react";
+import { useFocusAFKStore } from "../../store/store";
+import styles from "../../styles/components/navigation.module.scss";
+import { useUIStore } from "../../store/uiStore";
+import { useEvmLogin } from "../../hooks/useEvmLogin";
+import ProfileUser from "../profile/ProfileUser";
+import { Icon } from "../small/icons";
+import { useRouter } from "next/navigation";
 
-const toggleTheme = () => {
-  if (typeof window !== "undefined") {
-    const body = document.body;
-    const isDark = body.getAttribute("data-theme") === "dark";
-    body.setAttribute("data-theme", isDark ? "light" : "dark");
-  }
+const LeftSidebar = () => {
+  const { ui, setCurrentModule, setTheme } = useFocusAFKStore();
+
+  const router = useRouter();
+  const { showModal } = useUIStore();
+  const evmLogin = useEvmLogin();
+  const toggleTheme = () => {
+    const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+
+    if (typeof window !== "undefined") {
+      const body = document.body;
+      body.setAttribute("data-theme", newTheme);
+    }
+  };
+
+  const navigationItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'tasks', label: 'Tasks', icon: '📋' },
+    { id: 'timer', label: 'Timer', icon: '⏱️' },
+    { id: 'goals', label: 'Goals', icon: '🎯' },
+    // { id: 'learning', label: 'Learning', icon: '🎓' },
+    { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+  ];
+
+  return (
+    <aside className={styles.sidebar}>
+      <div className={styles.sidebarContent}>
+        {/* Brand */}
+        <div className={styles.sidebarBrand}>
+          <h1 className={styles.sidebarTitle}>
+            Focus AFK
+          </h1>
+          <p className={styles.sidebarSubtitle}>Productivity & Focus</p>
+        </div>
+
+        {/* Navigation */}
+        <nav className={styles.sidebarNav}>
+          {navigationItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setCurrentModule(item.id as any)
+                router.push(`/${item.id}`)
+              }}
+              className={`${styles.navItem} ${ui.currentModule === item.id ? styles.active : ''}`}
+            >
+              <span className={styles.navIcon}>{item.icon}</span>
+              <span className={styles.navLabel}>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Theme Toggle */}
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.navItem}
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            <span className={styles.navIcon}>
+              {ui.theme === 'dark' ? '☀️' : '🌙'}
+            </span>
+            <span className={styles.navLabel}>
+              {ui.theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <button onClick={() => {
+          showModal(<ProfileUser />);
+        }}>  <Icon name="user" /></button>
+
+      </div>
+    </aside>
+  );
 };
-
-const LeftSidebar = () => (
-  <aside className="hidden md:fixed md:top-0 md:left-0 md:h-full md:w-64 md:bg-white md:dark:bg-gray-900 md:border-r md:border-gray-200 md:dark:border-gray-700 md:flex md:flex-col md:items-center md:justify-start md:shadow z-40">
-    {/* Placeholder content */}
-    <span className="mt-8 text-gray-700 dark:text-gray-200 font-semibold">Left Sidebar</span>
-    <button
-      className="mt-4 px-3 py-1 rounded bg-[var(--brand-primary)] text-white dark:bg-[var(--brand-accent)]"
-      onClick={toggleTheme}
-      aria-label="Toggle dark mode"
-    >
-      Toggle Theme
-    </button>
-  </aside>
-);
 
 export default LeftSidebar; 

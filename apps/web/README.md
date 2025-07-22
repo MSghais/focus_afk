@@ -1,28 +1,168 @@
-## Getting Started
+# Focus AFK - Web Application
 
-First, run the development server:
+A comprehensive focus and productivity application built with Next.js, featuring task management, goal tracking, and focus timer functionality.
 
-```bash
-yarn dev
+## Features
+
+### 🎯 Task Management
+- Create, edit, and delete tasks
+- Set priorities (low, medium, high)
+- Add categories and due dates
+- Track completion status
+- Estimate and track actual time spent
+
+### 🎯 Goal Tracking
+- Set long-term goals with progress tracking
+- Visual progress bars
+- Target dates and deadline tracking
+- Category organization
+- Link goals to tasks
+
+### ⏱️ Focus Timer
+- Customizable Pomodoro timer
+- Break timer functionality
+- Task and goal integration
+- Session tracking and statistics
+- Browser notifications
+
+### 📊 Dashboard
+- Overview of tasks, goals, and focus sessions
+- Productivity statistics
+- Recent activity tracking
+- Quick action buttons
+- Weekly focus charts
+
+### ⚙️ Settings
+- Timer duration preferences
+- Auto-start options
+- Notification settings
+- Theme customization (light/dark/auto)
+- Data management
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **State Management**: Zustand
+- **Database**: Dexie.js (IndexedDB)
+- **Styling**: Tailwind CSS, CSS Modules
+- **Authentication**: Privy
+- **UI Components**: Custom components with modern design
+
+## Database Schema
+
+### Tasks
+```typescript
+interface Task {
+  id?: number;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  category?: string;
+  dueDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  estimatedMinutes?: number;
+  actualMinutes?: number;
+}
 ```
 
-Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+### Goals
+```typescript
+interface Goal {
+  id?: number;
+  title: string;
+  description?: string;
+  targetDate?: Date;
+  completed: boolean;
+  progress: number; // 0-100
+  category?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  relatedTasks?: number[]; // Task IDs
+}
+```
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+### Timer Sessions
+```typescript
+interface TimerSession {
+  id?: number;
+  taskId?: number;
+  goalId?: number;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  completed: boolean;
+  notes?: string;
+  createdAt: Date;
+}
+```
 
-To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3001/api/hello](http://localhost:3001/api/hello).
+### User Settings
+```typescript
+interface UserSettings {
+  id?: number;
+  defaultFocusDuration: number; // in minutes
+  defaultBreakDuration: number; // in minutes
+  autoStartBreaks: boolean;
+  autoStartSessions: boolean;
+  notifications: boolean;
+  theme: 'light' | 'dark' | 'auto';
+  updatedAt: Date;
+}
+```
 
-## Learn More
+## State Management
 
-To learn more about Next.js, take a look at the following resources:
+The application uses Zustand for state management with the following structure:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
+- **Tasks**: CRUD operations, filtering, statistics
+- **Goals**: CRUD operations, progress tracking
+- **Timer**: Session management, countdown logic
+- **Settings**: User preferences, theme management
+- **UI**: Navigation state, loading states
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Getting Started
 
-## Deploy on Vercel
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
+2. Run the development server:
+   ```bash
+   pnpm dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Data Persistence
+
+All data is stored locally in the browser using IndexedDB (via Dexie.js). This means:
+- No server required
+- Data persists between sessions
+- Works offline
+- Data is private and secure
+
+## Key Components
+
+- **Database Layer** (`lib/database.ts`): Dexie configuration and utility functions
+- **Store** (`lib/store.ts`): Zustand store with all application state and actions
+- **Modules**: Feature-specific components (Tasks, Goals, Timer, Dashboard, Settings)
+- **Providers**: Store initialization and authentication
+
+## Development
+
+The application follows a modular architecture:
+- Each feature has its own module in `components/modules/`
+- Shared utilities in `lib/`
+- Database operations abstracted through `dbUtils`
+- State management centralized in Zustand store
+
+## Contributing
+
+1. Follow the existing code structure
+2. Use TypeScript for type safety
+3. Follow the established naming conventions
+4. Test database operations thoroughly
+5. Ensure responsive design for mobile and desktop
