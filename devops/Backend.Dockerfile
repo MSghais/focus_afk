@@ -7,6 +7,10 @@ WORKDIR /workspace
 # Install pnpm globally
 RUN npm install -g pnpm@10.10.0
 
+# Install OpenSSL
+RUN apk add --no-cache openssl
+# RUN apk add --no-cache openssl bash curl git
+
 # Copy package manager files for better caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -18,6 +22,9 @@ RUN pnpm install --no-frozen-lockfile
 
 # Copy the rest of the monorepo
 COPY . .
+
+ARG BACKEND_DATABASE_URL
+ENV BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL}
 
 # Debug: print working directory and files
 RUN pwd && ls -la

@@ -6,7 +6,7 @@ import React from "react";
 import Script from "next/script";
 
 const geist = Geist({ subsets: ["latin"] });
-const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS;
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || '';
 
 export const metadata: Metadata = {
   title: "Focus AFK - Productivity & Focus",
