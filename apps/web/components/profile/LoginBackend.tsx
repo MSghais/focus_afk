@@ -4,7 +4,7 @@ import { Icon } from "../small/icons";
 import { useUIStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/auth";
 import { logClickedEvent } from "../../lib/analytics";
-import { ButtonPrimary } from "../ui/Buttons";
+import { ButtonPrimary } from "../small/buttons";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();

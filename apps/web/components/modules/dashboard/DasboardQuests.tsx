@@ -1,8 +1,91 @@
-import Link from 'next/link';
-import styles from '../../../styles/components/dashboard.module.scss';
-import { Icon } from '../../small/icons';
+'use client'
 
-export default function Dashboard() {
+import { useEffect, useState } from 'react';
+import styles from '../../../styles/components/dashboard.module.scss';
+import { useFocusAFKStore } from '../../../store/store';
+import { useAuthStore } from '../../../store/auth';
+import { formatTime } from '../../../lib/format';
+import { useUIStore } from '../../../store/uiStore';
+import Link from 'next/link';
+import { Icon } from '../../small/icons';
+import { ButtonSecondary } from '../../small/buttons';
+
+export default function DashboardQuests() {
+
+  const {showToast, showModal} = useUIStore();
+  const {
+    tasks,
+    goals,
+    timerSessions,
+    settings,
+    getTaskStats,
+    getFocusStats,
+    getBreakStats,
+    setCurrentModule
+  } = useFocusAFKStore();
+  const { userConnected } = useAuthStore();
+
+
+  const [taskStats, setTaskStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    overdue: 0
+  });
+
+  const [focusStats, setFocusStats] = useState({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageSessionLength: 0,
+    sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const [taskStatsData, focusStatsData, breakStatsData] = await Promise.all([
+        getTaskStats(),
+        getFocusStats(7),
+        getBreakStats(7)
+      ]);
+      // setTaskStats(taskStatsData);
+      setFocusStats(focusStatsData);
+      console.log("breakStatsData", breakStatsData);
+      setBreakStats(breakStatsData);
+    };
+
+    loadStats();
+  }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
+
+
+  const [breakStats, setBreakStats] = useState({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageSessionLength: 0,
+    sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const [taskStatsData, focusStatsData, breakStatsData] = await Promise.all([
+        getTaskStats(),
+        getFocusStats(7),
+        getBreakStats(7)
+      ]);
+      setTaskStats(taskStatsData);
+      setFocusStats(focusStatsData);
+      console.log("breakStatsData", breakStatsData);
+      setBreakStats(breakStatsData);
+    };
+
+    loadStats();
+  }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
+
+  // TODO proof submission
+
+  // TODO quests
+
+  // TODO daily streak
+
   return (
     <div className={styles.dashboardContainer}>
       {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
@@ -11,23 +94,16 @@ export default function Dashboard() {
       </div>
 
 
-      <div className={styles.dashboardButtonsContainer}>
+      <div className="flex flex-row gap-4 justify-center my-4">
 
-        <button className={styles.buttonLink}>
-          <Link href="/settings" className={styles.buttonLink}>
-            <Icon name="settings" />
+
+          <Link href="/settings" className="">
+            <Icon name="settings" size={24} />
           </Link>
 
-        </button>
+       
 
-
-        <Link href="/settings">
-            <Icon name="settings" />
-
-            <span>Got a goal? Stake it!</span>
-          </Link>
       </div>
-
 
       <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
@@ -46,11 +122,11 @@ export default function Dashboard() {
                 <circle cx="32" cy="32" r="28" stroke="#333" strokeWidth="6" fill="none" />
                 <circle cx="32" cy="32" r="28" stroke="var(--brand-accent)" strokeWidth="6" fill="none" strokeDasharray="176" strokeDashoffset="44" strokeLinecap="round" />
               </svg>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem', color: 'var(--foreground)' }}>05:12</div>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem', color: 'var(--foreground)' }}>{formatTime(focusStats.totalMinutes)}</div>
             </div>
             <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Focus Session</div>
             <div style={{ color: 'var(--brand-primary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: '1.1rem' }}>✔️</span> Proof submitted
+              {/* <span style={{ fontSize: '1.1rem' }}>✔️</span> Proof submitted */}
             </div>
           </div>
           <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>

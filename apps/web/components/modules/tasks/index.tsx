@@ -97,7 +97,7 @@ export default function Tasks() {
                 <h1 className="text-2xl font-bold">Tasks</h1>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
                 >
                     {showAddForm ? 'Cancel' : 'Add Task'}
                 </button>

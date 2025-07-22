@@ -20,7 +20,6 @@ export default function ProfileUser() {
             )}
             {user && (
                 <div className="flex flex-col gap-4 my-4">
-                    <PrivyUser />
 
                     {userConnected && (
                         <div className="flex flex-col gap-4">
@@ -30,6 +29,9 @@ export default function ProfileUser() {
                             <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Login Type: {userConnected?.loginType}</p>
                         </div>
                     )}
+
+                    <PrivyUser />
+
 
                     {!userConnected && (
                         <LoginBackend />
