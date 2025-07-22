@@ -1,11 +1,8 @@
 import { z } from 'zod';
-import { v2 as cloudinary } from 'cloudinary';
 import { ConfigSchema } from '../validations/config.validation';
 import dotenv from 'dotenv';
-
 // Load environment variables from .env file
 dotenv.config();
-
 // Create the config object
 function getConfig() {
   const rawConfig = {

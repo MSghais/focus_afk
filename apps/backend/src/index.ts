@@ -3,7 +3,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyIO from 'fastify-socket.io';
 import { Server as SocketIOServer } from 'socket.io';
 import path from 'path';
-import { config } from './config';
+import { config } from './config/index';
 import { setupWebSocket } from './services/event/socket';
 import authPlugin from './plugins/auth';
 import jwt from 'jsonwebtoken';
@@ -70,10 +70,14 @@ async function buildServer() {
 
   //Middleware to verify JWT
   const JWT_SECRET = config.jwt.secret;
-  fastify.decorate('verifyJWT', async (request, reply) => {
+  fastify.decorate('verifyJWT', async (request: import('fastify').FastifyRequest, reply: import('fastify').FastifyReply) => {
     try {
-      const token = request.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const authHeader = request.headers.authorization;
+      if (!authHeader) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, JWT_SECRET) as import('./types').UserJwtPayload;
       request.user = decoded;
     } catch (error) {
       reply.code(401).send({ error: 'Unauthorized' });

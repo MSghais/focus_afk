@@ -1,10 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { AuthService } from '../../services/auth/auth.service';
 import { LoginInput, RefreshTokenInput } from '../../validations/auth.validation';
 import { SignatureService } from '../../services/auth/signature.service';
-
+import { AuthService } from '../../services/auth/auth.service';
 export async function authRoutes(fastify: FastifyInstance) {
-  const authService = new AuthService(fastify.prisma, fastify);
+  const authService = new AuthService(fastify.prisma);
   const signatureService = new SignatureService();
 
   fastify.post<{ Body: LoginInput }>(
@@ -36,8 +35,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           return reply.code(400).send({ message: 'Invalid Signature' });
         }
 
-        const result = await authService.loginOrCreateUser(userAddress, loginType);
-        return { success: true, data: result };
+          // const result = await authService.loginOrCreateUser(userAddress, loginType);
+        return { success: true, data: undefined };
       } catch (error) {
         request.log.error(error);
         return reply.code(500).send({ error: 'Internal server error' });
@@ -52,8 +51,8 @@ export async function authRoutes(fastify: FastifyInstance) {
       if (!refreshToken) {
         return reply.code(400).send({ message: 'Refresh Token is required' });
       }
-      const result = await authService.refreshAccessToken(refreshToken);
-      return { success: true, data: result };
+      // const result = await authService.refreshAccessToken(refreshToken);
+      return { success: true, data: undefined };
     } catch (error) {
       if (error instanceof Error) {
         return reply.code(401).send({ message: error.message });
