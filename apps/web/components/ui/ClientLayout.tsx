@@ -6,7 +6,9 @@ import BottomBar from "./BottomBar";
 import LeftSidebar from "./LeftSidebar";
 import Navbar from "./Navbar";
 import Providers from "../../providers/Providers";
-import React from "react";
+import React, { useEffect } from "react";
+import { usePrivy } from "@privy-io/react-auth";
+import { useRouter } from "next/navigation";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -16,6 +18,14 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
 
+  const { ready, authenticated, user } = usePrivy();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (ready && !authenticated) {
+      router.push('/profile');
+    }
+  }, [ready, authenticated, router]);
   // Set dark theme by default on first load
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
