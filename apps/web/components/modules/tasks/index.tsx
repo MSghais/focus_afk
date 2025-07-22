@@ -87,8 +87,8 @@ export default function Tasks() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col p-6">
-            <div className="flex justify-between items-center mb-6">
+        <div className="w-full h-full flex flex-col p-2 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
                 <h1 className="text-2xl font-bold">Tasks</h1>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
@@ -100,7 +100,7 @@ export default function Tasks() {
 
             {/* Add Task Form */}
             {showAddForm && (
-                <form onSubmit={handleAddTask} className="mb-6 p-4  rounded-lg">
+                <form onSubmit={handleAddTask} className="mb-6 p-2 md:p-4 rounded-lg">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Title *</label>
@@ -252,7 +252,7 @@ export default function Tasks() {
                                         </div>
                                     </form>
                                 ) : (
-                                    <div className="flex items-start justify-between">
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <input
@@ -286,7 +286,7 @@ export default function Tasks() {
                                                 <span>Created: {formatDate(task.createdAt)}</span>
                                             </div>
                                         </div>
-                                        <div className="flex gap-2 ml-4">
+                                        <div className="flex flex-wrap gap-2 ml-0 sm:ml-4">
                                             <Link
                                                 href={`/deep/${task.id}`}
                                                 className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
