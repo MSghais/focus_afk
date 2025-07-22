@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { initializeStore } from '../lib/store';
+import { initializeStore } from '../store/store';
 
 interface StoreProviderProps {
   children: React.ReactNode;

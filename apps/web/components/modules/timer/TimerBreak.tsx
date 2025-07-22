@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from "react";
-import { useFocusAFKStore } from '../../../lib/store';
+import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
 
 function formatTime(seconds: number) {
@@ -14,7 +14,7 @@ interface TimerProps {
     isSetupEnabled: boolean;
 }
 
-export default function SimpleTimer({
+export default function TimerBreak({
     isSetupEnabled = true,
 }) {
     // Local timer state: count up from 0
@@ -72,7 +72,7 @@ export default function SimpleTimer({
             )}
 
             <div className="rounded-lg p-6 shadow-lg">
-                <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Focus Timer</h3>
+                {/* <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Focus Timer</h3> */}
                 <div className="text-center mb-4">
                     <div className="text-4xl font-mono font-bold text-[var(--brand-primary)] mb-2">
                         {formatTime(elapsedSeconds)}
@@ -83,7 +83,7 @@ export default function SimpleTimer({
                     {!isRunning ? (
                         <button
                             onClick={handleStart}
-                            className="flex-1 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                            className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                         >
                             Start Focus Session
                         </button>

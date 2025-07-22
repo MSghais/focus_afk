@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useFocusAFKStore } from '../../../lib/store';
+import { useFocusAFKStore } from '../../../store/store';
 import { Task } from '../../../lib/database';
 import { useRouter } from 'next/navigation';
 import Timer from '../../../components/modules/timer';
-import SimpleTimer from '../../../components/modules/timer/SimpleTimer';
+import SimpleTimer from '../../../components/modules/timer/TimerBreak';
 
 export default function DeepModePage() {
     const router = useRouter();

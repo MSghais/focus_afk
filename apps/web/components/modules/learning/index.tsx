@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useFocusAFKStore } from '../../../lib/store';
+import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/learning.module.scss';
 
 interface LearningPath {

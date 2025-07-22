@@ -76,6 +76,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+input {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+textarea {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
 // ============================================================================
 // LAYOUT CONTAINERS
 // ============================================================================

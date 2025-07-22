@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 
-export default function Console() {
+export default function Settings() {
     const { settings, updateSettings, setTheme, setNotifications } = useFocusAFKStore();
     const [localSettings, setLocalSettings] = useState({
         defaultFocusDuration: settings?.defaultFocusDuration || 25,

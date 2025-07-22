@@ -1,6 +1,6 @@
 'use client';
 import React from "react";
-import { useFocusAFKStore } from "../../lib/store";
+import { useFocusAFKStore } from "../../store/store";
 import styles from "../../styles/components/navigation.module.scss";
 
 const BottomBar = () => {

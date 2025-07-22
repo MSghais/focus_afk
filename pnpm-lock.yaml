@@ -189,6 +189,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      classnames:
+        specifier: ^2.5.1
+        version: 2.5.1
       dexie:
         specifier: ^4.0.11
         version: 4.0.11
@@ -7679,6 +7682,10 @@ packages:
       devtools-protocol: 0.0.1464554
       mitt: 3.0.1
       zod: 3.25.76
+    dev: false
+
+  /classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
     dev: false
 
   /client-only@0.0.1:

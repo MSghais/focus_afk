@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useFocusAFKStore } from '../../../lib/store';
+import { useFocusAFKStore } from '../../../store/store';
 import { Task } from '../../../lib/database';
 import Link from 'next/link';
 

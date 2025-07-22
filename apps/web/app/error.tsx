@@ -3,7 +3,7 @@ import Onboarding from "../components/onboarding/Onboarding";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useFocusAFKStore } from "../lib/store";
+import { useFocusAFKStore } from "../store/store";
 import Link from "next/link";
 
 export default function NotFoundPage() {

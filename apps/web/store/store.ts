@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { Task, Goal, TimerSession, UserSettings, dbUtils } from './database';
+import { Task, Goal, TimerSession, UserSettings, dbUtils } from '../lib/database';
 
 // Timer state interface
 interface TimerState {

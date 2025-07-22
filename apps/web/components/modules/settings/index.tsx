@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useFocusAFKStore } from '../../../lib/store';
+import { useFocusAFKStore } from '../../../store/store';
 
 export default function Settings() {
     const { settings, updateSettings, setTheme, setNotifications } = useFocusAFKStore();

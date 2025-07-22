@@ -9,7 +9,7 @@ import Settings from "../components/modules/settings";
 import Dashboard from "../components/modules/dashboard";
 import Timer from "../components/modules/timer";
 import Mentor from "../components/modules/mentor";
-import { useFocusAFKStore } from "../lib/store";
+import { useFocusAFKStore } from "../store/store";
 import Learning from "../components/modules/learning";
 
 export default function Page() {
