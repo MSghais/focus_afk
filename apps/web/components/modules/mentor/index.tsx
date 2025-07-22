@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/mentor.module.scss';
+import ChatAi from '../ChatAi';
 
 interface MentorMessage {
   id: string;
@@ -159,6 +160,9 @@ export default function Mentor() {
         </div>
 
         {/* Chat Interface */}
+
+        <ChatAi taskId={tasks[0]?.id} />
+
         <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
