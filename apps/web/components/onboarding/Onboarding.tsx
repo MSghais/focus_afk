@@ -1,16 +1,19 @@
 'use client'
 import { useState } from 'react';
 import styles from './Onboarding.module.scss';
-// import { useLoginWithOAuth } from '@privy-io/react-auth';
-// import { LoginOauth } from './LoginOauth';
+
 import LoginPrivy from './LoginPrivy';
-// import LoginEmail from './LoginEmail';
-// import LoginSms from './LoginSms';
-// import LoginPasskey from './LoginPasskey';
+
 import Link from 'next/link';
 import LoginBackend from '../profile/LoginBackend';
 import { logClickedEvent } from '../../lib/analytics';
-  
+// import LoginEmail from './LoginEmail';
+// import LoginSms from './LoginSms';
+// import LoginPasskey from './LoginPasskey';
+// import { useLoginWithOAuth } from '@privy-io/react-auth';
+// import { LoginOauth } from './LoginOauth';
+
+
 function LoginStep({ onNext }: { onNext: () => void }) {
   return (
     <div className={styles.onboardingContainer}>
@@ -28,9 +31,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
     <div className={styles.onboardingContainer}>
       <h1 className={styles.heading}>Welcome to FocusFi</h1>
       <p className={styles.subtext}>Bet. Focus. Prove. Earn.</p>
-      <p className={styles.subtext} style={{ marginBottom: '2.5rem' }}>
+      {/* <p className={styles.subtext} style={{ marginBottom: '2.5rem' }}>
         Lorem ipsum dolor sit amet. consectetuer ada isicing eit. Auduis.
-      </p>
+      </p> */}
       <button className={styles.button} onClick={onNext}>Continue</button>
     </div>
   );

@@ -54,6 +54,10 @@ jobs:
             pnpm install
           fi
 
+
+      - name: Build Prisma
+        run: pnpm build:prisma
+
       - name: Build
         run: pnpm build
 
