@@ -50,6 +50,11 @@ model User {
   sessions Session[]
   socialAccounts SocialAccount[]
 
+  // New relations
+  mentors Mentor[]
+  messages Message[]
+  fundingAccounts FundingAccount[]
+
   @@map("users")
 }
 
@@ -74,6 +79,63 @@ model SocialAccount {
 
   @@unique([userId, platform])
   @@map("social_accounts")
+}
+
+// Mentor model for personal assistant/coach
+model Mentor {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  role         String   @default("personal_assistant") // personal_assistant, coach, mentor, etc.
+  knowledges   String[] // Array of knowledge areas/skills
+  notes String?
+  assistant_metadata Json?
+  about        String?  // Description about the mentor
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@map("mentors")
+}
+
+// Message model for chat conversations
+model Message {
+  id        String   @id @default(cuid())
+  userId    String
+  mentorId  String?
+  role      String   // user, assistant, system
+  content   String   // The message content
+  model     String?  // AI model used for response
+  tokens    Int?     // Token count for cost tracking
+  metadata  Json?    // Additional metadata (model params, etc.)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)
+
+  @@map("messages")
+}
+
+// Funding account model for payment processing
+model FundingAccount {
+  id              String   @id @default(cuid())
+  userId          String
+  accountType     String   // crypto, fiat, subscription
+  accountName     String   // Display name for the account
+  accountAddress  String?  // For crypto addresses
+  accountDetails  Json?    // Encrypted account details
+  isActive        Boolean  @default(true)
+  balance         Decimal? @db.Decimal(10, 2) // Current balance
+  currency        String   @default("USD")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("funding_accounts")
 }
 
 model MentorPerUser {
