@@ -327,6 +327,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         settings: state.settings ? { ...state.settings, ...settings, updatedAt: new Date() } : null,
       }));
     },
+    
 
     loadSettings: async () => {
       set((state) => ({ loading: { ...state.loading, settings: true } }));

@@ -131,7 +131,7 @@ export default function Settings() {
                                 checked={localSettings.notifications}
                                 onChange={(e) => setLocalSettings({
                                     ...localSettings,
-                                    notifications: e.target.checked
+                                    // notifications: e.target.checked
                                 })}
                                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                             />
@@ -148,7 +148,7 @@ export default function Settings() {
                 </div>
 
                 {/* Theme Settings */}
-                <div className="p-6 rounded-lg border shadow-sm">
+                {/* <div className="p-6 rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Appearance</h2>
                     <div className="space-y-4">
                         <div>
@@ -167,7 +167,7 @@ export default function Settings() {
                             </select>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Data Management */}
                 <div className="p-6 rounded-lg border shadow-sm">

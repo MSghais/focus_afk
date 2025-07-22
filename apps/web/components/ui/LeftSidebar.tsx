@@ -20,9 +20,10 @@ const LeftSidebar = () => {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
-    { id: 'learning', label: 'Learning', icon: '🎓' },
+    { id: 'goals', label: 'Goals', icon: '🎯' },  
+    // { id: 'learning', label: 'Learning', icon: '🎓' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
-    { id: 'console', label: 'Settings', icon: '⚙️' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (

@@ -34,12 +34,17 @@ export default function TimerGoal({
 
     const [selectedTaskId, setSelectedTaskId] = useState<number | undefined>();
     const [selectedGoalId, setSelectedGoalId] = useState<number | undefined>();
-    const [customDuration, setCustomDuration] = useState(25);
+    const [customDuration, setCustomDuration] = useState(settings?.defaultFocusDuration || 25);
     const [goal, setGoal] = useState("");
 
     // Load settings on mount
     useEffect(() => {
         loadSettings();
+
+        if (settings?.defaultFocusDuration) {
+            setCustomDuration(settings.defaultFocusDuration);
+            setTimerDuration(settings.defaultFocusDuration * 60);
+        }
     }, [loadSettings]);
 
     // Update custom duration when settings change

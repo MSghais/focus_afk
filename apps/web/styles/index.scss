@@ -76,6 +76,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+span {
+  color: var(--text-primary); 
+  background: var(--background);
+}
+
+option {
+  color: var(--text-primary); 
+  background: var(--background);
+}
+
 input {
   background: var(--background);
   color: var(--text-primary);
