@@ -34,7 +34,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       {/* <p className={styles.subtext} style={{ marginBottom: '2.5rem' }}>
         Lorem ipsum dolor sit amet. consectetuer ada isicing eit. Auduis.
       </p> */}
-      <button className={styles.button} onClick={onNext}>Continue</button>
+      {/* <button className={styles.button} onClick={onNext}>Continue</button> */}
+
+      <LoginStep onNext={onNext} />
     </div>
   );
 }
@@ -66,10 +68,11 @@ function AllSetStep({ onNext }: { onNext?: () => void }) {
   );
 }
 const steps = [WelcomeStep,
-  LoginStep,
+  // LoginStep,
   LoginBackend,
   //  PasscodeStep, 
-  AllSetStep];
+  AllSetStep
+];
 
 type StepProps = { onNext: () => void };
 

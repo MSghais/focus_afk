@@ -14,6 +14,7 @@ const BottomBar = () => {
     { id: 'timer', label: 'Timer', icon: '⏱️' },
     { id: 'goals', label: 'Goals', icon: '🎯' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
   ];
 
   return (

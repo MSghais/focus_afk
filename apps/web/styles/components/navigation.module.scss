@@ -78,6 +78,7 @@
   top: 0;
   left: 0;
   width: var(--sidebar-width);
+  overflow-y: auto;
   height: 100vh;
   z-index: var(--z-sidebar);
   background: var(--background);
@@ -212,7 +213,7 @@
   }
   
   &.active {
-    background: linear-gradient(to right, var(--brand-primary), var(--brand-secondary));
+    border: 1px solid var(--border);
     color: black;
     box-shadow: var(--shadow-lg);
   }
