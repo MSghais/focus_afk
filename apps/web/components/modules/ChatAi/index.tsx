@@ -8,42 +8,11 @@ import { useRouter } from 'next/navigation';
 import TimeLoading from '../../small/loading/time-loading';
 import { logClickedEvent } from '../../../lib/analytics';
 import { useUIStore } from '../../../store/uiStore';
+import { apiService, Message } from '../../../lib/api';
 
 interface ChatAiProps {
     taskId?: number | string;
 }
-
-// AI Service function to call the backend
-const callMentorAI = async (prompt: string, model: string = 'GEMMA_3N_E2B_IT') => {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/mentor/chat`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                prompt,
-                model,
-            }),
-        });
-
-        console.log('response', response);
-
-        if (!response.ok) {
-            console.log('response', response);
-            return undefined
-            // throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.response;
-    } catch (error) {
-        console.error('Error calling mentor AI:', error);
-        // throw error;
-        console.log('error', error);
-        return undefined;
-    }
-};
 
 export default function ChatAi({ taskId }: ChatAiProps) {
     const router = useRouter();
@@ -60,8 +29,9 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         category: ''
     });
     const [chatMessage, setChatMessage] = useState('');
-    const [chatHistory, setChatHistory] = useState<Array<{ role: 'user' | 'assistant', message: string }>>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
     useEffect(() => {
         if (taskId && tasks.length > 0) {
@@ -81,84 +51,125 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         }
     }, [taskId, tasks]);
 
+    // Load messages from backend
+    useEffect(() => {
+        loadMessages();
+    }, []);
+
+    const loadMessages = async () => {
+        try {
+            setIsLoadingMessages(true);
+            const response = await apiService.getMessages({ limit: 50 });
+            
+            if (response.success && response.data) {
+                // Sort messages by creation date (oldest first for chat display)
+                const sortedMessages = response.data.sort((a, b) => 
+                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+                setMessages(sortedMessages);
+            } else {
+                console.error('Failed to load messages:', response.error);
+                showToast({
+                    message: 'Failed to load chat history',
+                    type: 'error',
+                });
+            }
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            showToast({
+                message: 'Error loading chat history',
+                type: 'error',
+            });
+        } finally {
+            setIsLoadingMessages(false);
+        }
+    };
+
     const handleSendMessage = async () => {
         if (!chatMessage.trim() || isLoading) return;
 
         const userMessage = chatMessage;
-        setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
         setChatMessage('');
         setIsLoading(true);
 
         logClickedEvent('send_message_deep_mode');
 
         try {
-            // Call the backend AI service
-            const aiResponse = await callMentorAI(userMessage);
-            if(!aiResponse) {
-                setIsLoading(false);
+            // Send message to backend
+            const response = await apiService.sendChatMessage({
+                prompt: userMessage,
+                mentorId: undefined, // You can add mentor selection later
+            });
+
+            if (response.success) {
+                // Reload messages to get the updated conversation
+                await loadMessages();
+            } else {
                 showToast({
-                    message: 'Error calling mentor AI',
+                    message: response.error || 'Failed to send message',
                     type: 'error',
                 });
-                return;
             }
-            
-            // Add AI response to chat history
-            setChatHistory(prev => [...prev, { 
-                role: 'assistant', 
-                message: aiResponse.text || 'I apologize, but I encountered an error processing your request.' 
-            }]);
-            setIsLoading(false);
         } catch (error) {
-            console.error('Error getting AI response:', error);
-            // Add error message to chat history
-            setChatHistory(prev => [...prev, { 
-                role: 'assistant', 
-                message: 'I apologize, but I\'m having trouble connecting right now. Please try again later.' 
-            }]);
+            console.error('Error sending message:', error);
+            showToast({
+                message: 'Error sending message',
+                type: 'error',
+            });
         } finally {
             setIsLoading(false);
         }
     };
 
-    // if (!task) {
-    //     return (
-    //         <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
-    //             <TimeLoading />
-    //         </div>
-    //     );
-    // }
+    const formatMessageTime = (timestamp: string) => {
+        return new Date(timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
+
+    if (isLoadingMessages) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
+                <TimeLoading />
+            </div>
+        );
+    }
 
     return (
-        <div className=" w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6  bg-[var(--background)]">
+        <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[var(--background)]">
             {/* Right Column - Mentor Chat */}
             <div className="rounded-lg p-6 shadow-lg">
                 <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                 <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
-                    {chatHistory.length === 0 ? (
+                    {messages.length === 0 ? (
                         <div className="text-center text-gray-500 py-8">
                             <p>Ask your mentor for guidance on this task!</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {chatHistory.map((msg, index) => (
+                            {messages.map((message) => (
                                 <div
-                                    key={index}
-                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    key={message.id}
+                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-xs p-3 rounded-lg ${msg.role === 'user'
-                                            ? 'bg-[var(--brand-primary)] text-white'
-                                            : 'bg-gray-200 text-gray-800'
-                                            }`}
+                                        className={`max-w-xs p-3 rounded-lg ${
+                                            message.role === 'user'
+                                                ? 'bg-[var(--brand-primary)] text-white'
+                                                : 'bg-gray-200 text-gray-800'
+                                        }`}
                                     >
-                                        {msg.message}
+                                        <div className="text-sm">{message.content}</div>
+                                        <div className="text-xs opacity-70 mt-1">
+                                            {formatMessageTime(message.createdAt)}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                             {isLoading && (
                                 <div className="flex justify-start">
-                                    <div className="max-w-xs p-3 rounded-lg">
+                                    <div className="max-w-xs p-3 rounded-lg bg-gray-200 text-gray-800">
                                         <div className="flex items-center space-x-2">
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
                                             <span>Thinking...</span>

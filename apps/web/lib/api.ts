@@ -100,13 +100,57 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+// Mentor and Message interfaces
+export interface Mentor {
+  id: string;
+  userId: string;
+  name: string;
+  role: string;
+  knowledges: string[];
+  about?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  userId: string;
+  mentorId?: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  model?: string;
+  tokens?: number;
+  metadata?: any;
+  createdAt: string;
+  mentor?: {
+    id: string;
+    name: string;
+    role: string;
+  };
+}
+
+export interface FundingAccount {
+  id: string;
+  userId: string;
+  accountType: 'crypto' | 'fiat' | 'subscription';
+  accountName: string;
+  accountAddress?: string;
+  accountDetails?: any;
+  isActive: boolean;
+  balance?: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 class ApiService {
   private baseUrl: string;
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
     this.loadTokens();
   }
 
@@ -140,9 +184,9 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string> || {}),
     };
 
     if (this.accessToken) {
@@ -365,6 +409,93 @@ class ApiService {
     sessionsByDay: { date: string; sessions: number; minutes: number }[];
   }>> {
     return this.request(`/stats/focus?days=${days}`);
+  }
+
+  // Mentor methods
+  async createMentor(mentorData: {
+    name: string;
+    role?: string;
+    knowledges: string[];
+    about?: string;
+  }): Promise<ApiResponse<Mentor>> {
+    return this.request<Mentor>('/mentor/mentors', {
+      method: 'POST',
+      body: JSON.stringify(mentorData),
+    });
+  }
+
+  async getMentors(): Promise<ApiResponse<Mentor[]>> {
+    return this.request<Mentor[]>('/mentor/mentors');
+  }
+
+  async updateMentor(id: string, updates: Partial<Mentor>): Promise<ApiResponse<Mentor>> {
+    return this.request<Mentor>(`/mentor/mentors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteMentor(id: string): Promise<ApiResponse> {
+    return this.request(`/mentor/mentors/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Message methods
+  async getMessages(filters?: {
+    mentorId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<Message[]>> {
+    const params = new URLSearchParams();
+    if (filters?.mentorId) params.append('mentorId', filters.mentorId);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    return this.request<Message[]>(`/mentor/messages?${params.toString()}`);
+  }
+
+  async sendChatMessage(messageData: {
+    prompt: string;
+    model?: string;
+    mentorId?: string;
+  }): Promise<ApiResponse<{ response: any }>> {
+    return this.request<{ response: any }>('/mentor/chat', {
+      method: 'POST',
+      body: JSON.stringify(messageData),
+    });
+  }
+
+  // Funding account methods
+  async createFundingAccount(accountData: {
+    accountType: 'crypto' | 'fiat' | 'subscription';
+    accountName: string;
+    accountAddress?: string;
+    accountDetails?: any;
+    balance?: number;
+    currency?: string;
+  }): Promise<ApiResponse<FundingAccount>> {
+    return this.request<FundingAccount>('/mentor/funding-accounts', {
+      method: 'POST',
+      body: JSON.stringify(accountData),
+    });
+  }
+
+  async getFundingAccounts(): Promise<ApiResponse<FundingAccount[]>> {
+    return this.request<FundingAccount[]>('/mentor/funding-accounts');
+  }
+
+  async updateFundingAccount(id: string, updates: Partial<FundingAccount>): Promise<ApiResponse<FundingAccount>> {
+    return this.request<FundingAccount>(`/mentor/funding-accounts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteFundingAccount(id: string): Promise<ApiResponse> {
+    return this.request(`/mentor/funding-accounts/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Utility methods

@@ -4,16 +4,12 @@ import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/mentor.module.scss';
 import ChatAi from '../ChatAi';
-
-interface MentorMessage {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: Date;
-}
+import { apiService, Message } from '../../../lib/api';
+import type { Mentor } from '../../../lib/api';
+import { useUIStore } from '../../../store/uiStore';
 
 interface MentorFeedback {
-  sessionId: number;
+  sessionId: string;
   rating: number;
   message: string;
   tips: string[];
@@ -22,28 +18,64 @@ interface MentorFeedback {
 
 export default function Mentor() {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
-  const [messages, setMessages] = useState<MentorMessage[]>([]);
+  const { showToast } = useUIStore();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [recentFeedback, setRecentFeedback] = useState<MentorFeedback | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
   useEffect(() => {
-    // Initialize with welcome message
-    setMessages([
-      {
-        id: '1',
-        type: 'ai',
-        content: "Hi! I'm your AI mentor. I'm here to help you stay focused and productive. How can I assist you today?",
-        timestamp: new Date()
-      }
-    ]);
-
+    loadMessages();
+    loadMentors();
+    
     // Load recent session feedback
     if (timerSessions.length > 0) {
       const latestSession = timerSessions[0];
       generateSessionFeedback(latestSession);
     }
   }, []);
+
+  const loadMessages = async () => {
+    try {
+      setIsLoadingMessages(true);
+      const response = await apiService.getMessages({ limit: 20 });
+      
+      if (response.success && response.data) {
+        // Sort messages by creation date (oldest first for chat display)
+        const sortedMessages = response.data.sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        setMessages(sortedMessages);
+      } else {
+        console.error('Failed to load messages:', response.error);
+        showToast({
+          message: 'Failed to load chat history',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      showToast({
+        message: 'Error loading chat history',
+        type: 'error',
+      });
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
+  const loadMentors = async () => {
+    try {
+      const response = await apiService.getMentors();
+      if (response.success && response.data) {
+        setMentors(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading mentors:', error);
+    }
+  };
 
   const generateSessionFeedback = async (session: any) => {
     // Simulate AI feedback generation
@@ -70,46 +102,42 @@ export default function Mentor() {
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const userMessage: MentorMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputMessage,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage = inputMessage;
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: MentorMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: generateAIResponse(inputMessage),
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiResponse]);
+    try {
+      // Send message to backend
+      const response = await apiService.sendChatMessage({
+        prompt: userMessage,
+        mentorId: mentors[0]?.id, // Use first mentor if available
+      });
+
+      if (response.success) {
+        // Reload messages to get the updated conversation
+        await loadMessages();
+      } else {
+        showToast({
+          message: response.error || 'Failed to send message',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      showToast({
+        message: 'Error sending message',
+        type: 'error',
+      });
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
-  const generateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-
-    if (lowerMessage.includes('focus') || lowerMessage.includes('concentrate')) {
-      return "Focus is like a muscle - it gets stronger with practice! Try the Pomodoro technique: 25 minutes of focused work followed by a 5-minute break. What specific task are you working on?";
-    }
-
-    if (lowerMessage.includes('procrastinate') || lowerMessage.includes('motivation')) {
-      return "Procrastination often comes from feeling overwhelmed. Break your task into tiny, manageable steps. Start with just 5 minutes - you'll often find yourself wanting to continue!";
-    }
-
-    if (lowerMessage.includes('stress') || lowerMessage.includes('overwhelm')) {
-      return "It's normal to feel overwhelmed. Let's take a step back. What's the most important thing you need to accomplish today? Sometimes focusing on just one priority can reduce stress significantly.";
-    }
-
-    return "That's a great question! I'd love to help you with that. Could you tell me more about your specific situation or what you're trying to achieve?";
+  const formatMessageTime = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
   const getProductivityInsights = () => {
@@ -134,8 +162,6 @@ export default function Mentor() {
       <h1 className={styles.title}>AI Mentor</h1>
 
       <div className={styles.mentorGrid}>
-
-
         {/* Productivity Insights */}
         <div className={styles.insightsCard}>
           <h2 className={styles.cardTitle}>Your Progress</h2>
@@ -160,20 +186,28 @@ export default function Mentor() {
         </div>
 
         {/* Chat Interface */}
-
-        <ChatAi taskId={tasks[0]?.id} />
-
         <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
-            {messages.map((message) => (
-              <div key={message.id} className={`${styles.message} ${styles[message.type]}`}>
-                <div className={styles.messageContent}>{message.content}</div>
-                <div className={styles.messageTime}>
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+            {isLoadingMessages ? (
+              <div className="text-center text-gray-500 py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
+                <p>Loading chat history...</p>
               </div>
-            ))}
+            ) : messages.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p>Start a conversation with your AI mentor!</p>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                  <div className={styles.messageContent}>{message.content}</div>
+                  <div className={styles.messageTime}>
+                    {formatMessageTime(message.createdAt)}
+                  </div>
+                </div>
+              ))
+            )}
             {isTyping && (
               <div className={`${styles.message} ${styles.ai}`}>
                 <div className={styles.typingIndicator}>
@@ -192,8 +226,13 @@ export default function Mentor() {
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               placeholder="Ask me anything about productivity, focus, or your goals..."
               className={styles.input}
+              disabled={isTyping}
             />
-            <button onClick={sendMessage} className={styles.sendButton}>
+            <button 
+              onClick={sendMessage} 
+              className={styles.sendButton}
+              disabled={isTyping || !inputMessage.trim()}
+            >
               ➤
             </button>
           </div>
