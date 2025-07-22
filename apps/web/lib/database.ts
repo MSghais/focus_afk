@@ -444,13 +444,14 @@ export const dbUtils = {
     startDate.setDate(startDate.getDate() - days);
 
     const sessions = await this.getTimerFocusSessions({
-      completed: true,
+      completed: false,
       startDate
     });
 
     const totalMinutes = sessions.reduce((sum, session) => sum + session.duration / 60, 0);
     const averageSessionLength = sessions.length > 0 ? totalMinutes / sessions.length : 0;
 
+    console.log('deep focus sessions', sessions);
     // Group by day
     const sessionsByDay = sessions.reduce((acc, session) => {
       const date = session.startTime.toISOString().split('T')[0];

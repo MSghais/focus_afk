@@ -38,7 +38,7 @@ export default function ClientLayout({
 
   return (
     <Providers>
-      <div className={`${geist.className} layout-container`}>
+      <div className={`${geist.className} layout-container bg-[var(--background)]`}>
         {/* Mobile Navbar - Fixed at top */}
         <Navbar />
         

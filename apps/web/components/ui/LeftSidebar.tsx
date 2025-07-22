@@ -32,6 +32,7 @@ const LeftSidebar = () => {
     { id: 'goals', label: 'Goals', icon: '🎯' },
     // { id: 'learning', label: 'Learning', icon: '🎓' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
+    { id: 'profile', label: 'User', icon: '👤' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 

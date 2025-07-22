@@ -67,7 +67,7 @@ interface FocusAFKStore {
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
   // Break
-  
+
   loadTimerSessions: () => Promise<void>;
 
   // Actions - Settings
@@ -82,7 +82,7 @@ interface FocusAFKStore {
     averageSessionLength: number;
     sessionsByDay: { date: string; sessions: number; minutes: number }[];
   }>;
-  
+
   getDeepFocusStats: (days?: number) => Promise<{
     totalSessions: number;
     totalMinutes: number;
@@ -446,13 +446,13 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       return await dbUtils.getFocusStats(days);
     },
 
-      getBreakStats: async (days = 7) => {
-    return await dbUtils.getBreakStats(days);
-  },
+    getBreakStats: async (days = 7) => {
+      return await dbUtils.getBreakStats(days);
+    },
 
-  getDeepFocusStats: async (days = 7) => {
-    return await dbUtils.getDeepFocusStats(days);
-  },
+    getDeepFocusStats: async (days = 7) => {
+      return await dbUtils.getDeepFocusStats(days);
+    },
 
     // startTimerBreak: async (duration = 0, taskId, goalId, timeBreak) => {
     //   const sessionId = await dbUtils.addTimerBreakSession({

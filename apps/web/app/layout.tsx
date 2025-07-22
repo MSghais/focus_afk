@@ -50,7 +50,7 @@ export default function RootLayout({
 
         )}
       </head>
-      <body className={geist.className}>
+      <body className={geist.className + "bg-[var(--background)]"}>
         <ClientLayout>
           {children}
         </ClientLayout>

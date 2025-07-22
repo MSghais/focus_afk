@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/dashboard.module.scss';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
+    const router = useRouter();
     const {
         tasks,
         goals,
@@ -106,7 +108,7 @@ export default function Dashboard() {
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
                             <p className={styles.statLabel}>Focus Time</p>
-                            <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes)}</p>
+                            <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes + deepFocusStats.totalMinutes)}</p>
                             <p className={styles.statSubValue}>Deep: {formatTime(deepFocusStats.totalMinutes)}</p>
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>
@@ -192,7 +194,10 @@ export default function Dashboard() {
             {/* Quick Actions */}
             <div className={styles.actionsGrid}>
                 <button
-                    onClick={() => setCurrentModule('tasks')}
+                    onClick={() => {
+                        setCurrentModule('tasks');
+                        router.push('/tasks');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #3B82F6, #1D4ED8)', color: 'white' }}
                 >
@@ -206,7 +211,10 @@ export default function Dashboard() {
                 </button>
 
                 <button
-                    onClick={() => setCurrentModule('timer')}
+                    onClick={() => {
+                        setCurrentModule('timer');
+                        router.push('/timer');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #10B981, #059669)', color: 'white' }}
                 >
@@ -220,7 +228,10 @@ export default function Dashboard() {
                 </button>
 
                 <button
-                    onClick={() => setCurrentModule('learning')}
+                    onClick={() => {
+                        setCurrentModule('learning');
+                        router.push('/learning');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)', color: 'white' }}
                 >
@@ -241,7 +252,10 @@ export default function Dashboard() {
                     <div className={styles.cardHeader}>
                         <h2 className={styles.cardTitle}>Recent Tasks</h2>
                         <button
-                            onClick={() => setCurrentModule('tasks')}
+                            onClick={() => {
+                                setCurrentModule('tasks');
+                                router.push('/tasks');
+                            }}
                             className={styles.viewAllButton}
                         >
                             View All
@@ -288,7 +302,10 @@ export default function Dashboard() {
                     <div className={styles.cardHeader}>
                         <h2 className={styles.cardTitle}>Active Goals</h2>
                         <button
-                            onClick={() => setCurrentModule('learning')}
+                            onClick={() => {
+                                setCurrentModule('goals');
+                                router.push('/goals');
+                            }}
                             className={styles.viewAllButton}
                         >
                             View All
