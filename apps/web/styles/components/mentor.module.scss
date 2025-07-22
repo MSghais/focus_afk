@@ -45,10 +45,14 @@
 
   // Feedback Card
   .feedbackCard {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+
     .rating {
       display: flex;
       gap: 0.25rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
+      margin-top: 0.5remrem;
 
       .star {
         font-size: 1.5rem;

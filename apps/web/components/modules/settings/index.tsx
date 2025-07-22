@@ -41,12 +41,12 @@ export default function Settings() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col p-6 overflow-y-auto">
+        <div className="w-full h-full flex flex-col overflow-y-auto">
             <h1 className="text-3xl font-bold mb-6">Settings</h1>
 
-            <div className="max-w-2xl space-y-8">
+            <div className="max-w-2xl space-y-8 gap-2">
                 {/* Timer Settings */}
-                <div className="p-6 rounded-lg border shadow-sm">
+                <div className="p-6  rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Timer Settings</h2>
                     <div className="space-y-4">
                         <div>

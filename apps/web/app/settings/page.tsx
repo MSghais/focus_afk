@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function SettingsPage() {
     return (
-        <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
+        <div className="w-full h-full flex flex-col px-6 bg-[var(--background)]">
             <Settings />
         </div>
     )

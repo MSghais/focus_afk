@@ -1,3 +1,4 @@
+'use client';
 import { useEffect, useState } from 'react';
 import GoalList, { Goal as LocalGoal, Task as LocalTask } from './GoalList';
 import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';

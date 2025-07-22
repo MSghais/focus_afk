@@ -6,10 +6,12 @@ import { useUIStore } from "../../store/uiStore";
 import { useEvmLogin } from "../../hooks/useEvmLogin";
 import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
+import { useRouter } from "next/navigation";
 
 const LeftSidebar = () => {
   const { ui, setCurrentModule, setTheme } = useFocusAFKStore();
 
+  const router = useRouter();
   const { showModal } = useUIStore();
   const evmLogin = useEvmLogin();
   const toggleTheme = () => {
@@ -48,7 +50,10 @@ const LeftSidebar = () => {
           {navigationItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setCurrentModule(item.id as any)}
+              onClick={() => {
+                setCurrentModule(item.id as any)
+                router.push(`/${item.id}`)
+              }}
               className={`${styles.navItem} ${ui.currentModule === item.id ? styles.active : ''}`}
             >
               <span className={styles.navIcon}>{item.icon}</span>

@@ -1,19 +1,19 @@
 'use client'
-import Onboarding from "../components/onboarding/Onboarding";
+import Onboarding from "../../components/onboarding/Onboarding";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Focus from "../components/modules/focus";
-import Tasks from "../components/modules/tasks";
-import Settings from "../components/modules/settings";
-import Dashboard from "../components/modules/dashboard";
-import TimerMain from "../components/modules/timer";
-import Mentor from "../components/modules/mentor";
-import { useFocusAFKStore } from "../store/store";
-import Learning from "../components/modules/learning";
-import GoalsOverview from "../components/modules/goals/GoalsOverview";
+import Focus from "../../components/modules/focus";
+import Tasks from "../../components/modules/tasks";
+import Settings from "../../components/modules/settings";
+import Dashboard from "../../components/modules/dashboard";
+import TimerMain from "../../components/modules/timer";
+import Mentor from "../../components/modules/mentor";
+import { useFocusAFKStore } from "../../store/store";
+import Learning from "../../components/modules/learning";
+import GoalsOverview from "../../components/modules/goals/GoalsOverview";
 
-export default function Page() {
+export default function DashboardPage() {
   const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
   const { ui } = useFocusAFKStore();

@@ -2,8 +2,10 @@
 import React from "react";
 import { useFocusAFKStore } from "../../store/store";
 import styles from "../../styles/components/navigation.module.scss";
+import { useRouter } from "next/navigation";
 
 const BottomBar = () => {
+  const router = useRouter();
   const { ui, setCurrentModule } = useFocusAFKStore();
 
   const navigationItems = [
@@ -19,7 +21,10 @@ const BottomBar = () => {
       {navigationItems.map((item) => (
         <button
           key={item.id}
-          onClick={() => setCurrentModule(item.id as any)}
+          onClick={() => {
+            setCurrentModule(item.id as any)
+            router.push(`/${item.id}`)
+          }}
           className={`${styles.bottomNavItem} ${ui.currentModule === item.id ? styles.active : ''}`}
         >
           <span className={styles.bottomNavIcon}>{item.icon}</span>
