@@ -1,37 +1,33 @@
 
-# Project Structure and Development Guide
+# Cursor LLM Project Rules for Focus AFK
 
-## Using Cursor for Development
+## Features & Capabilities
+- Task management, goal tracking, Pomodoro focus timer, dashboard, settings, and offline-first experience.
+- Modular, atomic UI with custom components and responsive design.
+- All data is local (IndexedDB via Dexie.js); no backend required for core features.
 
-- **Cursor Rules:**
-  - Always use the built-in code navigation and search features to find components, styles, and logic.
-  - When editing, prefer making small, focused commits and documenting your changes.
-  - Use the semantic search to understand how components interact, especially for styling and theming.
-  - Follow the monorepo structure: shared packages are in `packages/`, main app in `apps/web/`.
+## Stack
+- Next.js 15, React 19, TypeScript
+- Zustand for state management
+- Dexie.js for IndexedDB
+- Tailwind CSS, CSS Modules, SCSS, and CSS variables for styling
+- Privy for authentication
 
-## Dark Mode, Styling, and Components
+## Architecture
+- Monorepo: shared packages in `packages/`, main app in `apps/web/`
+- Feature modules in `components/modules/`
+- UI primitives in `components/small/` and `components/ui/`
+- State in `store/`, database in `lib/database.ts`
+- Theming via CSS variables and Tailwind, toggled with `data-theme` on `<body>`
 
-### Dark Mode
-- Dark mode is managed via CSS variables and/or Tailwind CSS (if enabled in the project).
-- The global styles are defined in `apps/web/app/globals.css` and `apps/web/styles/`.
-- If using Tailwind, dark mode is typically toggled via a `dark` class on the `<html>` or `<body>` element.
-- Check for a context/provider or a toggle component in `components/ui/` or `providers/` for dark mode logic.
+## Best Practices
+- Use semantic search and code navigation to explore modules and UI components.
+- Follow atomic design and modular structure for new features.
+- Reference `apps/web/index.md` for a high-level overview.
+- For styling, prefer Tailwind and CSS Modules; use CSS variables for theming.
+- Persist state in Zustand and Dexie.js.
+- Use Providers in `providers/` for app-wide context.
 
-### Styling
-- Styles are organized in `apps/web/styles/` (global, variables, and index files).
-- Component-specific styles may use CSS Modules (e.g., `Onboarding.module.scss`) or inline styles.
-- Shared styles for the monorepo may be in `packages/tailwind-config/shared-styles.css`.
-- Use semantic class names and prefer CSS Modules or Tailwind for new components.
-
-### Components
-- UI components are in `apps/web/components/`.
-  - `ui/` contains layout/navigation (Navbar, Sidebar, BottomBar).
-  - `small/` contains atomic elements (Card, Gradient, etc.).
-  - `onboarding/` and `privy/` are feature-specific.
-- Shared UI primitives may be in `packages/ui/src/`.
-- Compose components by importing from these folders, following the atomic design principle where possible.
-
-### Tips for Cursor Users
-- Use "Go to Definition" and "Find References" to trace component usage and styling.
-- Use the semantic search to answer questions like "How is dark mode toggled?" or "Where is the Card component styled?"
-- When in doubt, check the README or ask in the team chat for guidance.
+## References
+- See `apps/web/index.md` for a summary of features, stack, and architecture.
+- See `apps/web/README.md` for detailed documentation and database schema.

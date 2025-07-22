@@ -198,7 +198,7 @@ export default function TimerGoal({
             </div>
 
             {/* Goal Input */}
-            <div className="w-full max-w-md mb-6">
+            {/* <div className="w-full max-w-md mb-6">
                 <label className="block text-sm font-medium mb-2">What are you working on?</label>
                 <input 
                     type="text" 
@@ -207,7 +207,7 @@ export default function TimerGoal({
                     value={goal}
                     onChange={(e) => setGoal(e.target.value)}
                 />
-            </div>
+            </div> */}
 
             {/* Timer Controls */}
             <div className="flex gap-4 mb-6">
