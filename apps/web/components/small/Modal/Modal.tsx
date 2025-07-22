@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import classNames from 'classnames';
-import styles from '../../styles/components/modal.module.scss';
+import styles from '../../../styles/components/modal.module.scss';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 type ModalHeight = 'auto' | 'sm' | 'md' | 'lg' | 'full';
@@ -65,7 +65,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className={styles.modal} data-theme={theme}>
       <div
         className={classNames(styles['modal__overlay'], {
-          [styles['modal__overlay--visible']]: isOpen,
+          [styles['modal__overlay--visible'] as string]: isOpen,
         })}
         onClick={handleOverlayClick}
       />
@@ -75,11 +75,11 @@ export const Modal: React.FC<ModalProps> = ({
             className={classNames(
               styles['modal__panel'],
               {
-                [styles['modal__panel--visible']]: isOpen,
-                [styles[`modal__panel--${size}`]]: size,
-                [styles[`modal__panel--h-${height}`]]: height,
-                [styles[`modal__panel--${position}`]]: position,
-                [styles[`modal__panel--scroll-${scrollBehavior}`]]: scrollBehavior,
+                [styles['modal__panel--visible'] as string]: isOpen,
+                [styles[`modal__panel--${size}` as string]]: size,
+                [styles[`modal__panel--h-${height}` as string]]: height,
+                [styles[`modal__panel--${position}` as string]]: position,
+                [styles[`modal__panel--scroll-${scrollBehavior}` as string]]: scrollBehavior,
               },
               className
             )}

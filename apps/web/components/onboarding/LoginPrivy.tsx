@@ -8,7 +8,7 @@ export default function LoginPrivy({ onNext }: { onNext: () => void }) {
   const { login } = useLogin();
   const { ready, authenticated, user } = usePrivy();
 
- 
+
   useEffect(() => {
     if (ready && authenticated) {
       onNext();
@@ -16,13 +16,13 @@ export default function LoginPrivy({ onNext }: { onNext: () => void }) {
   }, [ready, authenticated, onNext]);
 
   return (
-      <div className={styles.onboardingContainer}>
-              <h1 className={styles.heading}>Sign Up</h1>
-              <p className={styles.subtext}>Sign up to get started</p>
-          {/* <input onChange={(e) => setEmail(e.currentTarget.value)} value={email} /> */}
-          <button
-          className={styles.button}
-          onClick={() => login()}>Login</button>
-      </div>
+    <div className={styles.onboardingContainer}>
+      <h1 className={styles.heading}>Sign Up</h1>
+      <p className={styles.subtext}>Sign up to get started</p>
+      {/* <input onChange={(e) => setEmail(e.currentTarget.value)} value={email} /> */}
+      <button
+        className={styles.button}
+        onClick={() => login()}>Login</button>
+    </div>
   );
 }

@@ -1,12 +1,16 @@
 import PrivyProviders from "./PrivyProviders";
 import { StoreProvider } from "./StoreProvider";
+import { UIProvider } from "./UIProvider";
 
-export default function Providers({children}: {children: React.ReactNode}) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PrivyProviders>
-      <StoreProvider>
-        {children}
-      </StoreProvider>
+      <UIProvider>
+
+        <StoreProvider>
+          {children}
+        </StoreProvider>
+      </UIProvider>
     </PrivyProviders>
   );
 }

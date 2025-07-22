@@ -1,23 +1,57 @@
-import { useState } from 'react';
-import GoalList, { Goal, Task } from './GoalList';
-import GoalCreate, { GoalFormData } from './GoalCreate';
+import { useEffect, useState } from 'react';
+import GoalList, { Goal as LocalGoal, Task as LocalTask } from './GoalList';
+import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
+import { useFocusAFKStore } from '../../../store/store';
+import { Task as StoreTask, Goal as StoreGoal } from '../../../lib/database';
 
-export interface GoalsOverviewProps {
-  goals?: Goal[];
-  tasks?: Task[];
+export interface GoalsOverviewProps {}
+
+function normalizeTask(task: StoreTask): LocalTask {
+  return {
+    ...task,
+    id: task.id ?? '',
+    title: task.title,
+  };
 }
 
-export default function GoalsOverview({ goals = [], tasks = [] }: GoalsOverviewProps) {
-  const [showCreate, setShowCreate] = useState<boolean>(false);
-  const [localGoals, setLocalGoals] = useState<Goal[]>(goals);
-
-  const handleCreate = (goal: GoalFormData) => {
-    setLocalGoals(prev => [
-      { ...goal, id: Date.now(), linkedTaskIds: goal.linkedTaskIds || [] },
-      ...prev
-    ]);
-    setShowCreate(false);
+function normalizeGoal(goal: StoreGoal): LocalGoal {
+  return {
+    ...goal,
+    id: goal.id ?? '',
+    name: goal.title,
+    title: goal.title,
+    type: goal.category,
+    description: goal.description,
+    targetDate: goal.targetDate,
+    linkedTaskIds: goal.relatedTasks ?? [],
   };
+}
+
+export default function GoalsOverview({}: GoalsOverviewProps) {
+  const [showCreate, setShowCreate] = useState<boolean>(false);
+  const { goals, tasks, addGoal, loadGoals, loadTasks } = useFocusAFKStore();
+
+  useEffect(() => {
+    loadGoals();
+    loadTasks();
+  }, [loadGoals, loadTasks]);
+
+  const handleCreate = async (goal: GoalFormData) => {
+    await addGoal({
+      title: goal.name,
+      description: goal.description,
+      targetDate: goal.targetDate ? new Date(goal.targetDate) : undefined,
+      completed: false,
+      progress: 0,
+      category: goal.type,
+      relatedTasks: goal.linkedTaskIds.map(id => typeof id === 'string' ? parseInt(id) : id),
+    });
+    setShowCreate(false);
+    await loadGoals();
+  };
+
+  const normalizedTasks = tasks.map(normalizeTask);
+  const normalizedGoals = goals.map(normalizeGoal);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
@@ -31,9 +65,9 @@ export default function GoalsOverview({ goals = [], tasks = [] }: GoalsOverviewP
         </button>
       </div>
       {showCreate ? (
-        <GoalCreate tasks={tasks} onCreate={handleCreate} onCancel={() => setShowCreate(false)} />
+        <GoalCreate tasks={normalizedTasks} onCreate={handleCreate} onCancel={() => setShowCreate(false)} />
       ) : (
-        <GoalList goals={localGoals} tasks={tasks} />
+        <GoalList goals={normalizedGoals} tasks={normalizedTasks} />
       )}
     </div>
   );

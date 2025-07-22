@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import classNames from 'classnames';
-import styles from '../../styles/components/toast.module.scss';
+import styles from '../../../styles/components/toast.module.scss';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -38,8 +38,8 @@ export const Toast: React.FC<ToastProps> = ({
       className={classNames(
         styles.toast,
         {
-          [styles['toast--visible']]: visible,
-          [styles[`toast--${type}`]]: type,
+          [styles['toast--visible'] as string]: visible,
+          [styles[`toast--${type}` as string]]: type,
         },
         className
       )}

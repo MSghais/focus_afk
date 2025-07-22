@@ -2,10 +2,14 @@
 import React from "react";
 import { useFocusAFKStore } from "../../store/store";
 import styles from "../../styles/components/navigation.module.scss";
+import { useUIStore } from "../../store/uiStore";
+import ProfileUser from "../profile/ProfileUser";
+import { Icon } from "../small/icons";
 
 const Navbar = () => {
   const { setTheme, ui } = useFocusAFKStore();
 
+  const {showModal} = useUIStore();
   const toggleTheme = () => {
     const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -27,6 +31,8 @@ const Navbar = () => {
 
       {/* Actions */}
       <div className={styles.navbarActions}>
+
+        <button onClick={() => showModal(<ProfileUser />)}> <Icon name="user" /> </button>
         <button
           onClick={toggleTheme}
           className={styles.themeToggle}

@@ -7,6 +7,7 @@ import { Task } from '../../../lib/database';
 import { useRouter } from 'next/navigation';
 import Timer from '../../../components/modules/timer';
 import SimpleTimer from '../../../components/modules/timer/TimerBreak';
+import TimeLoading from '../../../components/small/loading/time-loading';
 
 export default function DeepModePage() {
     const router = useRouter();
@@ -122,8 +123,8 @@ export default function DeepModePage() {
 
     if (!task) {
         return (
-            <div className="w-full h-full flex items-center justify-center">
-                <div className="text-lg">Loading task...</div>
+            <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
+                <TimeLoading />
             </div>
         );
     }

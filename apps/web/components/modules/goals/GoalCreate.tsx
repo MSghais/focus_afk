@@ -43,7 +43,7 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel }: GoalCreat
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md bg-white dark:bg-gray-900 p-4 rounded-lg shadow flex flex-col gap-4 mx-auto">
+    <form onSubmit={handleSubmit} className="w-full max-w-md p-4 rounded-lg shadow flex flex-col gap-4 mx-auto">
       <h2 className="text-xl font-bold mb-2">Create Goal / KPI / Aim</h2>
       <div>
         <label className="block text-sm font-medium mb-1">Name *</label>

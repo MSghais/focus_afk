@@ -48,7 +48,7 @@ export default function ClientLayout({
         {/* Main Content Area */}
         <main className="main-content">
           <div className="content-container">
-            <div className="container-responsive">
+            <div className="container-responsive bg-[var(--background)]">
               {children}
             </div>
           </div>
