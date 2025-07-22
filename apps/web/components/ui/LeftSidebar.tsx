@@ -2,14 +2,20 @@
 import React from "react";
 import { useFocusAFKStore } from "../../store/store";
 import styles from "../../styles/components/navigation.module.scss";
+import { useUIStore } from "../../store/uiStore";
+import { useEvmLogin } from "../../hooks/useEvmLogin";
+import ProfileUser from "../profile/ProfileUser";
+import { Icon } from "../small/icons";
 
 const LeftSidebar = () => {
   const { ui, setCurrentModule, setTheme } = useFocusAFKStore();
 
+  const { showModal } = useUIStore();
+  const evmLogin = useEvmLogin();
   const toggleTheme = () => {
     const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    
+
     if (typeof window !== "undefined") {
       const body = document.body;
       body.setAttribute("data-theme", newTheme);
@@ -20,7 +26,7 @@ const LeftSidebar = () => {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
-    { id: 'goals', label: 'Goals', icon: '🎯' },  
+    { id: 'goals', label: 'Goals', icon: '🎯' },
     // { id: 'learning', label: 'Learning', icon: '🎓' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
@@ -36,7 +42,7 @@ const LeftSidebar = () => {
           </h1>
           <p className={styles.sidebarSubtitle}>Productivity & Focus</p>
         </div>
-        
+
         {/* Navigation */}
         <nav className={styles.sidebarNav}>
           {navigationItems.map((item) => (
@@ -66,6 +72,13 @@ const LeftSidebar = () => {
             </span>
           </button>
         </div>
+      </div>
+
+      <div>
+        <button onClick={() => {
+          showModal(<ProfileUser />);
+        }}>  <Icon name="user" /></button>
+
       </div>
     </aside>
   );

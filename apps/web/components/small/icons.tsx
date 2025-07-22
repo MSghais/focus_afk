@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "create" | "search" | "user" | "settings" | "home";
+type IconName = "create" | "search" | "user" | "settings" | "home" | "login";
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   create: (
@@ -28,6 +28,13 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     </>
   ),
   home: (
+    <>
+      <path d="M19 21v-2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M22 9l-10-7-10 7L2 11v12h20V11L22 9z" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" strokeWidth="2"/>
+    </>
+  ),
+  login: (
     <>
       <path d="M19 21v-2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" strokeWidth="2"/>
       <path d="M22 9l-10-7-10 7L2 11v12h20V11L22 9z" fill="none" stroke="currentColor" strokeWidth="2"/>
