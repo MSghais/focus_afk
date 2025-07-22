@@ -9,7 +9,11 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        name: true,
+        userAddress: true,
+        loginType: true,
+        verified: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return user;
@@ -17,14 +21,14 @@ export class AuthService {
 
   async authenticateUser(userAddress: string, loginType: string) {
     const user = await this.prisma.user.findUnique({
-      where: { address: userAddress },
+      where: { userAddress: userAddress },
     });
     return user;
   }
 
-  async createUser(userAddress: string) {
+  async createUser(userAddress: string, loginType: string) {
     const user = await this.prisma.user.create({
-      data: { address: userAddress },
+      data: { userAddress: userAddress, loginType: loginType },
     });
     return user;
   }

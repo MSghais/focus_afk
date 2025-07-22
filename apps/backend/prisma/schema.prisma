@@ -29,10 +29,14 @@ model User {
   id          String   @id @default(cuid())
   userAddress String   @unique
   email       String?  @unique
+  name String?
+  metadata Json?
   loginType   String
   verified    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  starknetAddress String?
+  evmAddress String?
 
   socialAccounts SocialAccount[]
 
@@ -51,6 +55,10 @@ model SocialAccount {
   expiresAt    DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  userAddress String?
+  starknetAddress String?
+  evmAddress String?
+  metadata Json?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

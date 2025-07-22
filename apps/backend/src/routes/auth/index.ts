@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { LoginInput, RefreshTokenInput } from '../../validations/auth.validation';
 import { SignatureService } from '../../services/auth/signature.service';
 import { AuthService } from '../../services/auth/auth.service';
+
 export async function authRoutes(fastify: FastifyInstance) {
   const authService = new AuthService(fastify.prisma);
   const signatureService = new SignatureService();

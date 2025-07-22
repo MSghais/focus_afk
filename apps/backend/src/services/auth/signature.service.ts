@@ -36,7 +36,7 @@ export class SignatureService {
       const dummyPrivateKey = '0x1';
       const account = new Account(this.provider, accountAddress, dummyPrivateKey);
 
-      return await account.verifyMessage(signedData, formattedSignature);
+      return await account.verifyMessageInStarknet(signedData, formattedSignature, accountAddress);
     } catch (error) {
       console.log('verification failed:', error);
       throw Error('Error:' + error);
