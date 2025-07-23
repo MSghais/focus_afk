@@ -4,9 +4,11 @@ import { useRouter } from "next/router";
 import { usePrivy } from "@privy-io/react-auth";
 import LoginPrivy from "../onboarding/LoginPrivy";
 import { useUIStore } from "../../store/uiStore";
+import { useAuthStore } from "../../store/auth";
 
 export default function PrivyUser() {
     const { ready, authenticated, user, logout } = usePrivy();
+    const { logout: logoutBackend } = useAuthStore();
 
     const { showToast } = useUIStore();
     if (!ready) {
@@ -16,14 +18,8 @@ export default function PrivyUser() {
 
     const handleLogout = () => {
         logout();
-        localStorage?.removeItem('token');
-        localStorage?.removeItem('user');
-        localStorage?.removeItem('evmAddress');
-        localStorage?.removeItem('starknetAddress');
-        localStorage?.removeItem('loginType');
-        localStorage?.removeItem('isAuthenticated');
+        logoutBackend(); // Use the new logout function that clears localStorage
         showToast({ message: "Logged out successfully", type: "success" });
-       
     }
 
     if (ready && authenticated) {

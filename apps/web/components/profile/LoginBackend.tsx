@@ -5,6 +5,7 @@ import { useUIStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/auth";
 import { logClickedEvent } from "../../lib/analytics";
 import { ButtonPrimary } from "../small/buttons";
+import { saveAuthToStorage } from "../../lib/auth";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();
@@ -30,28 +31,31 @@ export default function LoginBackend() {
                 setLoginType(result?.user?.loginType || "ethereum");
                 setIsAuthenticated(true);
 
-                localStorage?.setItem('token', result.token);
-                localStorage?.setItem('user', JSON.stringify(result.user));
-                localStorage?.setItem('evmAddress', result?.user?.evmAddress);
-                localStorage?.setItem('starknetAddress', result?.user?.starknetAddress);
-                localStorage?.setItem('loginType', result?.user?.loginType || "ethereum");
-                localStorage?.setItem('isAuthenticated', 'true');
+                // Use the new auth utility to save to localStorage
+                saveAuthToStorage({
+                    token: result.token,
+                    user: result.user,
+                    evmAddress: result?.user?.evmAddress,
+                    starknetAddress: result?.user?.starknetAddress,
+                    loginType: result?.user?.loginType || "ethereum",
+                });
 
                 // Handle success (e.g., store session, redirect)
                 showToast({ message: "Login successful!", type: "success" });
             }
 
-        } catch (e) {
-            logClickedEvent('login_backend_failed');
-            showToast({ message: "Login failed: " + (e as Error).message, type: "error" });
+        } catch (error) {
+            console.error("Login failed:", error);
+            showToast({ message: "Login failed. Please try again.", type: "error" });
         }
     };
 
     return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-col gap-4">
+            <h3>Backend Login</h3>
             <ButtonPrimary onClick={handleLogin}>
                 <Icon name="login" />
-                <p>Sign</p>
+                Login with Wallet
             </ButtonPrimary>
         </div>
     );
