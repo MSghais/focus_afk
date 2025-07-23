@@ -29,34 +29,34 @@ export default function ProgressMentor() {
   const [isTyping, setIsTyping] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
-  const {getTaskStats, getFocusStats, getBreakStats, getDeepFocusStats} = useFocusAFKStore(); 
-   const [taskStats, setTaskStats] = useState({
-        total: 0,
-        completed: 0,
-        pending: 0,
-        overdue: 0
-    });
+  const { getTaskStats, getFocusStats, getBreakStats, getDeepFocusStats } = useFocusAFKStore();
+  const [taskStats, setTaskStats] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    overdue: 0
+  });
 
-    const [focusStats, setFocusStats] = useState({
-        totalSessions: 0,
-        totalMinutes: 0,
-        averageSessionLength: 0,
-        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
-    });
+  const [focusStats, setFocusStats] = useState({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageSessionLength: 0,
+    sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+  });
 
-    const [breakStats, setBreakStats] = useState({
-        totalSessions: 0,
-        totalMinutes: 0,
-        averageSessionLength: 0,
-        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
-    });
+  const [breakStats, setBreakStats] = useState({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageSessionLength: 0,
+    sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+  });
 
-    const [deepFocusStats, setDeepFocusStats] = useState({
-        totalSessions: 0,
-        totalMinutes: 0,
-        averageSessionLength: 0,
-        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
-    });
+  const [deepFocusStats, setDeepFocusStats] = useState({
+    totalSessions: 0,
+    totalMinutes: 0,
+    averageSessionLength: 0,
+    sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+  });
 
   useEffect(() => {
     const loadStats = async () => {
@@ -109,54 +109,51 @@ export default function ProgressMentor() {
 
 
   return (
-    <div className={styles.mentor}>
 
-      <div className={styles.mentorGrid}>
-        {/* Productivity Insights */}
-        <div className={styles.insightsCard}>
-          <h2 className={styles.cardTitle}>Your Progress</h2>
-          <div className={styles.insightsGrid}>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{taskStats.completed}%</span>
-              <span className={styles.insightLabel}>Task Completion</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{focusStats.totalMinutes?.toFixed(2)} min</span>
-              <span className={styles.insightLabel}>Total Focus Time</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{focusStats.averageSessionLength?.toFixed(2)}m</span>
-              <span className={styles.insightLabel}>Avg Session</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{focusStats.sessionsByDay.length}</span>
-              <span className={styles.insightLabel}>Today's Sessions</span>
-            </div>
+    <div className={styles.mentorGrid}>
+      {/* Productivity Insights */}
+      <div className={styles.insightsCard}>
+        <h2 className={styles.cardTitle}>Your Progress</h2>
+        <div className={styles.insightsGrid}>
+          <div className={styles.insight}>
+            <span className={styles.insightValue}>{taskStats.completed}%</span>
+            <span className={styles.insightLabel}>Task Completion</span>
           </div>
-        </div>
-
-     
-
-        {/* Quick Actions */}
-        <div className={styles.actionsCard}>
-          <h2 className={styles.cardTitle}>Quick Actions</h2>
-          <div className={styles.actionButtons}>
-            <button className={styles.actionButton}>
-              📊 Get Weekly Report
-            </button>
-            <button className={styles.actionButton}>
-              🎯 Set New Goal
-            </button>
-            <button className={styles.actionButton}>
-              ⏱️ Start Focus Session
-            </button>
-            <button className={styles.actionButton}>
-              📚 Learning Recommendations
-            </button>
+          <div className={styles.insight}>
+            <span className={styles.insightValue}>{focusStats.totalMinutes?.toFixed(2)} min</span>
+            <span className={styles.insightLabel}>Total Focus Time</span>
+          </div>
+          <div className={styles.insight}>
+            <span className={styles.insightValue}>{focusStats.averageSessionLength?.toFixed(2)}m</span>
+            <span className={styles.insightLabel}>Avg Session</span>
+          </div>
+          <div className={styles.insight}>
+            <span className={styles.insightValue}>{focusStats.sessionsByDay.length}</span>
+            <span className={styles.insightLabel}>Today's Sessions</span>
           </div>
         </div>
       </div>
 
+
+
+      {/* Quick Actions */}
+      {/* <div className={styles.actionsCard}>
+        <h2 className={styles.cardTitle}>Quick Actions</h2>
+        <div className={styles.actionButtons}>
+          <button className={styles.actionButton}>
+            📊 Get Weekly Report
+          </button>
+          <button className={styles.actionButton}>
+            🎯 Set New Goal
+          </button>
+          <button className={styles.actionButton}>
+            ⏱️ Start Focus Session
+          </button>
+          <button className={styles.actionButton}>
+            📚 Learning Recommendations
+          </button>
+        </div>
+      </div> */}
       {/* Recent Feedback */}
       {recentFeedback && (
         <div className={styles.feedbackCard}>
@@ -180,5 +177,7 @@ export default function ProgressMentor() {
         </div>
       )}
     </div>
+
+
   );
 } 

@@ -60,7 +60,7 @@ export default function TimerDeepFocus({
         logClickedEvent('timer_deep_focus_start');
         setElapsedSeconds(0);
         setIsRunning(true);
-        startTimerFocus(taskId, goalId);
+        startTimerFocus(taskId, Number(goalId));
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
@@ -132,7 +132,19 @@ export default function TimerDeepFocus({
                     )}
                 </div>
             </div>
-
+            {/* Selected Task/Goal Info */}
+            {(selectedTaskId || selectedGoalId) && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
+                    <p className="text-sm text-blue-800">
+                        {selectedTaskId && (
+                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                        )}
+                        {selectedGoalId && (
+                            <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                        )}
+                    </p>
+                </div>
+            )}
 
             <button
                 className="mt-4 border-2 border-gray-300 rounded-md p-2"
@@ -141,6 +153,18 @@ export default function TimerDeepFocus({
                     showModal(<div className="w-full max-w-md mb-6 space-y-4">
                         <div>
                             <label className="block text-sm font-medium mb-2">Select Task (Optional)</label>
+                            {selectedTaskId && (
+                                <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
+                                    <p className="text-sm text-blue-800">
+                                        {selectedTaskId && (
+                                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                                        )}
+                                     
+                                    </p>
+                                </div>
+                            )}
+
+
                             <select
                                 value={selectedTaskId || ''}
                                 onChange={(e) => setSelectedTaskId(e.target.value ? parseInt(e.target.value) : undefined)}
@@ -170,25 +194,20 @@ export default function TimerDeepFocus({
                                 ))}
                             </select>
                         </div>
+
+
+                        {selectedGoalId && (
+                            <div>
+                                <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                            </div>
+                        )}
                     </div>);
                 }}
             >
                 Set Your Goal
             </button>
 
-            {/* Selected Task/Goal Info */}
-            {(selectedTaskId || selectedGoalId) && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
-                    <p className="text-sm text-blue-800">
-                        {selectedTaskId && (
-                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
-                        )}
-                        {selectedGoalId && (
-                            <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
-                        )}
-                    </p>
-                </div>
-            )}
+
 
         </div>
     );

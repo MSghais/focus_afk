@@ -10,21 +10,23 @@ import { Message, Mentor } from '../../../types';
 import { useAuthStore } from '../../../store/auth';
 import MentorForm from './MentorForm';
 import { ButtonPrimary } from '../../small/buttons';
+import { useMentorsStore } from '../../../store/mentors';
 
 export default function MentorList() {
+  const { mentors, setMentors, setSelectedMentor } = useMentorsStore();
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { userConnected } = useAuthStore();
   const { showToast } = useUIStore();
   const apiService = useApi();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [mentorsState, setMentorsState] = useState<Mentor[]>([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingMentor, setEditingMentor] = useState<Mentor | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if(userConnected) loadMentors();
-    
+    if (userConnected) loadMentors();
+
     // Load recent session feedback
     if (timerSessions.length > 0) {
       const latestSession = timerSessions[0];
@@ -35,12 +37,14 @@ export default function MentorList() {
   const loadMentors = async () => {
     try {
       setIsLoading(true);
-      if(!userConnected) return;
-      
+      if (!userConnected) return;
+
       const response = await apiService.getMentors();
       console.log('response', response);
-      if ( response) {
+      if (response) {
+        setMentorsState(response);
         setMentors(response);
+        // setSelectedMentor(response[0]);
       }
     } catch (error) {
       console.error('Error loading mentors:', error);
@@ -88,11 +92,16 @@ export default function MentorList() {
     }
   };
 
-  const handleEditMentor = (mentor: Mentor) => {
+  const handleEditMentor = (mentor: Mentor | undefined | null) => {
+    if (!mentor) return;
+    // setSelectedMentor(mentor);
     setEditingMentor(mentor);
   };
 
-  console.log('mentors', mentors);
+  const handleSelectMentor = (mentor: Mentor | undefined | null) => {
+    if (!mentor) return;
+    setSelectedMentor(mentor);
+  };
 
   if (showCreateForm) {
     return (
@@ -132,7 +141,7 @@ export default function MentorList() {
           <div className={styles.spinner}></div>
           <p>Loading mentors...</p>
         </div>
-      ) : mentors.length === 0 ? (
+      ) : mentors?.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🤖</div>
           <h3>No mentors yet</h3>
@@ -146,58 +155,81 @@ export default function MentorList() {
         </div>
       ) : (
         <div className={styles.mentorGrid}>
-          {mentors.map((mentor) => (
-            <div className={styles.mentorCard} key={mentor.id}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>{mentor.name}</h2>
-                <div className={styles.cardActions}>
-                  <button
-                    onClick={() => handleEditMentor(mentor)}
-                    className={styles.editButton}
-                    title="Edit mentor"
-                  >
-                    ✏️
-                  </button>
-                  <button
-                    onClick={() => handleDeleteMentor(mentor.id!)}
-                    className={styles.deleteButton}
-                    title="Delete mentor"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-              
-              <p className={styles.cardRole}>{mentor.role}</p>
-              
-              {mentor.about && (
-                <p className={styles.cardDescription}>{mentor.about}</p>
-              )}
-              
-              <div className={styles.knowledgeTags}>
-                {mentor.knowledges.slice(0, 3).map((knowledge, index) => (
-                  <span key={index} className={styles.knowledgeTag}>
-                    {knowledge}
-                  </span>
-                ))}
-                {mentor.knowledges.length > 3 && (
-                  <span className={styles.moreTag}>
-                    +{mentor.knowledges.length - 3} more
-                  </span>
-                )}
-              </div>
+          {mentors?.map((mentor) => {
+            return (
+              <div className={styles.mentorCard} key={mentor.id}>
+                <div className={styles.cardHeader}>
+                  <h2 className={styles.cardTitle}>{mentor.name}</h2>
+                  <div className={styles.cardActions}>
+                    <button
+                      onClick={() => { 
+                        // Fix: ensure 'about' is undefined if null to match Mentor type
+                        const safeMentor = { ...mentor, about: mentor.about ?? undefined, createdAt: mentor.createdAt?.toString() ?? undefined, updatedAt: mentor.updatedAt?.toString() ?? undefined, notes: mentor.notes ?? undefined, assistant_metadata: mentor.assistant_metadata ?? undefined, accountEvmAddress: mentor.accountEvmAddress ?? undefined, evmAddressAgent: mentor.evmAddressAgent ?? undefined };
+                        handleEditMentor(safeMentor);
+                      }}
+                      className={styles.editButton}
+                      title="Edit mentor"
+                    >
+                      ✏️
+                    </button>
 
-              <div className={styles.cardFooter}>
-                <span className={styles.createdDate}>
-                  Created {new Date(mentor.createdAt || '').toLocaleDateString()}
-                </span>
-                <div className={styles.statusIndicator}>
-                  <span className={`${styles.statusDot} ${mentor.isActive ? styles.active : styles.inactive}`}></span>
-                  {mentor.isActive ? 'Active' : 'Inactive'}
+                    <button
+                      onClick={() => { 
+                        // Fix: ensure 'about' is undefined if null to match Mentor type
+                        const safeMentor = { ...mentor, about: mentor.about ?? undefined, createdAt: mentor.createdAt?.toString() ?? undefined, updatedAt: mentor.updatedAt?.toString() ?? undefined, notes: mentor.notes ?? undefined, assistant_metadata: mentor.assistant_metadata ?? undefined, accountEvmAddress: mentor.accountEvmAddress ?? undefined, evmAddressAgent: mentor.evmAddressAgent ?? undefined };
+                        handleSelectMentor(safeMentor);
+                      }}
+                      className={styles.editButton}
+                      title="Select mentor"
+                    >
+                      👤
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        // Fix: ensure 'about' is undefined if null to match Mentor type
+                        const safeMentor = { ...mentor, about: mentor.about ?? undefined, createdAt: mentor.createdAt?.toString() ?? undefined, updatedAt: mentor.updatedAt?.toString() ?? undefined, notes: mentor.notes ?? undefined, assistant_metadata: mentor.assistant_metadata ?? undefined, accountEvmAddress: mentor.accountEvmAddress ?? undefined, evmAddressAgent: mentor.evmAddressAgent ?? undefined };
+                        handleDeleteMentor(safeMentor.id!);
+                      }}
+                      className={styles.deleteButton}
+                      title="Delete mentor"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
+
+                <p className={styles.cardRole}>{mentor.role}</p>
+
+                {mentor.about && (
+                  <p className={styles.cardDescription}>{mentor.about}</p>
+                )}
+
+                <div className={styles.knowledgeTags}>
+                  {mentor.knowledges.slice(0, 3).map((knowledge, index) => (
+                    <span key={index} className={styles.knowledgeTag}>
+                      {knowledge}
+                    </span>
+                  ))}
+                  {mentor.knowledges.length > 3 && (
+                    <span className={styles.moreTag}>
+                      +{mentor.knowledges.length - 3} more
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.cardFooter}>
+                  <span className={styles.createdDate}>
+                    Created {new Date(mentor.createdAt || '').toLocaleDateString()}
+                  </span>
+                  <div className={styles.statusIndicator}>
+                    <span className={`${styles.statusDot} ${mentor.isActive ? styles.active : styles.inactive}`}></span>
+                    {mentor.isActive ? 'Active' : 'Inactive'}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

@@ -10,6 +10,7 @@ import type { Message, Mentor } from '../../../types';
 import MentorList from './MentorList';
 import ProgressMentor from './Progress';
 import { ButtonPrimary } from '../../small/buttons';
+import { useMentorsStore } from '../../../store/mentors';
 
 interface MentorFeedback {
   sessionId: string;
@@ -34,11 +35,12 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
+  const {selectedMentor} = useMentorsStore();
 
   const [isOpenInsights, setIsOpenInsights] = useState(false);
 
   useEffect(() => {
-    loadMessages();
+    // loadMessages();
     loadMentors();
 
     // Load recent session feedback
@@ -48,34 +50,6 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
     }
   }, []);
 
-  const loadMessages = async () => {
-    try {
-      setIsLoadingMessages(true);
-      const response = await apiService.getMessages({ limit: 20 });
-
-      if (response.success && response.data) {
-        // Sort messages by creation date (oldest first for chat display)
-        const sortedMessages = response.data.sort((a: Message, b: Message) =>
-          new Date(a.createdAt || '').getTime() - new Date(b.createdAt || '').getTime()
-        );
-        setMessages(sortedMessages);
-      } else {
-        // console.error('Failed to load messages:', response.error);
-        // showToast({
-        //   message: 'Failed to load chat history',
-        //   type: 'error',
-        // });
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      showToast({
-        message: 'Error loading chat history',
-        type: 'error',
-      });
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  };
 
   const loadMentors = async () => {
     try {
@@ -110,46 +84,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
     setRecentFeedback(feedback);
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
 
-    const userMessage = inputMessage;
-    setInputMessage('');
-    setIsTyping(true);
-
-    try {
-      // Send message to backend
-      const response = await apiService.sendChatMessage({
-        prompt: userMessage,
-        mentorId: mentors[0]?.id, // Use first mentor if available
-      });
-
-      if (response.success) {
-        // Reload messages to get the updated conversation
-        await loadMessages();
-      } else {
-        showToast({
-          message: response.error || 'Failed to send message',
-          type: 'error',
-        });
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      showToast({
-        message: 'Error sending message',
-        type: 'error',
-      });
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const getProductivityInsights = () => {
     const completedTasks = tasks.filter(t => t.completed).length;
@@ -178,7 +113,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
         <MentorList />
 
         {/* Chat Interface */}
-        <ChatAi taskId={tasks[0]?.id} mentorId={mentors[0]?.id} />
+        <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />
         {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
@@ -232,14 +167,12 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
         </div> */}
 
 
-
-
-        <ButtonPrimary
+        {/* <ButtonPrimary
           className={styles.insightsButton + "max-w-100 align-center"}
           onClick={() => setIsOpenInsights(!isOpenInsights)}
         >
           {isOpenInsights ? 'Close Insights' : 'Open Insights'}
-        </ButtonPrimary>
+        </ButtonPrimary> */}
 
         {isOpenInsights &&
           <>

@@ -96,6 +96,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
     const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
 
+    console.log('mentorId', mentorId);
     // Auto-scroll to bottom when messages change
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -137,7 +138,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                 return;
             }
 
-            const response = await apiService.getMessages({ limit: 50 });
+            const response = await apiService.getMessages({ limit: 50, mentorId: mentorId?.toString() || undefined });
 
             // console.log('Messages response:', response);
             
@@ -192,7 +193,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
             // Send message to backend
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
-                mentorId: undefined, // You can add mentor selection later
+                mentorId: mentorId?.toString() || undefined, // You can add mentor selection later
             });
 
             if (response?.success || response) {

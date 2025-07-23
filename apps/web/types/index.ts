@@ -148,11 +148,27 @@ export interface Mentor {
     userId: string;
     name: string;
     role: string;
+    notes?: string[];
+    note?: string;
     knowledges: string[];
     about?: string;
     isActive: boolean;
     createdAt?: string;
     updatedAt?: string;
+    evmAddress?: string;
+    starknetAddress?: string;
+    loginType?: string;
+    verified?: boolean;
+    user?: User;
+    metadata?: any;
+    knowledge?: string[];
+    sources?: string[];
+    personality?: any;
+    accountEvmAddress?: string;
+    evmAddressAgent?:string;
+    assistant_metadata?: any;
+
+
 }
 
 export interface MentorFeedback {
