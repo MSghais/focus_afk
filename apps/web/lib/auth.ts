@@ -10,43 +10,47 @@ const AUTH_KEYS = {
   IS_AUTHENTICATED: 'isAuthenticated',
 } as const;
 
-// Initialize auth state from localStorage
-export const initializeAuthFromStorage = () => {
-  if (typeof window === 'undefined') return;
+  // Initialize auth state from localStorage
+  export const initializeAuthFromStorage = () => {
+    if (typeof window === 'undefined') return;
 
-  try {
-    const token = localStorage.getItem(AUTH_KEYS.TOKEN);
-    const userStr = localStorage.getItem(AUTH_KEYS.USER);
-    const evmAddress = localStorage.getItem(AUTH_KEYS.EVM_ADDRESS);
-    const starknetAddress = localStorage.getItem(AUTH_KEYS.STARKNET_ADDRESS);
-    const loginType = localStorage.getItem(AUTH_KEYS.LOGIN_TYPE) as "ethereum" | "starknet" | undefined;
-    const isAuthenticated = localStorage.getItem(AUTH_KEYS.IS_AUTHENTICATED) === 'true';
+    try {
+      const token = localStorage.getItem(AUTH_KEYS.TOKEN);
+      const userStr = localStorage.getItem(AUTH_KEYS.USER);
+      const evmAddress = localStorage.getItem(AUTH_KEYS.EVM_ADDRESS);
+      const starknetAddress = localStorage.getItem(AUTH_KEYS.STARKNET_ADDRESS);
+      const loginType = localStorage.getItem(AUTH_KEYS.LOGIN_TYPE) as "ethereum" | "starknet" | undefined;
+      const isAuthenticated = localStorage.getItem(AUTH_KEYS.IS_AUTHENTICATED) === 'true';
 
-    if (token && userStr && isAuthenticated) {
-      const user = JSON.parse(userStr);
-      
-      // Restore auth state
-      useAuthStore.setState({
-        userConnected: user,
-        token,
-        jwtToken: token,
-        evmAddress: evmAddress || undefined,
-        starknetAddress: starknetAddress || undefined,
-        loginType,
-        isAuthenticated: true,
-      });
+      console.log('🔐 Auth Init - Checking localStorage for auth data...');
 
-      console.log('🔐 Auth state restored from localStorage');
-      return true;
+      if (token && userStr && isAuthenticated) {
+        const user = JSON.parse(userStr);
+        
+        // Restore auth state
+        useAuthStore.setState({
+          userConnected: user,
+          token,
+          jwtToken: token,
+          evmAddress: evmAddress || undefined,
+          starknetAddress: starknetAddress || undefined,
+          loginType,
+          isAuthenticated: true,
+        });
+
+        console.log('🔐 Auth state restored from localStorage');
+        return true;
+      } else {
+        console.log('🔐 Auth Init - Missing required data for restoration');
+      }
+    } catch (error) {
+      console.error('Failed to restore auth state from localStorage:', error);
+      // Clear corrupted localStorage data
+      clearAuthFromStorage();
     }
-  } catch (error) {
-    console.error('Failed to restore auth state from localStorage:', error);
-    // Clear corrupted localStorage data
-    clearAuthFromStorage();
-  }
 
-  return false;
-};
+    return false;
+  };
 
 // Save auth state to localStorage
 export const saveAuthToStorage = (authData: {
@@ -108,14 +112,24 @@ export const isUserAuthenticated = (): boolean => {
 export const getJwtToken = (): string | null => {
   const authState = useAuthStore.getState();
   
+  console.log('🔐 getJwtToken - Zustand state:', {
+    jwtToken: !!authState.jwtToken,
+    isAuthenticated: authState.isAuthenticated,
+    userConnected: !!authState.userConnected
+  });
+  
   if (authState.jwtToken) {
+    console.log('🔐 getJwtToken - Using Zustand token');
     return authState.jwtToken;
   }
 
   // Fallback to localStorage
   if (typeof window !== 'undefined') {
-    return localStorage.getItem(AUTH_KEYS.TOKEN);
+    const localStorageToken = localStorage.getItem(AUTH_KEYS.TOKEN);
+    console.log('🔐 getJwtToken - localStorage token available:', !!localStorageToken);
+    return localStorageToken;
   }
 
+  console.log('🔐 getJwtToken - No token found');
   return null;
 }; 

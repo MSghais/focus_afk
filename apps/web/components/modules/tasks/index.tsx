@@ -5,9 +5,11 @@ import { useFocusAFKStore } from '../../../store/store';
 import { Task } from '../../../lib/database';
 import Link from 'next/link';
 import { logClickedEvent } from '../../../lib/analytics';
+import { useAuthStore } from '../../../store/auth';
+import { isUserAuthenticated } from '../../../lib/auth';
 
 export default function Tasks() {
-    const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete } = useFocusAFKStore();
+    const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
@@ -18,6 +20,7 @@ export default function Tasks() {
     });
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,6 +73,24 @@ export default function Tasks() {
         }
     };
 
+    const handleSyncToBackend = async () => {
+        if (!isUserAuthenticated()) {
+            alert('Please login first to sync tasks to the backend');
+            return;
+        }
+
+        setSyncing(true);
+        try {
+            await syncTasksToBackend();
+            alert('Tasks synced to backend successfully!');
+        } catch (error) {
+            console.error('Failed to sync tasks:', error);
+            alert('Failed to sync tasks to backend. Please try again.');
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     const getPriorityColor = (priority: Task['priority']) => {
         switch (priority) {
             case 'high': return 'border-2 border-[var(--afk-danger)] text-[var(--afk-danger)] bg-[var(--afk-danger)]/10';
@@ -95,12 +116,23 @@ export default function Tasks() {
         <div className="w-full h-full flex flex-col p-2 md:p-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
                 <h1 className="text-2xl font-bold">Tasks</h1>
-                <button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
-                >
-                    {showAddForm ? 'Cancel' : 'Add Task'}
-                </button>
+                <div className="flex gap-2">
+                    {isUserAuthenticated() && (
+                        <button
+                            onClick={handleSyncToBackend}
+                            disabled={syncing}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                        >
+                            {syncing ? 'Syncing...' : 'Sync to Backend'}
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setShowAddForm(!showAddForm)}
+                        className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                    >
+                        {showAddForm ? 'Cancel' : 'Add Task'}
+                    </button>
+                </div>
             </div>
 
             {/* Add Task Form */}

@@ -52,7 +52,7 @@ const UserSettingsSchema = z.object({
 
 async function focusRoutes(fastify: FastifyInstance) {
   // Task routes
-  fastify.post('/tasks', {
+  fastify.post('/', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   body: TaskSchema,
@@ -77,7 +77,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.get('/tasks', {
+  fastify.get('/', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   querystring: z.object({
@@ -108,7 +108,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.get('/tasks/:id', {
+  fastify.get('/:id', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
@@ -130,7 +130,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.put('/tasks/:id', {
+  fastify.put('/:id', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   body: TaskSchema.partial(),
@@ -165,7 +165,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.delete('/tasks/:id', {
+  fastify.delete('/:id', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
@@ -196,7 +196,7 @@ async function focusRoutes(fastify: FastifyInstance) {
 
 
   // Statistics routes
-  fastify.get('/stats/tasks', {
+  fastify.get('/stats', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {

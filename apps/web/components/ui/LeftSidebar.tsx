@@ -3,7 +3,6 @@ import React from "react";
 import { useFocusAFKStore } from "../../store/store";
 import styles from "../../styles/components/navigation.module.scss";
 import { useUIStore } from "../../store/uiStore";
-import { useEvmLogin } from "../../hooks/useEvmLogin";
 import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
 import { useRouter } from "next/navigation";
@@ -14,7 +13,7 @@ const LeftSidebar = () => {
 
   const router = useRouter();
   const { showModal } = useUIStore();
-  const evmLogin = useEvmLogin();
+  // const evmLogin = useEvmLogin();
   const toggleTheme = () => {
     const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
