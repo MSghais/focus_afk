@@ -11,6 +11,7 @@ import { Icon } from '../../small/icons';
 import { ButtonSecondary } from '../../small/buttons';
 import DashboardQuests from './DasboardQuests';
 import Badges from '../../profile/Badges';
+import { logClickedEvent } from '../../../lib/analytics';
 
 export default function ProfileDashboard() {
 
@@ -91,16 +92,27 @@ export default function ProfileDashboard() {
   return (
     <div className={styles.dashboardContainer}>
       {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
-   
+
 
       <div className="flex flex-row gap-4 justify-center my-4 shadow-md rounded-lg p-2">
 
 
-        <Link href="/settings" className="">
+        <Link
+          title="Settings"
+          href="/settings"
+          className=""
+          onClick={() => {
+            logClickedEvent("settings_button_clicked ");
+          }}
+        >
           <Icon name="settings" size={24} />
         </Link>
 
-        <Link href="/lfg_session" className="flex items-center justify-center">
+        <Link title="Lfg Session"
+          onClick={() => {
+            logClickedEvent("lfg_session_button_clicked ");
+          }}
+          href="/lfg_session" className="flex items-center justify-center">
           <Icon name="lfg" size={24} />
         </Link>
 

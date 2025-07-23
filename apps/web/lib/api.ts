@@ -460,6 +460,13 @@ class ApiService {
   async getBadges(userId: string) {
     return this.request(`/badges/user/${userId}`);
   }
+
+  async awardBadge(userId: string, badge: { type: string; name: string; description: string; icon: string; dateAwarded: string; }) {
+    return this.request(`/badges/user/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify(badge),
+    });
+  }
 }
 
 export const apiService = new ApiService(); 
