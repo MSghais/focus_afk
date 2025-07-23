@@ -16,9 +16,9 @@ export function useApi() {
           ...(options.headers as Record<string, string> || {}),
         };
 
-        // Debug: Log the JWT token status
-        console.log('🔐 useApi - JWT Token available:', !!jwtToken);
-        console.log('🔐 useApi - JWT Token preview:', jwtToken ? jwtToken.substring(0, 20) + '...' : 'None');
+        // // Debug: Log the JWT token status
+        // console.log('🔐 useApi - JWT Token available:', !!jwtToken);
+        // console.log('🔐 useApi - JWT Token preview:', jwtToken ? jwtToken.substring(0, 20) + '...' : 'None');
 
         if (jwtToken) {
           headers.Authorization = `Bearer ${jwtToken}`;

@@ -20,7 +20,7 @@ const enhancedMarkdownRenderer = (text: string) => {
     if (!text || typeof text !== 'string') {
         return '';
     }
-    
+
     return text
         // HTML escaping
         .replace(/&/g, '&amp;')
@@ -62,14 +62,15 @@ const enhancedMarkdownRenderer = (text: string) => {
 
 interface ChatAiProps {
     taskId?: number | string;
+    mentorId?: number | string;
 }
 
-export default function ChatAi({ taskId }: ChatAiProps) {
+export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     const router = useRouter();
     const params = useParams();
-    const {showToast, showModal} = useUIStore();
+    const { showToast, showModal } = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
-    const {userConnected} = useAuthStore();
+    const { userConnected } = useAuthStore();
     const apiService = useApi();
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
@@ -112,17 +113,17 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         try {
             setIsLoadingMessages(true);
 
-            if(!userConnected) {
+            if (!userConnected) {
                 showModal(<ProfileUser />);
                 return;
             }
 
             const response = await apiService.getMessages({ limit: 50 });
-            
-            console.log('response', response);
+
+            // console.log('response', response);
             if (response && response) {
                 // Sort messages by creation date (oldest first for chat display)
-                const sortedMessages = response?.sort((a: Message, b: Message) => 
+                const sortedMessages = response?.sort((a: Message, b: Message) =>
                     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                 );
                 setMessages(sortedMessages);
@@ -185,9 +186,9 @@ export default function ChatAi({ taskId }: ChatAiProps) {
     };
 
     const formatMessageTime = (timestamp: string) => {
-        return new Date(timestamp).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        return new Date(timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
         });
     };
 
@@ -199,29 +200,35 @@ export default function ChatAi({ taskId }: ChatAiProps) {
     return (
         <div className={styles.chatAi}>
             <h1 className={styles.title}>AI Mentor</h1>
-            
+
             <div className={styles.chatGrid}>
                 <div className={styles.chatCard}>
-                    <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
 
-                    <div>
-                        <button onClick={() => {
-                            loadMessages();
-                        }}>
-                            <Icon name="refresh" />
-                        </button>
+                    <div className={"flex flex-row justify-between items-center"}>
+                        <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
+
+                        <div>
+                            <button onClick={() => {
+                                loadMessages();
+                            }}>
+                                <Icon name="refresh" />
+                            </button>
+                        </div>
+
                     </div>
+
+
 
                     {isLoadingMessages && (
                         <div className={styles.loadingState}>
                             <div className={styles.loadingContent}>
                                 <div className={styles.spinner}></div>
                                 <p>Loading chat history...</p>
-                                <TimeLoading /> 
+                                <TimeLoading />
                             </div>
                         </div>
                     )}
-                
+
                     <div className={styles.chatMessages}>
                         {messages.length === 0 ? (
                             <div className={styles.emptyState}>
@@ -229,24 +236,24 @@ export default function ChatAi({ taskId }: ChatAiProps) {
                             </div>
                         ) : (
                             messages.map((message) => {
-                                console.log('message', message.content);
+                                // console.log('message', message.content);
                                 return (
-                                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                                    <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
 
-                                    {message?.role === "assistant" && (
-                                        <div className={`${styles.messageContent} ${styles.markdownContent}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
-                                    )}
+                                        {message?.role === "assistant" && (
+                                            <div className={`${styles.messageContent} ${styles.markdownContent}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                        )}
 
-                                    {message?.role === "user" && (
-                                        <div className={styles.messageContent}>{message.content || ''}</div>
-                                    )}
+                                        {message?.role === "user" && (
+                                            <div className={styles.messageContent}>{message.content || ''}</div>
+                                        )}
 
-                                    <div className={styles.messageTime}>
-                                        {formatMessageTime(message.createdAt)}
+                                        <div className={styles.messageTime}>
+                                            {formatMessageTime(message.createdAt)}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })
+                                );
+                            })
                         )}
                         {isLoading && (
                             <div className={`${styles.message} ${styles.ai}`}>

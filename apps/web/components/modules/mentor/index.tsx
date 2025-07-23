@@ -192,7 +192,8 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
         </div>
 
         {/* Chat Interface */}
-        <div className={styles.chatCard}>
+        <ChatAi taskId={tasks[0]?.id} mentorId={mentors[0]?.id} />  
+        {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
             {isLoadingMessages ? (
@@ -242,7 +243,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
               ➤
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <div className={styles.actionsCard}>
