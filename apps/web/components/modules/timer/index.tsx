@@ -32,20 +32,20 @@ export default function TimerMain({
 }:TimerProps) {
 
 
-    const [timerType, setTimerType] = useState<'focus' | 'break' | 'deep'>(timerTypeProps as 'focus' | 'break' | 'deep');
+    const [timerType, setTimerType] = useState<'focus' | 'break' | 'deep'>(timerTypeProps as 'focus' | 'break' | 'deep' ?? "deep");
 
     return (
         <div className="w-full flex flex-col items-center justify-center px-6">
 
 
             <div className="flex flex-row items-center justify-center gap-4">
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600" onClick={() => setTimerType('deep')}>
+                <button className={`bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600 ${timerType === 'deep' ? 'bg-[var(--brand-primary)]' : ''}`} onClick={() => setTimerType('deep')}>
                     Deep
                 </button>
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600" onClick={() => setTimerType('focus')}>
+                <button className={`bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600 ${timerType === 'focus' ? 'bg-[var(--brand-primary)]' : ''}`} onClick={() => setTimerType('focus')}>
                     Focus
                 </button>
-                <button className="bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600" onClick={() => setTimerType('break')}>
+                <button className={`bg-gray-500 text-white px-4 py-2 rounded-md active:bg-gray-600 ${timerType === 'break' ? 'bg-[var(--brand-primary)]' : ''}`} onClick={() => setTimerType('break')}>
                     Break
                 </button>
             </div>

@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
+import { useUIStore } from '../../../store/uiStore';
 
 export default function Settings() {
+
+    const {showToast} = useUIStore();
     const { settings, updateSettings, setTheme, setNotifications } = useFocusAFKStore();
     const [localSettings, setLocalSettings] = useState({
         defaultFocusDuration: settings?.defaultFocusDuration || 25,
@@ -23,7 +26,7 @@ export default function Settings() {
             notifications: localSettings.notifications,
             theme: localSettings.theme as 'light' | 'dark' | 'auto'
         });
-        
+        showToast({message: 'Settings saved', description: 'Your settings have been saved', type: 'success'});
         // Update theme and notifications in the store
         setTheme(localSettings.theme as 'light' | 'dark' | 'auto');
         setNotifications(localSettings.notifications);

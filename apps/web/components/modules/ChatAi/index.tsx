@@ -5,12 +5,11 @@ import { useParams } from 'next/navigation';
 import { useFocusAFKStore } from '../../../store/store';
 import { Task } from '../../../lib/database';
 import { useRouter } from 'next/navigation';
-import Timer from '../timer';
-import SimpleTimer from '../timer/TimerBreak';
 import TimeLoading from '../../small/loading/time-loading';
-import TimerMain from '../timer';
 import { logClickedEvent } from '../../../lib/analytics';
-
+import { useUIStore } from '../../../store/uiStore';
+import { Message } from '../../../lib/api';
+import { useApi } from '../../../hooks/useApi';
 
 interface ChatAiProps {
     taskId?: number | string;
@@ -19,7 +18,9 @@ interface ChatAiProps {
 export default function ChatAi({ taskId }: ChatAiProps) {
     const router = useRouter();
     const params = useParams();
+    const {showToast} = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
+    const apiService = useApi();
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
         id: '',
@@ -30,8 +31,9 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         category: ''
     });
     const [chatMessage, setChatMessage] = useState('');
-    const [chatHistory, setChatHistory] = useState<Array<{ role: 'user' | 'assistant', message: string }>>([]);
-
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
     useEffect(() => {
         if (taskId && tasks.length > 0) {
@@ -51,41 +53,85 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         }
     }, [taskId, tasks]);
 
-    const handleSendMessage = () => {
-        if (!chatMessage.trim()) return;
+    // Load messages from backend
+    useEffect(() => {
+        loadMessages();
+    }, []);
+
+    const loadMessages = async () => {
+        try {
+            setIsLoadingMessages(true);
+            const response = await apiService.getMessages({ limit: 50 });
+            
+            console.log('response', response);
+            if (response && response) {
+                // Sort messages by creation date (oldest first for chat display)
+                const sortedMessages = response?.sort((a: Message, b: Message) => 
+                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+                setMessages(sortedMessages);
+            } else {
+                console.error('Failed to load messages:', response.error);
+                showToast({
+                    message: 'Failed to load chat history',
+                    type: 'error',
+                });
+            }
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            showToast({
+                message: 'Error loading chat history',
+                type: 'error',
+            });
+        } finally {
+            setIsLoadingMessages(false);
+        }
+    };
+
+    const handleSendMessage = async () => {
+        if (!chatMessage.trim() || isLoading) return;
 
         const userMessage = chatMessage;
-        setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
         setChatMessage('');
+        setIsLoading(true);
 
         logClickedEvent('send_message_deep_mode');
 
-        // Simulate AI response
-        setTimeout(() => {
-            const responses = [
-                "Great question! Let me help you break this down into smaller steps.",
-                "I can see you're making progress. What specific challenge are you facing?",
-                "That's a good approach. Have you considered trying it this way?",
-                "You're on the right track! Keep going and don't forget to take breaks.",
-                "I'm here to support you. What would help you move forward?"
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            setChatHistory(prev => [...prev, { role: 'assistant', message: randomResponse || '' }]);
-        }, 1000);
+        try {
+            // Send message to backend
+            const response = await apiService.sendChatMessage({
+                prompt: userMessage,
+                mentorId: undefined, // You can add mentor selection later
+            });
+
+            if (response?.success || response) {
+                // Reload messages to get the updated conversation
+                await loadMessages();
+            } else {
+                showToast({
+                    message: response.error || 'Failed to send message',
+                    type: 'error',
+                });
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            showToast({
+                message: 'Error sending message',
+                type: 'error',
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
+    const formatMessageTime = (timestamp: string) => {
+        return new Date(timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    };
 
-    // useEffect(() => {
-    //     let interval: NodeJS.Timeout;
-    //     if (isTimerRunning) {
-    //         interval = setInterval(() => {
-    //             setTimerSeconds(prev => prev + 1);
-    //         }, 1000);
-    //     }
-    //     return () => clearInterval(interval);
-    // }, [isTimerRunning]);
-
-    if (!task) {
+    if (isLoadingMessages) {
         return (
             <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
                 <TimeLoading />
@@ -94,32 +140,48 @@ export default function ChatAi({ taskId }: ChatAiProps) {
     }
 
     return (
-        <div className=" w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6  bg-[var(--background)]">
+        <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[var(--background)]">
             {/* Right Column - Mentor Chat */}
             <div className="rounded-lg p-6 shadow-lg">
+
+                <button onClick={() => loadMessages()}>Load Messages</button>
                 <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                 <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
-                    {chatHistory.length === 0 ? (
+                    {messages.length === 0 ? (
                         <div className="text-center text-gray-500 py-8">
                             <p>Ask your mentor for guidance on this task!</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {chatHistory.map((msg, index) => (
+                            {messages.map((message) => (
                                 <div
-                                    key={index}
-                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                    key={message.id}
+                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
-                                        className={`max-w-xs p-3 rounded-lg ${msg.role === 'user'
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-gray-200 text-gray-800'
-                                            }`}
+                                        className={`max-w-xs p-3 rounded-lg ${
+                                            message.role === 'user'
+                                                ? 'bg-[var(--brand-primary)] text-white'
+                                                : 'bg-gray-200 text-gray-800'
+                                        }`}
                                     >
-                                        {msg.message}
+                                        <div className="text-sm">{message.content}</div>
+                                        <div className="text-xs opacity-70 mt-1">
+                                            {formatMessageTime(message.createdAt)}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
+                            {isLoading && (
+                                <div className="flex justify-start">
+                                    <div className="max-w-xs p-3 rounded-lg bg-gray-200 text-gray-800">
+                                        <div className="flex items-center space-x-2">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                                            <span>Thinking...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -131,15 +193,17 @@ export default function ChatAi({ taskId }: ChatAiProps) {
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                         placeholder="Ask your mentor..."
                         className="flex-1 p-3 border rounded-lg"
+                        disabled={isLoading}
                     />
                     <button
                         onClick={handleSendMessage}
-                        className="px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-purple-700 transition"
+                        disabled={isLoading || !chatMessage.trim()}
+                        className="px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Send
+                        {isLoading ? 'Sending...' : 'Send'}
                     </button>
                 </div>
             </div>
         </div>
     );
-} 
+}

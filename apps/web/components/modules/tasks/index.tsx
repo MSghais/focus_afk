@@ -72,9 +72,9 @@ export default function Tasks() {
 
     const getPriorityColor = (priority: Task['priority']) => {
         switch (priority) {
-            case 'high': return 'text-red-600 bg-red-100';
-            case 'medium': return 'text-yellow-600 bg-yellow-100';
-            case 'low': return 'text-green-600 bg-green-100';
+            case 'high': return 'border-2 border-[var(--afk-danger)] text-[var(--afk-danger)] bg-[var(--afk-danger)]/10';
+            case 'medium': return 'border-2 border-[var(--afk-warning)] text-[var(--afk-warning)] bg-[var(--afk-warning)]/10';
+            case 'low': return 'border-2 border-[var(--afk-success)] text-[var(--afk-success)] bg-[var(--afk-success)]/10';
             default: return 'text-gray-600 bg-gray-100';
         }
     };
@@ -97,7 +97,7 @@ export default function Tasks() {
                 <h1 className="text-2xl font-bold">Tasks</h1>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
                 >
                     {showAddForm ? 'Cancel' : 'Add Task'}
                 </button>
@@ -273,7 +273,7 @@ export default function Tasks() {
                                                     {task.priority}
                                                 </span>
                                                 {task.category && (
-                                                    <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs">
+                                                    <span className="px-2 py-1 rounded-full text-xs">
                                                         {task.category}
                                                     </span>
                                                 )}

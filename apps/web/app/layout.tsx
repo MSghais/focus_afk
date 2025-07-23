@@ -11,6 +11,13 @@ const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || '';
 export const metadata: Metadata = {
   title: "Focus AFK - Productivity & Focus",
   description: "Boost your productivity with Focus AFK - the ultimate focus and task management app",
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -22,29 +29,35 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script
-          // strategy="lazyOnload"
-          strategy="afterInteractive"
 
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-        />
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-          // strategy="lazyOnload"
-          dangerouslySetInnerHTML={{
-            __html: `
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Script
+              // strategy="lazyOnload"
+              strategy="afterInteractive"
+
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+            />
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
+              // strategy="lazyOnload"
+              dangerouslySetInnerHTML={{
+                __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             gtag('config', '${GA_TRACKING_ID}', {
               page_path: window.location.pathname,
             });
-          `,
-          }}
-        />
+              `,
+              }}
+            />
+          </>
+
+        )}
       </head>
-      <body className={geist.className}>
+      <body className={geist.className + "bg-[var(--background)]"}>
         <ClientLayout>
           {children}
         </ClientLayout>

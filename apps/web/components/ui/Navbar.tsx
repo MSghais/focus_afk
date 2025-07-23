@@ -6,15 +6,16 @@ import { useUIStore } from "../../store/uiStore";
 import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
 import Link from "next/link";
+import ToggleTheme from "./ToggleTheme";
 
 const Navbar = () => {
   const { setTheme, ui } = useFocusAFKStore();
 
-  const {showModal} = useUIStore();
+  const { showModal } = useUIStore();
   const toggleTheme = () => {
     const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    
+
     if (typeof window !== "undefined") {
       const body = document.body;
       body.setAttribute("data-theme", newTheme);
@@ -34,17 +35,9 @@ const Navbar = () => {
 
       {/* Actions */}
       <div className={styles.navbarActions}>
-
         <button onClick={() => showModal(<ProfileUser />)}> <Icon name="user" /> </button>
-        <button
-          onClick={toggleTheme}
-          className={styles.themeToggle}
-          aria-label="Toggle theme"
-        >
-          <span className={styles.themeIcon}>
-            {ui.theme === 'dark' ? '☀️' : '🌙'}
-          </span>
-        </button>
+
+        <ToggleTheme />
       </div>
     </nav>
   );

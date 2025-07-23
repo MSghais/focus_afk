@@ -14,6 +14,7 @@ const BottomBar = () => {
     { id: 'timer', label: 'Timer', icon: '⏱️' },
     { id: 'goals', label: 'Goals', icon: '🎯' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
   ];
 
   return (
@@ -28,7 +29,7 @@ const BottomBar = () => {
           className={`${styles.bottomNavItem} ${ui.currentModule === item.id ? styles.active : ''}`}
         >
           <span className={styles.bottomNavIcon}>{item.icon}</span>
-          <span className={styles.bottomNavLabel}>{item.label}</span>
+          {/* <span className={styles.bottomNavLabel}>{item.label}</span> */}
         </button>
       ))}
     </nav>

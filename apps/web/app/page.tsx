@@ -12,6 +12,7 @@ import Mentor from "../components/modules/mentor";
 import { useFocusAFKStore } from "../store/store";
 import Learning from "../components/modules/learning";
 import GoalsOverview from "../components/modules/goals/GoalsOverview";
+import TimeLoading from "../components/small/loading/time-loading";
 
 export default function Page() {
   const { ready, authenticated, user } = usePrivy();
@@ -25,7 +26,9 @@ export default function Page() {
   }, [ready, authenticated, router]);
 
   if (!ready) {
-    return <div>Loading...</div>;
+    return <div className="page w-full h-full flex items-center justify-center bg-[var(--background)]">
+      <TimeLoading />
+    </div>;
   }
 
   const renderCurrentModule = () => {
@@ -53,7 +56,8 @@ export default function Page() {
 
   return (
     <div className="page">
-      {renderCurrentModule()}
+      <Dashboard />
+      {/* {renderCurrentModule()} */}
     </div>
   );
 }

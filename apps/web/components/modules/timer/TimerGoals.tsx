@@ -12,7 +12,7 @@ function formatTime(seconds: number) {
 }
 
 interface TimerProps {
-    isSetupEnabled: boolean;
+    isSetupEnabled?: boolean;
     taskId?: number;
     goalId?: string;
     task?: Task;

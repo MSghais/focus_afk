@@ -7,6 +7,7 @@ import LoginPrivy from './LoginPrivy';
 import Link from 'next/link';
 import LoginBackend from '../profile/LoginBackend';
 import { logClickedEvent } from '../../lib/analytics';
+import TimerDeepFocus from '../modules/timer/TimerDeepFocus';
 // import LoginEmail from './LoginEmail';
 // import LoginSms from './LoginSms';
 // import LoginPasskey from './LoginPasskey';
@@ -34,7 +35,9 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
       {/* <p className={styles.subtext} style={{ marginBottom: '2.5rem' }}>
         Lorem ipsum dolor sit amet. consectetuer ada isicing eit. Auduis.
       </p> */}
-      <button className={styles.button} onClick={onNext}>Continue</button>
+      {/* <button className={styles.button} onClick={onNext}>Continue</button> */}
+
+      <LoginStep onNext={onNext} />
     </div>
   );
 }
@@ -66,10 +69,11 @@ function AllSetStep({ onNext }: { onNext?: () => void }) {
   );
 }
 const steps = [WelcomeStep,
-  LoginStep,
+  // LoginStep,
   LoginBackend,
   //  PasscodeStep, 
-  AllSetStep];
+  AllSetStep
+];
 
 type StepProps = { onNext: () => void };
 
@@ -80,5 +84,7 @@ export default function Onboarding({ onNext }: { onNext?: () => void }) {
     return <StepComponent onNext={() => setStep(step + 1)} />;
   }
   // Last step does not need onNext
-  return <AllSetStep onNext={onNext} />;
+  return <div className="flex flex-col items-center justify-center h-screen">
+    <AllSetStep onNext={onNext} />
+  </div>;
 } 

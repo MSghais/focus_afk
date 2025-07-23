@@ -20,7 +20,6 @@ export default function ProfileUser() {
             )}
             {user && (
                 <div className="flex flex-col gap-4 my-4">
-                    <PrivyUser />
 
                     {userConnected && (
                         <div className="flex flex-col gap-4">
@@ -31,9 +30,13 @@ export default function ProfileUser() {
                         </div>
                     )}
 
+                    <PrivyUser />
+
+{/* 
                     {!userConnected && (
-                        <LoginBackend />
-                    )}
+                    )} */}
+
+                    <LoginBackend />
 
                 </div>
             )}

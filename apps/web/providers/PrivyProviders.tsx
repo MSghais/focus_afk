@@ -13,7 +13,16 @@ export default function Providers({children}: {children: React.ReactNode}) {
           ethereum: {
             createOnLogin: 'users-without-wallets'
           }
-        }
+        },
+        // Add OAuth configuration
+        loginMethods: ['email', 'wallet', 'google', "sms" , "farcaster"],
+        // redirectUri: 'http://localhost:3000/profile',
+        appearance: {
+          theme: 'dark',
+          accentColor: '#676FFF',
+        },
+        // Add default chain configuration
+        // defaultChain: 1, // Ethereum mainnet
       }}
     >
       {children}

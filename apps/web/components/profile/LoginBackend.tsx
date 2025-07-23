@@ -4,6 +4,7 @@ import { Icon } from "../small/icons";
 import { useUIStore } from "../../store/uiStore";
 import { useAuthStore } from "../../store/auth";
 import { logClickedEvent } from "../../lib/analytics";
+import { ButtonPrimary } from "../small/buttons";
 
 export default function LoginBackend() {
     const evmLogin = useEvmLogin();
@@ -22,15 +23,14 @@ export default function LoginBackend() {
                 logClickedEvent('login_backend_success');
                 setUserConnected(result.user);
                 setToken(result.token);
-                setJwtToken(result.jwtToken || result?.token);
+                // The backend returns 'token', not 'jwtToken'
+                setJwtToken(result.token);
                 setEvmAddress(result?.user?.evmAddress);
                 setStarknetAddress(result?.user?.starknetAddress);
                 setLoginType(result?.user?.loginType || "ethereum");
                 // Handle success (e.g., store session, redirect)
                 showToast({ message: "Login successful!", type: "success" });
             }
-
-
 
         } catch (e) {
             logClickedEvent('login_backend_failed');
@@ -40,10 +40,10 @@ export default function LoginBackend() {
 
     return (
         <div className="flex items-center justify-center gap-2">
-            <button className="bg-[var(--brand-primary)] border-radius border-2 border-[var(--brand-primary)] p-4 flex items-center gap-2" onClick={handleLogin}>
+            <ButtonPrimary onClick={handleLogin}>
                 <Icon name="login" />
-                <p>Login</p>
-            </button>
+                <p>Sign</p>
+            </ButtonPrimary>
         </div>
     );
 }

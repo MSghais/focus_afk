@@ -3,26 +3,29 @@
 import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/dashboard.module.scss';
+import { useRouter } from 'next/navigation';
 
 export default function Dashboard() {
-    const { 
-        tasks, 
-        goals, 
-        timerSessions, 
+    const router = useRouter();
+    const {
+        tasks,
+        goals,
+        timerSessions,
         settings,
-        getTaskStats, 
+        getTaskStats,
         getFocusStats,
         getBreakStats,
-        setCurrentModule 
+        getDeepFocusStats,
+        setCurrentModule
     } = useFocusAFKStore();
-    
+
     const [taskStats, setTaskStats] = useState({
         total: 0,
         completed: 0,
         pending: 0,
         overdue: 0
     });
-    
+
     const [focusStats, setFocusStats] = useState({
         totalSessions: 0,
         totalMinutes: 0,
@@ -37,21 +40,30 @@ export default function Dashboard() {
         sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
     });
 
+    const [deepFocusStats, setDeepFocusStats] = useState({
+        totalSessions: 0,
+        totalMinutes: 0,
+        averageSessionLength: 0,
+        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+    });
+
     useEffect(() => {
         const loadStats = async () => {
-            const [taskStatsData, focusStatsData, breakStatsData] = await Promise.all([
+            const [taskStatsData, focusStatsData, breakStatsData, deepFocusStatsData] = await Promise.all([
                 getTaskStats(),
                 getFocusStats(7),
-                getBreakStats(7)
+                getBreakStats(7),
+                getDeepFocusStats(7)
             ]);
             setTaskStats(taskStatsData);
             setFocusStats(focusStatsData);
             console.log("breakStatsData", breakStatsData);
             setBreakStats(breakStatsData);
+            setDeepFocusStats(deepFocusStatsData);
         };
-        
+
         loadStats();
-    }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
+    }, [tasks, goals, timerSessions, getTaskStats, getFocusStats, getBreakStats, getDeepFocusStats]);
 
     const formatTime = (minutes: number) => {
         if (minutes === 0) return '0m';
@@ -75,7 +87,8 @@ export default function Dashboard() {
     const getProductivityScore = () => {
         const taskScore = getCompletionRate();
         const focusScore = focusStats.totalSessions > 0 ? Math.min(100, (focusStats.totalMinutes / 60) * 2) : 0;
-        return Math.round((taskScore + focusScore) / 2);
+        const deepFocusScore = deepFocusStats.totalSessions > 0 ? Math.min(100, (deepFocusStats.totalMinutes / 60) * 3) : 0;
+        return Math.round((taskScore + focusScore + deepFocusScore) / 3);
     };
 
     const recentTasks = tasks.slice(0, 5);
@@ -87,19 +100,44 @@ export default function Dashboard() {
             <h1 className={styles.title}>Dashboard</h1>
 
             {/* Stats Overview */}
+
+
             <div className={styles.statsGrid}>
+
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Focus Time</p>
+                            <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes + deepFocusStats.totalMinutes)}</p>
+                            <p className={styles.statSubValue}>Deep: {formatTime(deepFocusStats.totalMinutes)}</p>
+                        </div>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>⏱️</span>
+                        </div>
+                    </div>
+                </div>
                 <div className={styles.statCard}>
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
                             <p className={styles.statLabel}>Total Tasks</p>
                             <p className={styles.statValue}>{taskStats.total}</p>
+
+                            <div className={styles.statSubValue}>
+                                <p className={styles.statValue + "text-xs italic font-bold text-gray-500"}>Completed: {taskStats.completed} / {taskStats.total} ✅</p>
+                            </div>
+
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #3B82F6, #1D4ED8)' }}>
                             <span style={{ color: 'white', fontSize: '1.25rem' }}>📋</span>
                         </div>
+                        {/* <div className={styles.statSubValue}>
+                            <p className={styles.statValue + "text-xs italic font-bold text-gray-500"}>Completed: {taskStats.completed} / {taskStats.total} ✅</p>
+                        </div> */}
                     </div>
+
                 </div>
 
+                {/* 
                 <div className={styles.statCard}>
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
@@ -110,19 +148,32 @@ export default function Dashboard() {
                             <span style={{ color: 'white', fontSize: '1.25rem' }}>✅</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
+
+
+                {/* 
+                <div className={styles.statCard}>
+                    <div className={styles.statContent}>
+                        <div className={styles.statInfo}>
+                            <p className={styles.statLabel}>Deep Focus</p>
+                            <p className={styles.statValue} style={{ color: '#EC4899' }}>{formatTime(deepFocusStats.totalMinutes)}</p>
+                            <p className={styles.statSubValue}>{deepFocusStats.totalSessions} sessions</p>
+                        </div>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #EC4899, #BE185D)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>🎯</span>
+                        </div>
+                    </div>
+                </div> */}
 
                 <div className={styles.statCard}>
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
-                            <p className={styles.statLabel}>Focus Time</p>
-                            <p className={styles.statValue} style={{ color: '#8B5CF6' }}>{formatTime(focusStats.totalMinutes)}</p>
-
-                            <p className={styles.statSubValue}>Break: {formatTime(breakStats?.totalMinutes)}. {breakStats?.totalSessions} sessions</p>
-
+                            <p className={styles.statLabel}>Break Time</p>
+                            <p className={styles.statValue} style={{ color: '#10B981' }}>{formatTime(breakStats.totalMinutes)}</p>
+                            <p className={styles.statSubValue}>{breakStats.totalSessions} sessions</p>
                         </div>
-                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)' }}>
-                            <span style={{ color: 'white', fontSize: '1.25rem' }}>⏱️</span>
+                        <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #10B981, #059669)' }}>
+                            <span style={{ color: 'white', fontSize: '1.25rem' }}>☕</span>
                         </div>
                     </div>
                 </div>
@@ -143,7 +194,10 @@ export default function Dashboard() {
             {/* Quick Actions */}
             <div className={styles.actionsGrid}>
                 <button
-                    onClick={() => setCurrentModule('tasks')}
+                    onClick={() => {
+                        setCurrentModule('tasks');
+                        router.push('/tasks');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #3B82F6, #1D4ED8)', color: 'white' }}
                 >
@@ -157,7 +211,10 @@ export default function Dashboard() {
                 </button>
 
                 <button
-                    onClick={() => setCurrentModule('timer')}
+                    onClick={() => {
+                        setCurrentModule('timer');
+                        router.push('/timer');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #10B981, #059669)', color: 'white' }}
                 >
@@ -171,7 +228,10 @@ export default function Dashboard() {
                 </button>
 
                 <button
-                    onClick={() => setCurrentModule('learning')}
+                    onClick={() => {
+                        setCurrentModule('learning');
+                        router.push('/learning');
+                    }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)', color: 'white' }}
                 >
@@ -192,7 +252,10 @@ export default function Dashboard() {
                     <div className={styles.cardHeader}>
                         <h2 className={styles.cardTitle}>Recent Tasks</h2>
                         <button
-                            onClick={() => setCurrentModule('tasks')}
+                            onClick={() => {
+                                setCurrentModule('tasks');
+                                router.push('/tasks');
+                            }}
                             className={styles.viewAllButton}
                         >
                             View All
@@ -221,10 +284,10 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                     <span className={styles.itemBadge} style={{
-                                        backgroundColor: task.priority === 'high' ? '#FEE2E2' : 
-                                                       task.priority === 'medium' ? '#FEF3C7' : '#D1FAE5',
-                                        color: task.priority === 'high' ? '#DC2626' : 
-                                              task.priority === 'medium' ? '#D97706' : '#059669'
+                                        backgroundColor: task.priority === 'high' ? '#FEE2E2' :
+                                            task.priority === 'medium' ? '#FEF3C7' : '#D1FAE5',
+                                        color: task.priority === 'high' ? '#DC2626' :
+                                            task.priority === 'medium' ? '#D97706' : '#059669'
                                     }}>
                                         {task.priority}
                                     </span>
@@ -239,7 +302,10 @@ export default function Dashboard() {
                     <div className={styles.cardHeader}>
                         <h2 className={styles.cardTitle}>Active Goals</h2>
                         <button
-                            onClick={() => setCurrentModule('learning')}
+                            onClick={() => {
+                                setCurrentModule('goals');
+                                router.push('/goals');
+                            }}
                             className={styles.viewAllButton}
                         >
                             View All
@@ -332,8 +398,8 @@ export default function Dashboard() {
                                         <div className={styles.chartProgress}>
                                             <div
                                                 className={styles.progressFill}
-                                                style={{ 
-                                                    width: `${Math.min(100, (day.minutes / 60) * 20)}%` 
+                                                style={{
+                                                    width: `${Math.min(100, (day.minutes / 60) * 20)}%`
                                                 }}
                                             ></div>
                                         </div>

@@ -88,7 +88,7 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel }: GoalCreat
         )}
       </div>
       <div className="flex gap-2 mt-4">
-        <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex-1">Create</button>
+        <button type="submit" className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition flex-1">Create</button>
         <button type="button" className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex-1" onClick={onCancel}>Cancel</button>
       </div>
     </form>

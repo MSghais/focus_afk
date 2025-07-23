@@ -93,6 +93,14 @@ export async function authRoutes(fastify: FastifyInstance) {
       // 3. Create JWT
       const token = fastify.jwt.sign({ id: user.id, userAddress: user.userAddress });
 
+
+      const sessionToken = await fastify.prisma.session.create({
+        data: {
+          userId: user.id,
+          token: token,
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+        },
+      });
       console.log("token", token);
       return reply.send({ success: true, user, token });
     } catch (error) {

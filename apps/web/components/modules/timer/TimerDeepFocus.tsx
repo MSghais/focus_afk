@@ -12,14 +12,14 @@ function formatTime(seconds: number) {
 }
 
 interface TimerProps {
-    isSetupEnabled: boolean;
+    isSetupEnabled?: boolean;
     taskId?: number;
     goalId?: string;
     task?: Task;
     goal?: Goal;
 }
 
-export default function TimerBreak({
+export default function TimerDeepFocus({
     isSetupEnabled = true,
     taskId,
     goalId,
@@ -63,10 +63,9 @@ export default function TimerBreak({
 
     // Stop timer
     const handleStop = () => {
-
         logClickedEvent('timer_deep_focus_end');
         setIsRunning(false);
-        stopTimeFocus(false, taskId, Number(goalId));
+        stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
         // TODO: Send the data to the backend
         if (intervalRef.current) clearInterval(intervalRef.current);
     };

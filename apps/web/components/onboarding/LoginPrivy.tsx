@@ -6,7 +6,9 @@ import { logClickedEvent } from "../../lib/analytics";
 export default function LoginPrivy({ onNext }: { onNext: () => void }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const { login } = useLogin();
+  const { login } = useLogin({
+    
+  });
   const { ready, authenticated, user } = usePrivy();
 
 

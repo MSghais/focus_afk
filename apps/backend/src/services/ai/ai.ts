@@ -9,7 +9,7 @@ import { Pinecone } from "@pinecone-database/pinecone";
 
 interface LlmInputsGeneration {
     model: string;
-    systemPrompt: string;
+    systemPrompt?: string;
     prompt: string;
 }
 
