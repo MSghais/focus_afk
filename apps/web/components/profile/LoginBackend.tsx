@@ -11,7 +11,7 @@ export default function LoginBackend() {
 
     const { showModal, showToast } = useUIStore();
 
-    const { setUserConnected, setToken, setJwtToken, setEvmAddress, setStarknetAddress, setLoginType } = useAuthStore();
+    const { setUserConnected, setToken, setJwtToken, setEvmAddress, setStarknetAddress, setLoginType, setIsAuthenticated } = useAuthStore();
     const handleLogin = async () => {
         try {
 
@@ -28,6 +28,7 @@ export default function LoginBackend() {
                 setEvmAddress(result?.user?.evmAddress);
                 setStarknetAddress(result?.user?.starknetAddress);
                 setLoginType(result?.user?.loginType || "ethereum");
+                setIsAuthenticated(true);
                 // Handle success (e.g., store session, redirect)
                 showToast({ message: "Login successful!", type: "success" });
             }

@@ -157,10 +157,13 @@ class ApiService {
   }
 
   // Timer session methods
-  async createTimerSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt'>): Promise<ApiResponse<TimerSession>> {
+  async createTimerSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt'>, token: string): Promise<ApiResponse<TimerSession>> {
     return this.request<TimerSession>('/timer-sessions', {
       method: 'POST',
       body: JSON.stringify(sessionData),
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 
@@ -327,4 +330,7 @@ class ApiService {
   }
 }
 
-export const apiService = new ApiService(); 
+export const api = new ApiService(); 
+export const apiService =api; 
+
+export default api;

@@ -9,12 +9,14 @@ import { User } from '@prisma/client';
   evmAddress?: string;
   starknetAddress?: string;
   loginType?: "ethereum" | "starknet";
+  isAuthenticated: boolean;
   setUserConnected: (user: User) => void;
   setToken: (token: string) => void;
   setJwtToken: (token: string) => void;
   setEvmAddress: (address: string) => void;
   setStarknetAddress: (address: string) => void;
   setLoginType: (type: "ethereum" | "starknet") => void;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -24,10 +26,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   evmAddress: undefined,
   starknetAddress: undefined,
   loginType: undefined,
+  isAuthenticated: false,
   setUserConnected: (user) => set({ userConnected: user }),
   setToken: (token) => set({ token }),
   setJwtToken: (token) => set({ jwtToken: token }),
   setEvmAddress: (address) => set({ evmAddress: address }),
   setStarknetAddress: (address) => set({ starknetAddress: address }),
   setLoginType: (type) => set({ loginType: type }),
+  setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 })); 
