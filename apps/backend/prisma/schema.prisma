@@ -42,8 +42,6 @@ model User {
   tasks Task[]
   goals Goal[]
   timerSessions TimerSession[]
-  timerFocusSessions TimerFocusSession[]
-  timerBreakSessions TimerBreakSession[]
   userSettings UserSettings?
 
   // Authentication relations
@@ -55,6 +53,7 @@ model User {
   messages Message[]
   fundingAccounts FundingAccount[]
   badges Badge[]
+  quests Quests[]
 
   @@map("users")
 }
@@ -188,7 +187,6 @@ model Task {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   timerSessions TimerSession[]
-  timerFocusSessions TimerFocusSession[]
 
   @@map("tasks")
 }
@@ -209,7 +207,6 @@ model Goal {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   timerSessions TimerSession[]
-  timerFocusSessions TimerFocusSession[]
 
   @@map("goals")
 }
@@ -225,7 +222,8 @@ model TimerSession {
   endTime   DateTime?
   duration  Int       // in seconds
   completed Boolean   @default(false)
-  notes     String?
+  note     String?
+  notes String[]
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -242,55 +240,8 @@ model TimerSession {
   mood            String?
   energyLevel     String?
   productivityLevel String?
-  notes           String?
 
   @@map("timer_sessions")
-}
-
-// Timer focus session model
-model TimerFocusSession {
-  id        String    @id @default(cuid())
-  userId    String
-  taskId    String?
-  goalId    String?
-  startTime DateTime
-  endTime   DateTime?
-  duration  Int       // in seconds
-  completed Boolean   @default(false)
-  notes     String?
-  createdAt DateTime  @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
-
-  @@map("timer_focus_sessions")
-}
-
-// Timer break session model
-model TimerBreakSession {
-  id              String    @id @default(cuid())
-  userId          String
-  taskId          String?
-  goalId          String?
-  startTime       DateTime
-  endTime         DateTime?
-  duration        Int       // in seconds
-  completed       Boolean   @default(false)
-  isHavingFun     Boolean?
-  activities      String[]  // Array of activities
-  persons         String[]  // Array of persons
-  location        String?
-  weather         String?
-  mood            String?
-  energyLevel     String?
-  productivityLevel String?
-  notes           String?
-  createdAt       DateTime  @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("timer_break_sessions")
 }
 
 // User settings model
@@ -330,6 +281,33 @@ model Badge {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, type])
+  @@index([userId, type], map: "badges_userId_type_idx")
   @@map("badges")
+}
+
+
+// Badge model for gamification
+model Quests {
+  id          String   @id @default(cuid())
+  userId      String
+  isCompleted String?
+  requirements String[]
+
+  taskAbout String?
+  type        String   // e.g. 'daily_connection', 'streak', etc.
+  name        String
+  description String?
+  icon        String?  // emoji or icon name
+  dateAwarded DateTime @default(now())
+  meta        Json?
+
+  nftContractAddress String?
+  nftTokenId String?
+  imageUrl String?
+
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type], map: "quests_userId_type_idx")
+  @@map("quests")
 }

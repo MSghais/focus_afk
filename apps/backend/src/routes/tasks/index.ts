@@ -30,7 +30,7 @@ const TimerSessionSchema = z.object({
   notes: z.string().optional(),
 });
 
-const TimerBreakSessionSchema = TimerSessionSchema.extend({
+const BreakMetadataSchema = z.object({
   isHavingFun: z.boolean().optional(),
   activities: z.array(z.string()).optional(),
   persons: z.array(z.string()).optional(),
@@ -343,32 +343,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Timer break session routes
-  fastify.post('/timer-break-sessions', {
-    onRequest: [fastify.authenticate],
-    schema: {
-      body: TimerBreakSessionSchema,
-    },
-  }, async (request, reply) => {
-    try {
-      const userId = request.user.id;
-      const sessionData = request.body as z.infer<typeof TimerBreakSessionSchema>;
 
-      const session = await fastify.prisma.timerBreakSession.create({
-        data: {
-          ...sessionData,
-          userId,
-          startTime: new Date(sessionData.startTime),
-          endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
-        },
-      });
-
-      return reply.code(201).send({ success: true, data: session });
-    } catch (error) {
-      request.log.error(error);
-      return reply.code(500).send({ error: 'Internal server error' });
-    }
-  });
 
   // User settings routes
   fastify.get('/settings', {
