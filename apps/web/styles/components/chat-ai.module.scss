@@ -1,7 +1,5 @@
 .chatAi {
   padding: 2rem;
-//   max-width: 1200px;
-//   margin: 0 auto;
 
   .title {
     font-size: 2rem;
@@ -99,6 +97,74 @@
       font-size: 0.75rem;
       color: #94a3b8;
       margin-top: 0.25rem;
+    }
+  }
+
+  .markdownContent {
+    // Markdown content styling
+    p {
+      margin: 0 0 0.5rem 0;
+      line-height: 1.5;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    strong {
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    em {
+      font-style: italic;
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.125rem 0.25rem;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 0.875em;
+    }
+
+    pre {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 0.75rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+
+      code {
+        background: none;
+        padding: 0;
+      }
+    }
+
+    ul, ol {
+      margin: 0.5rem 0;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin: 0.25rem 0;
+    }
+
+    a {
+      color: #667eea;
+      text-decoration: underline;
+
+      &:hover {
+        color: #764ba2;
+      }
+    }
+
+    blockquote {
+      border-left: 3px solid #667eea;
+      margin: 0.5rem 0;
+      padding-left: 1rem;
+      font-style: italic;
+      color: #cbd5e1;
     }
   }
 

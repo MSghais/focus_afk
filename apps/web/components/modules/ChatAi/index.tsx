@@ -14,6 +14,25 @@ import styles from '../../../styles/components/chat-ai.module.scss';
 import { useAuthStore } from '../../../store/auth';
 import ProfileUser from '../../profile/ProfileUser';
 import { Icon } from '../../small/icons';
+import MarkdownIt from 'markdown-it';
+
+// Add a simple markdown renderer as fallback
+const simpleMarkdownRenderer = (text: string) => {
+    if (!text || typeof text !== 'string') {
+        return '';
+    }
+    
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/\n/g, '<br>');
+};
 
 interface ChatAiProps {
     taskId?: number | string;
@@ -146,6 +165,26 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         });
     };
 
+    // Initialize markdown-it with error handling
+    const renderMarkdown = (content: string) => {
+        if (!content || typeof content !== 'string') {
+            return '';
+        }
+        
+        try {
+            const md = new MarkdownIt({
+                html: true,
+                linkify: true,
+                typographer: true
+            });
+            return md.render(content);
+        } catch (error) {
+            console.warn('Markdown-it failed, using fallback renderer:', error);
+            return simpleMarkdownRenderer(content);
+        }
+    };
+
+
     return (
         <div className={styles.chatAi}>
             <h1 className={styles.title}>AI Mentor</h1>
@@ -178,14 +217,25 @@ export default function ChatAi({ taskId }: ChatAiProps) {
                                 <p>Start a conversation with your AI mentor!</p>
                             </div>
                         ) : (
-                            messages.map((message) => (
+                            messages.map((message) => {
+                                console.log('message', message.content);
+                                return (
                                 <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
-                                    <div className={styles.messageContent}>{message.content}</div>
+
+                                    {message?.role === "assistant" && (
+                                        <div className={`${styles.messageContent} ${styles.markdownContent}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                    )}
+
+                                    {message?.role === "user" && (
+                                        <div className={styles.messageContent}>{message.content || ''}</div>
+                                    )}
+
                                     <div className={styles.messageTime}>
                                         {formatMessageTime(message.createdAt)}
                                     </div>
                                 </div>
-                            ))
+                            );
+                        })
                         )}
                         {isLoading && (
                             <div className={`${styles.message} ${styles.ai}`}>
