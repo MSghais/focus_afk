@@ -1,0 +1,68 @@
+.questDetail {
+  background: var(--color-bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 24px 28px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+.difficulty {
+  color: var(--color-accent);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.status {
+  margin-bottom: 10px;
+  font-size: 1em;
+}
+.status .pending {
+  color: var(--color-warning, #FFA500);
+}
+.status .active {
+  color: var(--color-accent);
+}
+.status .completed {
+  color: var(--color-success, #4CAF50);
+}
+.status .failed {
+  color: var(--color-error, #E53935);
+}
+.description {
+  color: var(--color-text-secondary);
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+.rewards {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.xp {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.badge {
+  color: var(--color-badge, #FFD700);
+  font-size: 1.15em;
+}
+.actionBtn {
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.actionBtn:hover {
+  background: var(--color-accent-light);
+} 

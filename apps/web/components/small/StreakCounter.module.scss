@@ -1,0 +1,18 @@
+.streakCounter {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  font-size: 1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.fireIcon {
+  margin-right: 6px;
+  font-size: 1.2em;
+}
+.streakNumber {
+  font-size: 1em;
+} 
