@@ -110,18 +110,7 @@ export interface AuthResponse {
     refreshToken: string;
 }
 
-// Mentor and Message interfaces
-export interface Mentor {
-    id?: string;
-    userId: string;
-    name: string;
-    role: string;
-    knowledges: string[];
-    about?: string;
-    isActive: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-}
+
 
 export interface Message {
     id?: string;
@@ -152,4 +141,24 @@ export interface FundingAccount {
     currency: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface Mentor {
+    id?: string;
+    userId: string;
+    name: string;
+    role: string;
+    knowledges: string[];
+    about?: string;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface MentorFeedback {
+    sessionId: string;
+    rating: number;
+    message: string;
+    tips: string[];
+    nextSteps: string[];
 }

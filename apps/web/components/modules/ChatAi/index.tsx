@@ -228,7 +228,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
 
     return (
         <div className={styles.chatAi}>
-            <h1 className={styles.title}>AI Mentor</h1>
+            {/* <h1 className={styles.title}>AI Mentor</h1> */}
 
             <div className={styles.chatGrid}>
                 <div className={styles.chatCard}>

@@ -203,7 +203,7 @@ export default function Dashboard() {
                 >
                     <div className={styles.actionContent}>
                         <div className={styles.actionInfo}>
-                            <p className={styles.actionTitle}>Add Task</p>
+                            <p className={styles.actionTitle}>Add/Check Task</p>
                             <p className={styles.actionDescription}>Create a new task</p>
                         </div>
                         <span className={styles.actionIcon}>➕</span>

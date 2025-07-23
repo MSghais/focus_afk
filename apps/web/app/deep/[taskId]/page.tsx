@@ -14,8 +14,6 @@ import GoalsOverview from '../../../components/modules/goals/GoalsOverview';
 import { useUIStore } from '../../../store/uiStore';
 import { ButtonPrimary } from '../../../components/small/buttons';
 import { Task } from '../../../types';
-// import AuthDebug from '../../../components/modules/mentor/AuthDebug';
-// import LoginCheck from '../../../components/modules/mentor/LoginCheck';
 
 export default function DeepModePage() {
     const router = useRouter();
