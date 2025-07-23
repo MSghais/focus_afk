@@ -6,35 +6,59 @@ dotenv.config();
 
 const TimerSessionSchema = z.object({
   taskId: z.string().optional(),
-  goalId: z.string().optional(),
-  startTime: z.string().datetime(),
-  endTime: z.string().datetime().optional(),
-  duration: z.number().positive(),
+  userId: z.string().optional(),
+  completed: z.boolean().optional(),
   notes: z.string().optional(),
+  type: z.enum(['focus', 'break', 'deep']).optional(),
+  goalId: z.string().optional(),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  duration: z.number().positive().optional(),
 }).partial();
 
 async function timerRoutes(fastify: FastifyInstance) {
 
   // Timer session routes
+  // Fix: Fastify v5+ requires JSON schema, not Zod schema, in the route definition.
+  // Use zodToJsonSchema to convert the Zod schema to JSON schema for Fastify.
+  // Fix: Use zodToJsonSchema for the body schema, and ensure only valid JSON Schema keywords are used.
   fastify.post('/timer-sessions', {
     onRequest: [fastify.authenticate],
-    // schema: {
-    //     body: TimerSessionSchema,
-    // },
+    schema: {
+      response: {
+        201: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'object' }, // You can further specify the timerSession shape if desired
+          },
+          required: ['success', 'data'],
+        }
+      }
+    },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+      // const sessionData = request.body as z.infer<typeof TimerSessionSchema>;
+
+        const body = TimerSessionSchema.safeParse(request.body);
+      if (!body.success) {
+        return reply.code(400).send({ error: 'Invalid session data' });
+      }
+
       const sessionData = request.body as z.infer<typeof TimerSessionSchema>;
 
       const data: any = {
         userId,
-        startTime: sessionData.startTime ? new Date(sessionData.startTime) : new Date(),
+        startTime: sessionData?.startTime ? new Date(sessionData.startTime) : new Date(),
         endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
         duration: sessionData.duration,
         notes: sessionData.notes,
         // Only add these if they are defined
         ...(sessionData.taskId ? { taskId: sessionData.taskId } : {}),
         ...(sessionData.goalId ? { goalId: sessionData.goalId } : {}),
+        ...(sessionData.completed !== undefined ? { completed: sessionData.completed } : {}),
+        ...(sessionData.type ? { type: sessionData.type } : {}),
       };
 
       const session = await fastify.prisma.timerSession.create({ data });
@@ -49,25 +73,45 @@ async function timerRoutes(fastify: FastifyInstance) {
   fastify.get('/timer-sessions', {
     onRequest: [fastify.authenticate],
     schema: {
-      querystring: z.object({
-        taskId: z.string().optional(),
-        goalId: z.string().optional(),
-        completed: z.string().optional(),
-        startDate: z.string().datetime().optional(),
-        endDate: z.string().datetime().optional(),
-      }),
+      querystring: {
+        type: 'object',
+        properties: {
+          taskId: { type: 'string' },
+          goalId: { type: 'string' },
+          completed: { type: 'string' },
+          startDate: { type: 'string' },
+          endDate: { type: 'string' },
+        },
+        additionalProperties: false,
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            data: { type: 'array', items: { type: 'object' } }, // You can further specify the timerSession shape if desired
+          },
+          required: ['success', 'data'],
+        }
+      }
     },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      const { taskId, goalId, completed, startDate, endDate } = request.query as any;
+      const { taskId, goalId, completed, startDate, endDate } = request.query as {
+        taskId?: string;
+        goalId?: string;
+        completed?: string;
+        startDate?: string;
+        endDate?: string;
+      };
 
       const where: any = { userId };
       if (taskId) where.taskId = taskId;
       if (goalId) where.goalId = goalId;
       if (completed !== undefined) where.completed = completed === 'true';
       if (startDate) where.startTime = { gte: new Date(startDate) };
-      if (endDate) where.startTime = { ...where.startTime, lte: new Date(endDate) };
+      if (endDate) where.startTime = { ...(where.startTime || {}), lte: new Date(endDate) };
 
       const sessions = await fastify.prisma.timerSession.findMany({
         where,
@@ -84,21 +128,23 @@ async function timerRoutes(fastify: FastifyInstance) {
   // Update a timer session
   fastify.put('/timer-sessions/:id', {
     onRequest: [fastify.authenticate],
-    schema: {
-      body: TimerSessionSchema.partial(),
-      querystring: z.object({
-        taskId: z.string().optional(),
-        goalId: z.string().optional(),
-        completed: z.string().optional(),
-        startDate: z.string().datetime().optional(),
-        endDate: z.string().datetime().optional(),
-      }),
+    preValidation: [
+      (request, reply, done) => {
+        const body = TimerSessionSchema.safeParse(request.body);
+        if (!body.success) {
+          return reply.code(400).send({ error: 'Invalid session data' });
+        }
+        done();
       },
+    ],
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
       const { id } = request.params as { id: string };
-      const updateData = request.body as Partial<z.infer<typeof TimerSessionSchema>>;
+      const body = TimerSessionSchema.safeParse(request.body);  
+      if (!body.success) {
+        return reply.code(400).send({ error: 'Invalid session data' });
+      }
 
       const session = await fastify.prisma.timerSession.findFirst({
         where: { id, userId },
@@ -107,6 +153,7 @@ async function timerRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Timer session not found' });
       }
 
+      const updateData = body?.data as Partial<z.infer<typeof TimerSessionSchema>>;
       const data: any = {
         ...updateData,
         startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
@@ -190,9 +237,13 @@ async function timerRoutes(fastify: FastifyInstance) {
   fastify.get('/stats/focus', {
     onRequest: [fastify.authenticate],
     schema: {
-      querystring: z.object({
-        days: z.string().optional(),
-      }),
+      querystring: {
+        type: 'object',
+        properties: {
+          days: { type: 'string' }
+        },
+        additionalProperties: false
+      }
     },
   }, async (request, reply) => {
     try {

@@ -26,13 +26,18 @@ async function goalsRoutes(fastify: FastifyInstance) {
   // Goal routes
   fastify.post('/goals', {
     onRequest: [fastify.authenticate],
-    schema: {
-      body: GoalSchema,
-    },
+    // schema: {
+    //   body: GoalSchema,
+    // },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      const goalData = request.body as z.infer<typeof GoalSchema>;
+      const body = GoalSchema.safeParse(request.body);
+      if (!body.success) {
+        return reply.code(400).send({ error: 'Invalid goal data' });
+      }
+      
+      const goalData = body.data as z.infer<typeof GoalSchema>; 
 
       const goal = await fastify.prisma.goal.create({
         data: {
@@ -51,16 +56,23 @@ async function goalsRoutes(fastify: FastifyInstance) {
 
   fastify.get('/goals', {
     onRequest: [fastify.authenticate],
-    schema: {
-      querystring: z.object({
-        completed: z.string().optional(),
-        category: z.string().optional(),
-      }),
-    },
+    // schema: {
+    //   querystring: {
+    //     type: 'object',
+    //     properties: {
+    //       completed: { type: 'string' },
+    //       category: { type: 'string' },
+    //     },
+    //     additionalProperties: false,
+    //   },
+    // },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      const { completed, category } = request.query as any;
+      const { completed, category } = request.query as {
+        completed?: string;
+        category?: string;
+      };
 
       const where: any = { userId };
       if (completed !== undefined) where.completed = completed === 'true';
@@ -80,9 +92,9 @@ async function goalsRoutes(fastify: FastifyInstance) {
 
   fastify.put('/goals/:id', {
     onRequest: [fastify.authenticate],
-    schema: {
-      body: GoalSchema.partial(),
-    },
+    // schema: {
+    //   body: GoalSchema.partial(),
+    // },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
