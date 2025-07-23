@@ -94,7 +94,7 @@ export default function DashboardQuests() {
     let streak = 0;
     let current = new Date();
     for (let i = 0; i < sorted.length; i++) {
-      const day = new Date(sorted[i].date);
+      const day = new Date(sorted[i]?.date || new Date().toISOString());
       // If first day, check if today or yesterday
       if (i === 0) {
         const diff = Math.floor((current.getTime() - day.getTime()) / (1000 * 60 * 60 * 24));

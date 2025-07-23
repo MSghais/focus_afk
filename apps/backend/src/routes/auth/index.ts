@@ -4,10 +4,12 @@ import { SignatureService } from '../../services/auth/signature.service';
 import { AuthService } from '../../services/auth/auth.service';
 import { ethers } from "ethers";
 import { ec } from 'starknet';
+import { BadgeService } from '../../services/badge.service';
 
 export async function authRoutes(fastify: FastifyInstance) {
   const authService = new AuthService(fastify.prisma);
   const signatureService = new SignatureService();
+  const badgeService = new BadgeService(fastify.prisma);
 
   fastify.post<{ Body: LoginInput }>(
     '/auth',
@@ -93,17 +95,17 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         const mentor = await fastify.prisma.mentor.findFirst({
           where: {
-            // userId: user.id,
-            accountEvmAddress: address.toLowerCase(),
+            userId: user.id,
+            // accountEvmAddress: address.toLowerCase(),
           },
         });
         if (!mentor) {
           await fastify.prisma.mentor.create({
             data: {
               userId: user.id,
-              accountEvmAddress: address.toLowerCase(),
+              accountEvmAddress: address?.toLowerCase() || "" ,
               isActive: true,
-              name: `Mentor ${address.toLowerCase()}`,
+              name: `Mentor ${address?.toLowerCase() || ""}`,
             },
           });
         }
@@ -157,6 +159,9 @@ export async function authRoutes(fastify: FastifyInstance) {
         },
       });
       console.log("user", user);
+
+      // Award daily connection badge
+      badgeService.awardDailyConnectionBadge(user.id);
 
       // 3. Create JWT
       const token = fastify.jwt.sign({ id: user.id, userAddress: user.userAddress });
