@@ -95,6 +95,13 @@ model Mentor {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  isPublic Boolean?
+  imageUrl String?
+  metadata Json?
+  personality Json?
+  knowledge Json?
+  sources String[]
+
   accountEvmAddress String?
   evmAddressAgent String?
 
@@ -184,6 +191,11 @@ model Task {
   actualMinutes   Int?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  // Subtask relationships
+  parentTaskId    String?   // ID of the parent task
+  parentTask      Task?     @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  subtasks        Task[]    @relation("TaskSubtasks")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   timerSessions TimerSession[]

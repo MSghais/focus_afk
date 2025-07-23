@@ -12,8 +12,9 @@ const BottomBar = () => {
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
-    { id: 'goals', label: 'Goals', icon: '🎯' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
+    // { id: 'goals', label: 'Goals', icon: '🎯' },
+    // { id: 'settings', label: 'Settings', icon: '⚙️' },
     { id: 'profile', label: 'Profile', icon: '👤' },
   ];
 
@@ -26,7 +27,7 @@ const BottomBar = () => {
             setCurrentModule(item.id as any)
             router.push(`/${item.id}`)
           }}
-          className={`${styles.bottomNavItem} ${ui.currentModule === item.id ? styles.active : ''}`}
+          className={`${styles.bottomNavItem} ${ ui.currentModule === item.id ? styles.active : ''}`}
         >
           <span className={styles.bottomNavIcon}>{item.icon}</span>
           {/* <span className={styles.bottomNavLabel}>{item.label}</span> */}

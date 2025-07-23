@@ -52,6 +52,7 @@ export interface TimerSession {
 export interface Task {
     id?: number;
     title: string;
+    subTaskId?: number;
     description?: string;
     completed: boolean;
     priority: 'low' | 'medium' | 'high';
@@ -110,18 +111,7 @@ export interface AuthResponse {
     refreshToken: string;
 }
 
-// Mentor and Message interfaces
-export interface Mentor {
-    id?: string;
-    userId: string;
-    name: string;
-    role: string;
-    knowledges: string[];
-    about?: string;
-    isActive: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-}
+
 
 export interface Message {
     id?: string;
@@ -152,4 +142,40 @@ export interface FundingAccount {
     currency: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface Mentor {
+    id?: string;
+    userId: string;
+    name: string;
+    role: string;
+    notes?: string[];
+    note?: string;
+    knowledges: string[];
+    about?: string;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    evmAddress?: string;
+    starknetAddress?: string;
+    loginType?: string;
+    verified?: boolean;
+    user?: User;
+    metadata?: any;
+    knowledge?: string[];
+    sources?: string[];
+    personality?: any;
+    accountEvmAddress?: string;
+    evmAddressAgent?:string;
+    assistant_metadata?: any;
+
+
+}
+
+export interface MentorFeedback {
+    sessionId: string;
+    rating: number;
+    message: string;
+    tips: string[];
+    nextSteps: string[];
 }

@@ -33,6 +33,9 @@ interface FocusAFKStore {
   timerSessions: TimerSession[];
   settings: UserSettings | null;
 
+  selectedTask: Task | null;
+  selectedGoal: Goal | null;
+
   // Timer state
   timer: TimerState;
 
@@ -153,6 +156,15 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       settings: false,
     },
 
+    selectedTask: null,
+    selectedGoal: null,   
+
+    setSelectedTask: (task: Task | null) => {
+      set({ selectedTask: task });
+    },
+    setSelectedGoal: (goal: Goal | null) => {
+      set({ selectedGoal: goal });
+    },  
 
     // Timer actions
     startTimerFocus: async (taskId, goalId) => {

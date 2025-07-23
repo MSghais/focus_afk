@@ -13,7 +13,7 @@ export class FocusAFKDatabase extends Dexie {
     super('FocusAFKDatabase');
 
     this.version(1).stores({
-      tasks: '++id, title, completed, priority, category, dueDate, createdAt',
+      tasks: '++id, title, completed, priority, category, dueDate, createdAt, subTaskId',
       goals: '++id, title, completed, category, targetDate, createdAt',
       timerSessions: '++id, type, taskId, goalId, startTime, endTime, completed, createdAt',
       userSettings: '++id, updatedAt'

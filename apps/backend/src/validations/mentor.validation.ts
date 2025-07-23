@@ -15,6 +15,12 @@ export const mentorZodSchema = {
     knowledges: z.array(z.string()).optional(),
     about: z.string().optional(),
     isActive: z.boolean().optional(),
+    isPublic: z.boolean().optional(),
+    metadata: z.any().optional(),
+    personality: z.any().optional(),
+    knowledge: z.any().optional(),
+    imageUrl: z.string().optional(),
+    sources: z.array(z.string()).optional(),  
   }),
 
   createMessage: z.object({
@@ -79,6 +85,12 @@ export const mentorSchema = {
       },
       about: { type: 'string' },
       isActive: { type: 'boolean' },
+      isPublic: { type: 'boolean' },
+      metadata: { type: 'object' },
+      personality: { type: 'object' },
+      knowledge: { type: 'object' },
+      sources: { type: 'array', items: { type: 'string' } },
+      imageUrl: { type: 'string' },
     },
   },
 

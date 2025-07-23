@@ -14,25 +14,18 @@ const LeftSidebar = () => {
   const router = useRouter();
   const { showModal } = useUIStore();
   // const evmLogin = useEvmLogin();
-  const toggleTheme = () => {
-    const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-
-    if (typeof window !== "undefined") {
-      const body = document.body;
-      body.setAttribute("data-theme", newTheme);
-    }
-  };
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
+    { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'goals', label: 'Goals', icon: '🎯' },
-    // { id: 'learning', label: 'Learning', icon: '🎓' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
-    { id: 'profile', label: 'User', icon: '👤' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
+
+    // { id: 'learning', label: 'Learning', icon: '🎓' },
+ 
+    // { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
@@ -52,7 +45,7 @@ const LeftSidebar = () => {
             <button
               key={item.id}
               onClick={() => {
-                // setCurrentModule(item.id as any)
+                setCurrentModule(item.id as any)
                 router.push(`/${item.id}`)
               }}
               className={`${styles.navItem} ${ui.currentModule === item.id ? styles.active : ''}`}

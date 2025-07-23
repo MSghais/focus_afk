@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
-import { Task } from '../../../lib/database';
+
 import Link from 'next/link';
 import { logClickedEvent } from '../../../lib/analytics';
 import { useAuthStore } from '../../../store/auth';
 import { isUserAuthenticated } from '../../../lib/auth';
+import { ButtonPrimary } from '../../small/buttons';
+import { Task } from '../../../types';
 
 export default function Tasks() {
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend } = useFocusAFKStore();
@@ -233,9 +235,8 @@ export default function Tasks() {
                         {tasks.map((task) => (
                             <div
                                 key={task.id}
-                                className={`p-4 border rounded-lg transition-all ${
-                                    task.completed ? 'bg-gray-50 opacity-75' : 'hover:shadow-md'
-                                }`}
+                                className={`p-4 border rounded-lg transition-all ${task.completed ? 'bg-gray-50 opacity-75' : 'hover:shadow-md'
+                                    }`}
                             >
                                 {editingTask?.id === task.id ? (
                                     <form onSubmit={handleUpdateTask} className="space-y-3">
@@ -266,7 +267,7 @@ export default function Tasks() {
                                                 type="text"
                                                 value={editingTask?.category || ''}
                                                 onChange={(e) =>
-                                                        setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                                    setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
                                                 }
                                                 className="p-2 border rounded-md text-sm"
                                                 placeholder="Category"
@@ -324,23 +325,29 @@ export default function Tasks() {
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap gap-2 ml-0 sm:ml-4">
-                                            <Link
-                                                href={`/deep/${task.id}`}
+                                            <ButtonPrimary
                                                 className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
                                             >
-                                                Go DEEP
-                                            </Link>
+                                                <Link
+                                                    href={`/deep/${task.id}`}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    🎯
+                                                    Go DEEP
+                                                </Link>
+                                            </ButtonPrimary>
+
                                             <button
                                                 onClick={() => setEditingTask(task)}
-                                                className="px-2 py-1 text-blue-600 hover:bg-blue-50 rounded text-sm"
+                                                className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
                                             >
-                                                Edit
+                                              ✏️ Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteTask(task.id!)}
-                                                className="px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
+                                                className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
                                             >
-                                                Delete
+                                                🗑️ Delete
                                             </button>
                                         </div>
                                     </div>
@@ -350,6 +357,6 @@ export default function Tasks() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

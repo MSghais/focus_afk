@@ -1,4 +1,4 @@
-import TimerMain from "../../components/modules/timer";
+import TimePageComponent from "./TimePageComponent";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default function TimerPage() {
     return (
         <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
-            <TimerMain isSetupEnabled={false} 
-            timerTypeProps="deep"
-            />
+            <TimePageComponent />
+
+           
         </div>
     )
 }

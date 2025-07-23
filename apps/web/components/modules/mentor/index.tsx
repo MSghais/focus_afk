@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/mentor.module.scss';
 import ChatAi from '../ChatAi';
-import { Message } from '../../../lib/api';
-import type { Mentor } from '../../../lib/api';
 import { useUIStore } from '../../../store/uiStore';
 import { useApi } from '../../../hooks/useApi';
+import type { Message, Mentor } from '../../../types';
+import MentorList from './MentorList';
+import ProgressMentor from './Progress';
+import { ButtonPrimary, ButtonSecondary } from '../../small/buttons';
+import { useMentorsStore } from '../../../store/mentors';
 
 interface MentorFeedback {
   sessionId: string;
@@ -32,10 +35,15 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
+  const {selectedMentor} = useMentorsStore();
+
+  const [isOpenInsights, setIsOpenInsights] = useState(false);
+  const [isViewChatAi, setIsViewChatAi] = useState(false);
+
   useEffect(() => {
-    loadMessages();
+    // loadMessages();
     loadMentors();
-    
+
     // Load recent session feedback
     if (timerSessions.length > 0) {
       const latestSession = timerSessions[0];
@@ -43,40 +51,12 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
     }
   }, []);
 
-  const loadMessages = async () => {
-    try {
-      setIsLoadingMessages(true);
-      const response = await apiService.getMessages({ limit: 20 });
-      
-      if (response.success && response.data) {
-        // Sort messages by creation date (oldest first for chat display)
-        const sortedMessages = response.data.sort((a: Message, b: Message) => 
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-        setMessages(sortedMessages);
-      } else {
-        console.error('Failed to load messages:', response.error);
-        showToast({
-          message: 'Failed to load chat history',
-          type: 'error',
-        });
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      showToast({
-        message: 'Error loading chat history',
-        type: 'error',
-      });
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  };
 
   const loadMentors = async () => {
     try {
       const response = await apiService.getMentors();
-      if (response.success && response.data) {
-        setMentors(response.data);
+      if (response) {
+        setMentors(response);
       }
     } catch (error) {
       console.error('Error loading mentors:', error);
@@ -105,46 +85,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
     setRecentFeedback(feedback);
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim()) return;
 
-    const userMessage = inputMessage;
-    setInputMessage('');
-    setIsTyping(true);
-
-    try {
-      // Send message to backend
-      const response = await apiService.sendChatMessage({
-        prompt: userMessage,
-        mentorId: mentors[0]?.id, // Use first mentor if available
-      });
-
-      if (response.success) {
-        // Reload messages to get the updated conversation
-        await loadMessages();
-      } else {
-        showToast({
-          message: response.error || 'Failed to send message',
-          type: 'error',
-        });
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      showToast({
-        message: 'Error sending message',
-        type: 'error',
-      });
-    } finally {
-      setIsTyping(false);
-    }
-  };
-
-  const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
 
   const getProductivityInsights = () => {
     const completedTasks = tasks.filter(t => t.completed).length;
@@ -165,34 +106,21 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
 
   return (
     <div className={styles.mentor}>
-      <h1 className={styles.title}>AI Mentor</h1>
+      {/* <h1 className={styles.title}>AI Mentor</h1> */}
 
       <div className={styles.mentorGrid}>
         {/* Productivity Insights */}
-        <div className={styles.insightsCard}>
-          <h2 className={styles.cardTitle}>Your Progress</h2>
-          <div className={styles.insightsGrid}>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{insights.taskCompletion}%</span>
-              <span className={styles.insightLabel}>Task Completion</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{insights.totalFocusHours}h</span>
-              <span className={styles.insightLabel}>Total Focus Time</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{insights.averageSessionMinutes}m</span>
-              <span className={styles.insightLabel}>Avg Session</span>
-            </div>
-            <div className={styles.insight}>
-              <span className={styles.insightValue}>{insights.streak}</span>
-              <span className={styles.insightLabel}>Today's Sessions</span>
-            </div>
-          </div>
+
+        <MentorList />
+
+        <div className="flex flex-row gap-4 justify-center"> 
+          <ButtonSecondary onClick={() => setIsViewChatAi(!isViewChatAi)}>
+              {isViewChatAi ? "Hide Chat AI" : "Show Chat AI"}
+          </ButtonSecondary>
         </div>
 
         {/* Chat Interface */}
-        <ChatAi taskId={tasks[0]?.id} mentorId={mentors[0]?.id} />  
+        {isViewChatAi && <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />}
         {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
@@ -245,48 +173,64 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
           </div>
         </div> */}
 
-        {/* Quick Actions */}
-        <div className={styles.actionsCard}>
-          <h2 className={styles.cardTitle}>Quick Actions</h2>
-          <div className={styles.actionButtons}>
-            <button className={styles.actionButton}>
-              📊 Get Weekly Report
-            </button>
-            <button className={styles.actionButton}>
-              🎯 Set New Goal
-            </button>
-            <button className={styles.actionButton}>
-              ⏱️ Start Focus Session
-            </button>
-            <button className={styles.actionButton}>
-              📚 Learning Recommendations
-            </button>
-          </div>
-        </div>
+
+        {/* <ButtonPrimary
+          className={styles.insightsButton + "max-w-100 align-center"}
+          onClick={() => setIsOpenInsights(!isOpenInsights)}
+        >
+          {isOpenInsights ? 'Close Insights' : 'Open Insights'}
+        </ButtonPrimary> */}
+
+        {isOpenInsights &&
+          <>
+            <ProgressMentor />
+
+            {/* <div className={styles.actionsCard}>
+              <h2 className={styles.cardTitle}>Quick Actions</h2>
+              <div className={styles.actionButtons}>
+                <button className={styles.actionButton}>
+                  📊 Get Weekly Report
+                </button>
+                <button className={styles.actionButton}>
+                  🎯 Set New Goal
+                </button>
+                <button className={styles.actionButton}>
+                  ⏱️ Start Focus Session
+                </button>
+                <button className={styles.actionButton}>
+                  📚 Learning Recommendations
+                </button>
+              </div>
+            </div> */}
+
+            {recentFeedback && (
+              <div className={styles.feedbackCard}>
+                <h2 className={styles.cardTitle}>Latest Session Feedback</h2>
+                <div className={styles.rating}>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className={`${styles.star} ${i < recentFeedback.rating ? styles.filled : ''}`}>
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+                <p className={styles.feedbackMessage}>{recentFeedback.message}</p>
+                <div className={styles.tips}>
+                  <h3>Quick Tips:</h3>
+                  <ul>
+                    {recentFeedback.tips.map((tip, index) => (
+                      <li key={index}>{tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </>
+        }
+
+
+
       </div>
 
-      {/* Recent Feedback */}
-      {recentFeedback && (
-        <div className={styles.feedbackCard}>
-          <h2 className={styles.cardTitle}>Latest Session Feedback</h2>
-          <div className={styles.rating}>
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={`${styles.star} ${i < recentFeedback.rating ? styles.filled : ''}`}>
-                ⭐
-              </span>
-            ))}
-          </div>
-          <p className={styles.feedbackMessage}>{recentFeedback.message}</p>
-          <div className={styles.tips}>
-            <h3>Quick Tips:</h3>
-            <ul>
-              {recentFeedback.tips.map((tip, index) => (
-                <li key={index}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
     </div>
   );
 } 
