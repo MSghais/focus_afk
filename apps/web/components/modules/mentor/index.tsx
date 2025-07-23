@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/mentor.module.scss';
 import ChatAi from '../ChatAi';
-import { apiService, Message } from '../../../lib/api';
+import { Message } from '../../../lib/api';
 import type { Mentor } from '../../../lib/api';
 import { useUIStore } from '../../../store/uiStore';
+import { useApi } from '../../../hooks/useApi';
 
 interface MentorFeedback {
   sessionId: string;
@@ -19,6 +20,7 @@ interface MentorFeedback {
 export default function Mentor() {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { showToast } = useUIStore();
+  const apiService = useApi();
   const [messages, setMessages] = useState<Message[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -44,7 +46,7 @@ export default function Mentor() {
       
       if (response.success && response.data) {
         // Sort messages by creation date (oldest first for chat display)
-        const sortedMessages = response.data.sort((a, b) => 
+        const sortedMessages = response.data.sort((a: Message, b: Message) => 
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
         setMessages(sortedMessages);

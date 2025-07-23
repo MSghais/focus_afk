@@ -32,10 +32,11 @@ export default function ProfileUser() {
 
                     <PrivyUser />
 
-
+{/* 
                     {!userConnected && (
-                        <LoginBackend />
-                    )}
+                    )} */}
+
+                    <LoginBackend />
 
                 </div>
             )}

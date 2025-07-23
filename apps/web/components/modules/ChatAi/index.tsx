@@ -8,7 +8,8 @@ import { useRouter } from 'next/navigation';
 import TimeLoading from '../../small/loading/time-loading';
 import { logClickedEvent } from '../../../lib/analytics';
 import { useUIStore } from '../../../store/uiStore';
-import { apiService, Message } from '../../../lib/api';
+import { Message } from '../../../lib/api';
+import { useApi } from '../../../hooks/useApi';
 
 interface ChatAiProps {
     taskId?: number | string;
@@ -19,6 +20,7 @@ export default function ChatAi({ taskId }: ChatAiProps) {
     const params = useParams();
     const {showToast} = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
+    const apiService = useApi();
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
         id: '',

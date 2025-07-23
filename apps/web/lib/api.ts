@@ -146,37 +146,24 @@ export interface FundingAccount {
 
 class ApiService {
   private baseUrl: string;
-  private accessToken: string | null = null;
-  private refreshToken: string | null = null;
 
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    this.loadTokens();
   }
 
-  private loadTokens() {
+  private getAuthToken(): string | null {
+    // Try to get token from Zustand store first
     if (typeof window !== 'undefined') {
-      this.accessToken = localStorage.getItem('accessToken');
-      this.refreshToken = localStorage.getItem('refreshToken');
+      // Access the auth store directly
+      const authStore = (window as any).__ZUSTAND_AUTH_STORE__;
+      if (authStore?.getState()?.jwtToken) {
+        return authStore.getState().jwtToken;
+      }
+      
+      // Fallback to localStorage for backward compatibility
+      return localStorage.getItem('accessToken');
     }
-  }
-
-  private saveTokens(accessToken: string, refreshToken: string) {
-    this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-    }
-  }
-
-  private clearTokens() {
-    this.accessToken = null;
-    this.refreshToken = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
+    return null;
   }
 
   private async request<T>(
@@ -189,8 +176,9 @@ class ApiService {
       ...(options.headers as Record<string, string> || {}),
     };
 
-    if (this.accessToken) {
-      headers.Authorization = `Bearer ${this.accessToken}`;
+    const token = this.getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
 
     try {
@@ -199,21 +187,10 @@ class ApiService {
         headers,
       });
 
-      if (response.status === 401 && this.refreshToken) {
-        // Try to refresh token
-        const refreshResult = await this.refreshAccessToken();
-        if (refreshResult.success) {
-          // Retry the original request
-          headers.Authorization = `Bearer ${this.accessToken}`;
-          const retryResponse = await fetch(url, {
-            ...options,
-            headers,
-          });
-          return await retryResponse.json();
-        } else {
-          this.clearTokens();
-          throw new Error('Authentication failed');
-        }
+      if (response.status === 401) {
+        // For 401 errors, we'll just throw an error since we don't have refresh token logic
+        // in the current auth flow
+        throw new Error('Authentication failed - please login again');
       }
 
       return await response.json();
@@ -225,63 +202,36 @@ class ApiService {
 
   // Authentication methods
   async evmLogin(address: string, signature: string, message: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await this.request<AuthResponse>('/evm-login', {
+    const response = await this.request<AuthResponse>('/auth/evm-login', {
       method: 'POST',
       body: JSON.stringify({ address, signature, message }),
     });
-
-    if (response.success && response.data) {
-      this.saveTokens(response.data.accessToken, response.data.refreshToken);
-    }
 
     return response;
   }
 
   async starknetLogin(address: string, signature: string, message: string): Promise<ApiResponse<AuthResponse>> {
-    const response = await this.request<AuthResponse>('/starknet-login', {
+    const response = await this.request<AuthResponse>('/auth/starknet-login', {
       method: 'POST',
       body: JSON.stringify({ address, signature, message }),
     });
-
-    if (response.success && response.data) {
-      this.saveTokens(response.data.accessToken, response.data.refreshToken);
-    }
 
     return response;
   }
 
   async refreshAccessToken(): Promise<ApiResponse<{ accessToken: string }>> {
-    if (!this.refreshToken) {
-      return { success: false, error: 'No refresh token available' };
-    }
-
-    const response = await this.request<{ accessToken: string }>('/refresh-token', {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken: this.refreshToken }),
-    });
-
-    if (response.success && response.data) {
-      this.accessToken = response.data.accessToken;
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', response.data.accessToken);
-      }
-    }
-
-    return response;
+    return { success: false, error: 'Refresh token not implemented in current auth flow' };
   }
 
   async logout(): Promise<ApiResponse> {
-    const response = await this.request('/logout', {
+    return this.request('/auth/logout', {
       method: 'POST',
-      body: JSON.stringify({ sessionId: 'current' }), // You might want to track session IDs
+      body: JSON.stringify({ sessionId: 'current' }),
     });
-
-    this.clearTokens();
-    return response;
   }
 
   async getProfile(): Promise<ApiResponse<{ user: User }>> {
-    return this.request<{ user: User }>('/me');
+    return this.request<{ user: User }>('/auth/me');
   }
 
   // Task methods
@@ -500,11 +450,11 @@ class ApiService {
 
   // Utility methods
   isAuthenticated(): boolean {
-    return !!this.accessToken;
+    return !!this.getAuthToken();
   }
 
   getAccessToken(): string | null {
-    return this.accessToken;
+    return this.getAuthToken();
   }
 }
 

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiService, Message } from '../../../lib/api';
+import { Message } from '../../../lib/api';
 import { useUIStore } from '../../../store/uiStore';
+import { useApi } from '../../../hooks/useApi';
 
 export default function MessageTest() {
   const { showToast } = useUIStore();
+  const apiService = useApi();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
