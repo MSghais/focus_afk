@@ -14,23 +14,15 @@ const LeftSidebar = () => {
   const router = useRouter();
   const { showModal } = useUIStore();
   // const evmLogin = useEvmLogin();
-  const toggleTheme = () => {
-    const newTheme = ui.theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-
-    if (typeof window !== "undefined") {
-      const body = document.body;
-      body.setAttribute("data-theme", newTheme);
-    }
-  };
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
+    { id: 'tasks', label: 'Tasks', icon: '📋' },
+    { id: 'goals', label: 'Goals', icon: '🎯' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     { id: 'profile', label: 'Profile', icon: '👤' },
-    // { id: 'tasks', label: 'Tasks', icon: '📋' },
-    // { id: 'goals', label: 'Goals', icon: '🎯' },
+
     // { id: 'learning', label: 'Learning', icon: '🎓' },
  
     // { id: 'settings', label: 'Settings', icon: '⚙️' },
