@@ -1,155 +1,13 @@
-// API service for backend communication
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, FundingAccount, AuthResponse, User } from '../types';
 
-export interface Task {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  priority: 'low' | 'medium' | 'high';
-  category?: string;
-  dueDate?: string;
-  estimatedMinutes?: number;
-  actualMinutes?: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
-export interface Goal {
-  id: string;
-  userId: string;
-  title: string;
-  description?: string;
-  targetDate?: string;
-  completed: boolean;
-  progress: number;
-  category?: string;
-  createdAt: string;
-  updatedAt: string;
-  relatedTaskIds: string[];
-}
-
-export interface TimerSession {
-  id: string;
-  userId: string;
-  taskId?: string;
-  goalId?: string;
-  startTime: string;
-  endTime?: string;
-  duration: number;
-  completed: boolean;
-  notes?: string;
-  createdAt: string;
-}
-
-export interface TimerBreakSession {
-  id: string;
-  userId: string;
-  taskId?: string;
-  goalId?: string;
-  startTime: string;
-  endTime?: string;
-  duration: number;
-  completed: boolean;
-  isHavingFun?: boolean;
-  activities?: string[];
-  persons?: string[];
-  location?: string;
-  weather?: string;
-  mood?: string;
-  energyLevel?: string;
-  productivityLevel?: string;
-  notes?: string;
-  createdAt: string;
-}
-
-export interface UserSettings {
-  id: string;
-  userId: string;
-  defaultFocusDuration: number;
-  defaultBreakDuration: number;
-  autoStartBreaks: boolean;
-  autoStartSessions: boolean;
-  notifications: boolean;
-  theme: 'light' | 'dark' | 'auto';
-  updatedAt: string;
-}
-
-export interface User {
-  id: string;
-  userAddress: string;
-  email?: string;
-  name?: string;
-  loginType: string;
-  verified: boolean;
-  createdAt: string;
-  updatedAt: string;
-  starknetAddress?: string;
-  evmAddress?: string;
-}
-
-export interface AuthResponse {
-  user: User;
-  accessToken: string;
-  refreshToken: string;
-}
-
-// Mentor and Message interfaces
-export interface Mentor {
-  id: string;
-  userId: string;
-  name: string;
-  role: string;
-  knowledges: string[];
-  about?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Message {
-  id: string;
-  userId: string;
-  mentorId?: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  model?: string;
-  tokens?: number;
-  metadata?: any;
-  createdAt: string;
-  mentor?: {
-    id: string;
-    name: string;
-    role: string;
-  };
-}
-
-export interface FundingAccount {
-  id: string;
-  userId: string;
-  accountType: 'crypto' | 'fiat' | 'subscription';
-  accountName: string;
-  accountAddress?: string;
-  accountDetails?: any;
-  isActive: boolean;
-  balance?: number;
-  currency: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 class ApiService {
   private baseUrl: string;
 
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-  }
+  } 
 
   private getAuthToken(): string | null {
     // Try to get token from Zustand store first
@@ -323,8 +181,8 @@ class ApiService {
     return this.request<TimerSession[]>(`/timer-sessions?${params.toString()}`);
   }
 
-  async createTimerBreakSession(sessionData: Omit<TimerBreakSession, 'id' | 'userId' | 'createdAt'>): Promise<ApiResponse<TimerBreakSession>> {
-    return this.request<TimerBreakSession>('/timer-break-sessions', {
+  async createTimerBreakSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<TimerSession>> {
+    return this.request<TimerSession>('/timer-sessions', {
       method: 'POST',
       body: JSON.stringify(sessionData),
     });

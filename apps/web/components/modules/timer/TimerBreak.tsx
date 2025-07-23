@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
-import { Task, Goal } from '../../../lib/database';
 import { dbUtils } from '../../../lib/database';
 import { logClickedEvent } from "../../../lib/analytics";
+import { useAuthStore } from "../../../store/auth";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -49,8 +49,11 @@ export default function TimerBreak({
             setElapsedSeconds(prev => prev + 1);
         }, 1000);
         // Create a new break session in the DB
-        const sessionId = await dbUtils.addTimerBreakSession({
-            startTime: new Date(),
+        // Get the current userId from the store, fallback to empty string if not available
+        const userId = useAuthStore.getState().userConnected?.id || "";
+        const sessionId = await dbUtils.addSession({
+            type: 'break',
+            startTime: new Date().toISOString(),
             duration: 0,
             completed: false,
             isHavingFun: false,
@@ -58,6 +61,7 @@ export default function TimerBreak({
             persons: [],
             location: '',
             weather: '',
+            userId
         });
         setBreakSessionId(sessionId);
     };
@@ -69,8 +73,8 @@ export default function TimerBreak({
         if (intervalRef.current) clearInterval(intervalRef.current);
         // Update the break session in the DB
         if (breakSessionId !== null) {
-            await dbUtils.updateTimerBreakSession(breakSessionId, {
-                endTime: new Date(),
+            await dbUtils.updateSession(breakSessionId, {
+                endTime: new Date().toISOString(),
                 duration: elapsedSeconds,
                 completed: true,
             });

@@ -217,6 +217,7 @@ model Goal {
 // Timer session model (general)
 model TimerSession {
   id        String    @id @default(cuid())
+  type String
   userId    String
   taskId    String?
   goalId    String?
@@ -230,6 +231,18 @@ model TimerSession {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   task Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
   goal Goal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+
+  metadata Json?
+  isHavingFun     Boolean?
+  activities      String[]  // Array of activities
+  persons         String[]  // Array of persons
+  location        String?
+  weather         String?
+  mood            String?
+  energyLevel     String?
+  productivityLevel String?
+  notes           String?
 
   @@map("timer_sessions")
 }

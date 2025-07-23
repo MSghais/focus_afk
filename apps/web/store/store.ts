@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { Task, Goal, TimerSession, UserSettings, dbUtils, TimerBreakSession } from '../lib/database';
+import { Task, Goal, Session, UserSettings, dbUtils } from '../lib/database';
 
 // Timer state interface
 interface TimerState {
@@ -26,7 +26,7 @@ interface FocusAFKStore {
   // Data
   tasks: Task[];
   goals: Goal[];
-  timerSessions: TimerSession[];
+  timerSessions: Session[];
   settings: UserSettings | null;
 
   // Timer state
@@ -153,15 +153,14 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     startTimerFocus: async (taskId, goalId) => {
       const { settings } = get();
       const duration = (settings?.defaultFocusDuration || 25) * 60;
-
-      const sessionId = await dbUtils.addTimeFocusSession({
+      const sessionId = await dbUtils.addSession({
+        type: 'focus',
         taskId,
-        goalId: Number(goalId),
+        goalId: goalId ? Number(goalId) : undefined,
         startTime: new Date(),
         duration: 0,
         completed: false,
       });
-
       set((state) => ({
         timer: {
           ...state.timer,
@@ -266,14 +265,14 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
 
     // Timer actions
     startTimer: async (duration, taskId, goalId) => {
-      const sessionId = await dbUtils.addTimerSession({
+      const sessionId = await dbUtils.addSession({
+        type: 'deep',
         taskId,
         goalId,
         startTime: new Date(),
         duration: 0,
         completed: false,
       });
-
       set((state) => ({
         timer: {
           ...state.timer,
@@ -302,13 +301,12 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       const { timer } = get();
       if (timer.currentSessionId) {
         const duration = timer.totalSeconds - timer.secondsLeft;
-        await dbUtils.updateTimerSession(timer.currentSessionId, {
+        await dbUtils.updateSession(timer.currentSessionId, {
           endTime: new Date(),
           duration,
           completed: true,
         });
       }
-
       set((state) => ({
         timer: {
           ...defaultTimerState,
@@ -322,7 +320,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       const { timer } = get();
       if (timer.currentSessionId) {
         const sessionDuration = duration || (timer.totalSeconds - timer.secondsLeft);
-        await dbUtils.updateTimerFocusSession(timer.currentSessionId, {
+        await dbUtils.updateSession(timer.currentSessionId, {
           endTime: new Date(),
           duration: sessionDuration,
           completed: completed,
@@ -358,10 +356,10 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     loadTimerSessions: async () => {
       set((state) => ({ loading: { ...state.loading, sessions: true } }));
       try {
-        const sessions = await dbUtils.getTimerSessions();
-        set({ timerSessions: sessions });
+          const timerSessions = await dbUtils.getSessions();
+        set({ timerSessions });
       } catch (error) {
-        console.error('Failed to load timer sessions:', error);
+        console.error('Failed to load sessions:', error);
       } finally {
         set((state) => ({ loading: { ...state.loading, sessions: false } }));
       }

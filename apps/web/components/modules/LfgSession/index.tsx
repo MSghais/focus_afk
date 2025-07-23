@@ -13,6 +13,7 @@ import Badges from '../../profile/Badges';
 import { useFocusAFKStore } from '../../../store/store';
 import { Badge, Quest } from '../../../lib/gamification';
 import { getAwardedBadges, generateQuests, saveBadgesToBackend } from '../../../lib/gamification';
+import { Session } from '../../../lib/database';
 import { useApi } from '../../../hooks/useApi';
 
 const LOCAL_COMPLETED_QUESTS_KEY = 'completedQuests';
@@ -49,8 +50,10 @@ export default function LfgSession() {
 
   // Update quests on activity change
   useEffect(() => {
+    // Only count focus and deep sessions for quests
+    const focusSessions = timerSessions.filter((s: Session) => s.type === 'focus' || s.type === 'deep');
     const newQuests = generateQuests({
-      timerSessions,
+      timerSessions: focusSessions,
       tasks,
       goals,
       mentorChats,
@@ -80,8 +83,9 @@ export default function LfgSession() {
   // Award badges for new activity
   useEffect(() => {
     async function checkBadges() {
+      const focusSessions = timerSessions.filter((s: Session) => s.type === 'focus' || s.type === 'deep');
       const newBadges = getAwardedBadges({
-        timerSessions,
+        timerSessions: focusSessions,
         tasks,
         mentorChats,
         streak,

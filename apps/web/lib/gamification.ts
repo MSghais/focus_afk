@@ -1,4 +1,4 @@
-import { TimerSession, Task } from './database';
+import { Session, Task } from './database';
 
 export interface Badge {
   id: string;
@@ -22,7 +22,7 @@ export function getAwardedBadges({
   goals,
   badges,
 }: {
-  timerSessions: TimerSession[];
+  timerSessions: Session[];
   tasks: Task[];
   mentorChats: number;
   streak: number;
@@ -164,7 +164,7 @@ export function generateQuests({
   level,
   completedQuests,
 }: {
-  timerSessions: TimerSession[];
+  timerSessions: Session[];
   tasks: Task[];
   goals: { completed: boolean }[];
   mentorChats: number;
