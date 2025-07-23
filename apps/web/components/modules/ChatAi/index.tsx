@@ -13,6 +13,8 @@ import styles from '../../../styles/components/chat-ai.module.scss';
 import { useAuthStore } from '../../../store/auth';
 import ProfileUser from '../../profile/ProfileUser';
 import { Icon } from '../../small/icons';
+import { useMentorsStore } from '../../../store/mentors';
+import MentorList from '../mentor/MentorList';
 
 // Enhanced markdown renderer without external dependencies
 const enhancedMarkdownRenderer = (text: string) => {
@@ -71,10 +73,12 @@ const enhancedMarkdownRenderer = (text: string) => {
 interface ChatAiProps {
     taskId?: number | string;
     mentorId?: number | string;
+    isSelectMentorViewEnabled?: boolean;
 }
 
-export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
+export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false }: ChatAiProps) {
     const router = useRouter();
+    const { selectedMentor } = useMentorsStore();
     const params = useParams();
     const { showToast, showModal } = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
@@ -131,10 +135,10 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     }, []);
 
     useEffect(() => {
-        if (mentorId) {
+        if (selectedMentor?.id) {
             loadMessages();
         }
-    }, [mentorId]);
+    }, [selectedMentor?.id, mentorId]);
 
     const loadMessages = async () => {
         try {
@@ -144,7 +148,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                 return;
             }
 
-            const response = await apiService.getMessages({ limit: 50, mentorId: mentorId?.toString() || undefined });
+            const response = await apiService.getMessages({ limit: 50, mentorId: selectedMentor?.id?.toString() || undefined });
 
             // console.log('Messages response:', response);
             
@@ -199,7 +203,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
             // Send message to backend
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
-                mentorId: mentorId?.toString() || undefined, // You can add mentor selection later
+                mentorId: selectedMentor?.id?.toString() || undefined, // You can add mentor selection later
             });
 
             if (response?.success || response) {
@@ -243,6 +247,18 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
 
                     <div className={"flex flex-row justify-between items-center"}>
                         <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
+
+
+                        {isSelectMentorViewEnabled && (
+                            <div className="flex flex-row justify-between items-center">
+                                <button onClick={() => {
+                                    logClickedEvent('select_mentor_list');   
+                                    showModal(<MentorList />);
+                                }}>
+                                    <Icon name="list" />
+                                </button>
+                            </div>
+                        )}
 
                         <div>
                             <button onClick={() => {

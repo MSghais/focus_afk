@@ -11,9 +11,10 @@ import { useAuthStore } from '../../../store/auth';
 import MentorForm from './MentorForm';
 import { ButtonPrimary } from '../../small/buttons';
 import { useMentorsStore } from '../../../store/mentors';
-
+import { Checkbox } from '../../small/checkbox';
+import { logClickedEvent } from '../../../lib/analytics'; 
 export default function MentorList() {
-  const { mentors, setMentors, setSelectedMentor } = useMentorsStore();
+  const { mentors, setMentors, setSelectedMentor, selectedMentor } = useMentorsStore();
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { userConnected } = useAuthStore();
   const { showToast } = useUIStore();
@@ -73,6 +74,8 @@ export default function MentorList() {
     }
 
     try {
+
+      logClickedEvent('delete_mentor', 'mentor', 'delete_mentor'  );
       const response = await apiService.deleteMentor(mentorId);
       if (response.success || response.message) {
         showToast({
@@ -178,11 +181,21 @@ export default function MentorList() {
                         // Fix: ensure 'about' is undefined if null to match Mentor type
                         const safeMentor = { ...mentor, about: mentor.about ?? undefined, createdAt: mentor.createdAt?.toString() ?? undefined, updatedAt: mentor.updatedAt?.toString() ?? undefined, notes: mentor.notes ?? undefined, assistant_metadata: mentor.assistant_metadata ?? undefined, accountEvmAddress: mentor.accountEvmAddress ?? undefined, evmAddressAgent: mentor.evmAddressAgent ?? undefined };
                         handleSelectMentor(safeMentor);
+                        logClickedEvent('select_mentor', 'mentor', 'select_mentor', 1   );  
+                        showToast({
+                          message: 'Mentor selected',
+                          type: 'success'
+                        });
                       }}
                       className={styles.editButton}
                       title="Select mentor"
                     >
-                      👤
+                      <Checkbox 
+                        checked={selectedMentor?.id === mentor.id}
+                        onChange={() => {
+                          handleSelectMentor(mentor);
+                        }}
+                      />
                     </button>
 
                     <button

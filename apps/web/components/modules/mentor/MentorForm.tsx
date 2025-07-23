@@ -6,6 +6,7 @@ import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
 import { Mentor } from '../../../types';
 import styles from '../../../styles/components/mentor.module.scss';
+import { logClickedEvent } from '../../../lib/analytics'; 
 
 interface MentorFormProps {
   mentor?: Mentor;
@@ -124,8 +125,10 @@ export default function MentorForm({ mentor, onSuccess, onCancel, mode }: Mentor
 
       let response;
       if (mode === 'create') {
+        logClickedEvent('create_mentor', 'mentor', 'create_mentor'  );
         response = await apiService.createMentor(mentorData);
       } else {
+        logClickedEvent('update_mentor', 'mentor', 'update_mentor'  );
         response = await apiService.updateMentor(mentor!.id!, mentorData);
       }
 
