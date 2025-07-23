@@ -26,10 +26,10 @@ const LeftSidebar = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'timer', label: 'Timer', icon: '⏱️' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
-    { id: 'profile', label: 'User', icon: '👤' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
     // { id: 'tasks', label: 'Tasks', icon: '📋' },
-    // { id: 'timer', label: 'Timer', icon: '⏱️' },
     // { id: 'goals', label: 'Goals', icon: '🎯' },
     // { id: 'learning', label: 'Learning', icon: '🎓' },
  
