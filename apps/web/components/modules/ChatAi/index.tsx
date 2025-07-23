@@ -63,9 +63,9 @@ export default function ChatAi({ taskId }: ChatAiProps) {
             setIsLoadingMessages(true);
             const response = await apiService.getMessages({ limit: 50 });
             
-            if (response.success && response.data) {
+            if (response && response.data) {
                 // Sort messages by creation date (oldest first for chat display)
-                const sortedMessages = response.data.sort((a, b) => 
+                const sortedMessages = response.data.sort((a: Message, b: Message) => 
                     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                 );
                 setMessages(sortedMessages);
@@ -103,7 +103,7 @@ export default function ChatAi({ taskId }: ChatAiProps) {
                 mentorId: undefined, // You can add mentor selection later
             });
 
-            if (response.success) {
+            if (response?.success || response) {
                 // Reload messages to get the updated conversation
                 await loadMessages();
             } else {
