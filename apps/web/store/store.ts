@@ -288,30 +288,38 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         console.log(`🔄 Syncing ${tasks.length} tasks to backend...`);
 
         for (const task of tasks) {
+          console.log(`🔄 Processing task: ${task.id} - ${task.title}`);
+          
           try {
             // Check if task exists in backend
+            console.log(`🔄 Checking if task ${task.id} exists in backend...`);
             await api.getTask(task.id!.toString());
+            console.log(`🔄 Task ${task.id} exists, updating...`);
+            
             // If it exists, update it
-                         await api.updateTask(task.id!.toString(), {
-               title: task.title,
-               description: task.description,
-               priority: task.priority,
-               category: task.category,
-               completed: task.completed,
-               dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
-               estimatedMinutes: task.estimatedMinutes,
-             } as any);
+            await api.updateTask(task.id!.toString(), {
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              category: task.category,
+              completed: task.completed,
+              dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
+              estimatedMinutes: task.estimatedMinutes,
+            } as any);
+            console.log(`✅ Task ${task.id} updated successfully`);
           } catch (error) {
+            console.log(`🔄 Task ${task.id} not found in backend, creating...`);
             // If task doesn't exist, create it
-                         await api.createTask({
-               title: task.title,
-               description: task.description,
-               priority: task.priority,
-               category: task.category,
-               completed: task.completed,
-               dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
-               estimatedMinutes: task.estimatedMinutes,
-             } as any);
+            await api.createTask({
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              category: task.category,
+              completed: task.completed,
+              dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
+              estimatedMinutes: task.estimatedMinutes,
+            } as any);
+            console.log(`✅ Task ${task.id} created successfully`);
           }
         }
 
