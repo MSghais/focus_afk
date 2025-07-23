@@ -9,7 +9,7 @@ import { useApi } from '../../../hooks/useApi';
 import type { Message, Mentor } from '../../../types';
 import MentorList from './MentorList';
 import ProgressMentor from './Progress';
-import { ButtonPrimary } from '../../small/buttons';
+import { ButtonPrimary, ButtonSecondary } from '../../small/buttons';
 import { useMentorsStore } from '../../../store/mentors';
 
 interface MentorFeedback {
@@ -38,6 +38,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const {selectedMentor} = useMentorsStore();
 
   const [isOpenInsights, setIsOpenInsights] = useState(false);
+  const [isViewChatAi, setIsViewChatAi] = useState(false);
 
   useEffect(() => {
     // loadMessages();
@@ -112,8 +113,14 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
 
         <MentorList />
 
+        <div className="flex flex-row gap-4 justify-center"> 
+          <ButtonSecondary onClick={() => setIsViewChatAi(!isViewChatAi)}>
+              {isViewChatAi ? "Hide Chat AI" : "Show Chat AI"}
+          </ButtonSecondary>
+        </div>
+
         {/* Chat Interface */}
-        <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />
+        {isViewChatAi && <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />}
         {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
