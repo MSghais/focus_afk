@@ -11,12 +11,16 @@ import TimeLoading from '../../../components/small/loading/time-loading';
 import TimerMain from '../../../components/modules/timer';
 import { logClickedEvent } from '../../../lib/analytics';
 import ChatAi from '../../../components/modules/ChatAi';
+import GoalsOverview from '../../../components/modules/goals/GoalsOverview';
+import { useUIStore } from '../../../store/uiStore';
+import { ButtonPrimary } from '../../../components/small/buttons';
 // import AuthDebug from '../../../components/modules/mentor/AuthDebug';
 // import LoginCheck from '../../../components/modules/mentor/LoginCheck';
 
 export default function DeepModePage() {
     const router = useRouter();
     const params = useParams();
+    const { showModal } = useUIStore();
     const taskId = parseInt(params.taskId as string);
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
     const [task, setTask] = useState<Task | null>(null);
@@ -34,6 +38,8 @@ export default function DeepModePage() {
     const [level, setLevel] = useState(1);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
+
+    const [isOpenGoalModal, setIsOpenGoalModal] = useState(false);
 
     useEffect(() => {
         if (taskId && tasks.length > 0) {
@@ -171,8 +177,8 @@ export default function DeepModePage() {
                     )}
                     <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className={`px-2 py-1 rounded-full ${task.priority === 'high' ? 'bg-red-100 text-red-600' :
-                                task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                                    'bg-green-100 text-green-600'
+                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                                'bg-green-100 text-green-600'
                             }`}>
                             {task.priority} priority
                         </span>
@@ -192,63 +198,34 @@ export default function DeepModePage() {
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
 
-                    <TimerMain timerTypeProps="deep" isSetupEnabled={false} taskId={taskId}
+                    <TimerMain timerTypeProps="deep" isSetupEnabled={true} taskId={taskId}
                     // goalId={goal?.} 
 
                     />
+{/* 
+                    <ButtonPrimary  
+                        className="max-w-100"
+                        onClick={() => showModal(
+                            <>
+                                <GoalsOverview />
+                            </>
+                        )}
+                    >
+                        Set Your Goal
+                    </ButtonPrimary> */}
 
-                    {/* Goal Setting */}
-                    <div className="rounded-lg p-6 shadow-lg">
-                        <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Set Your Goal</h3>
-                        <div className="space-y-3">
-                            <input
-                                type="text"
-                                value={goal.title}
-                                onChange={(e) => setGoal({ ...goal, title: e.target.value })}
-                                placeholder="What do you want to achieve?"
-                                className="w-full p-3 border rounded-lg"
-                            />
-                            <textarea
-                                value={goal.description}
-                                onChange={(e) => setGoal({ ...goal, description: e.target.value })}
-                                placeholder="Describe your goal..."
-                                rows={3}
-                                className="w-full p-3 border rounded-lg"
-                            />
-                            <div className="grid grid-cols-2 gap-3">
-                                <input
-                                    type="date"
-                                    value={goal.targetDate}
-                                    onChange={(e) => setGoal({ ...goal, targetDate: e.target.value })}
-                                    className="p-3 border rounded-lg"
-                                />
-                                <input
-                                    type="text"
-                                    value={goal.category}
-                                    onChange={(e) => setGoal({ ...goal, category: e.target.value })}
-                                    placeholder="Category"
-                                    className="p-3 border rounded-lg"
-                                />
-                            </div>
-                            <button
-                                onClick={handleCreateGoal}
-                                className="w-full py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-purple-700 transition font-medium"
-                            >
-                                Create Goal
-                            </button>
-                        </div>
-                    </div>
+
                 </div>
 
                 {/* Right Column - Mentor Chat */}
                 <ChatAi taskId={taskId} />
-                
+
                 <div className="rounded-lg p-6 shadow-lg">
                     {/* Check if user is logged in */}
                     {/* <LoginCheck />
                     
                     <AuthDebug /> */}
-                    
+
                     {/* <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                     <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
                         {chatHistory.length === 0 ? (

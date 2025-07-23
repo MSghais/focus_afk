@@ -13,7 +13,7 @@ import declareRoutes from './router';
 import fastifySession from '@fastify/session';
 import fastifyOauth2 from '@fastify/oauth2';
 import fastifyMultipart from '@fastify/multipart';
-
+import { initCron } from './cron';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -22,7 +22,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     io: SocketIOServer;
   }
-}
+}     
 
 export const publicDir = path.join(__dirname, 'public');
 
@@ -114,6 +114,8 @@ async function buildServer() {
 
   console.log('Initializing all cron jobs');
   // Initialize WebSocket handlers
+
+  initCron(fastify);
   fastify.ready((err) => {
     if (err) throw err;
     setupWebSocket(fastify.io);

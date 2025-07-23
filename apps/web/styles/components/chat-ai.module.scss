@@ -68,7 +68,7 @@
     flex-direction: column;
 
     &.user {
-      align-items: flex-end;
+      align-items: flex-start;
 
       .messageContent {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -81,7 +81,7 @@
     }
 
     &.ai {
-      align-items: flex-start;
+      align-items: flex-end;
 
       .messageContent {
         background: rgba(255, 255, 255, 0.1);
@@ -89,6 +89,17 @@
         border-radius: 18px 18px 18px 4px;
         padding: 0.75rem 1rem;
         max-width: 80%;
+        word-wrap: break-word;
+      }
+    }
+
+    &.assistant {
+      align-items: flex-end;
+
+      .messageContent {
+        border-radius: 18px 18px 18px 4px;
+        padding: 0.75rem 1rem;
+        max-width: 70%;
         word-wrap: break-word;
       }
     }
@@ -101,6 +112,10 @@
   }
 
   .markdownContent {
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.75rem 1rem;
+    max-width: 250px;
+    word-wrap: break-word;
     // Markdown content styling
     p {
       margin: 0 0 0.5rem 0;

@@ -101,6 +101,7 @@ export function useApi() {
           method: 'DELETE',
         });
       },
+      getBadges: apiService.getBadges,
       // Keep other methods from the original apiService
       evmLogin: apiService.evmLogin,
       starknetLogin: apiService.starknetLogin,

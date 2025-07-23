@@ -1,6 +1,5 @@
 .mentor {
-  padding: 2rem;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
 
   .title {
@@ -16,7 +15,7 @@
   .mentorGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
+    gap: 1rem;
   }
 
   .feedbackCard,
@@ -40,7 +39,6 @@
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #e2e8f0;
   }
 
   // Feedback Card
@@ -78,7 +76,7 @@
         font-size: 0.875rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        color: #94a3b8;
+        // color: #94a3b8;
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }
@@ -90,7 +88,7 @@
         li {
           padding: 0.5rem 0;
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-          color: #e2e8f0;
+          // color: #e2e8f0;
           font-size: 0.875rem;
 
           &:last-child {
@@ -283,7 +281,7 @@
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
-      color: #e2e8f0;
+      // color: #e2e8f0;
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;

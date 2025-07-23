@@ -456,6 +456,10 @@ class ApiService {
   getAccessToken(): string | null {
     return this.getAuthToken();
   }
+
+  async getBadges(userId: string) {
+    return this.request(`/badges/user/${userId}`);
+  }
 }
 
 export const apiService = new ApiService(); 

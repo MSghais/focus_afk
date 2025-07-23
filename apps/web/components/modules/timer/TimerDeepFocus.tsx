@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { Task, Goal } from '../../../lib/database';
 import { logClickedEvent } from "../../../lib/analytics";
+import { useUIStore } from "../../../store/uiStore";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -23,31 +24,36 @@ export default function TimerDeepFocus({
     isSetupEnabled = true,
     taskId,
     goalId,
-}:TimerProps) {
+}: TimerProps) {
     // Local timer state: count up from 0
     const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const { 
-        timer, 
-        tasks, 
-        goals, 
+    const {
+        timer,
+        tasks,
+        goals,
         settings,
-        startTimerFocus, 
-        pauseTimer, 
-        resumeTimer, 
-        stopTimer, 
-        stopTimeFocus, 
-        resetTimer, 
+        startTimerFocus,
+        pauseTimer,
+        resumeTimer,
+        stopTimer,
+        stopTimeFocus,
+        resetTimer,
         setTimerDuration,
         loadSettings
     } = useFocusAFKStore();
+
+    const [selectedTaskId, setSelectedTaskId] = useState<number | undefined>();
+    const [selectedGoalId, setSelectedGoalId] = useState<number | undefined>();
     // Reset timer when component unmounts
     useEffect(() => {
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
         };
     }, []);
+
+    const { showModal } = useUIStore();
 
     // Start timer: count up from 0
     const handleStart = () => {
@@ -87,6 +93,10 @@ export default function TimerDeepFocus({
     // Show session complete message if stopped and elapsedSeconds > 0
     const sessionComplete = !isRunning && elapsedSeconds > 0;
 
+
+    const pendingTasks = tasks.filter(task => !task.completed);
+    const pendingGoals = goals.filter(goal => !goal.completed);
+
     return (
         <div className="w-full flex flex-col items-center justify-center p-6">
             {/* Session Complete Message */}
@@ -122,6 +132,64 @@ export default function TimerDeepFocus({
                     )}
                 </div>
             </div>
+
+
+            <button
+                className="mt-4 border-2 border-gray-300 rounded-md p-2"
+
+                onClick={() => {
+                    showModal(<div className="w-full max-w-md mb-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Select Task (Optional)</label>
+                            <select
+                                value={selectedTaskId || ''}
+                                onChange={(e) => setSelectedTaskId(e.target.value ? parseInt(e.target.value) : undefined)}
+                                className="w-full p-2 border rounded-md"
+                            >
+                                <option value="">No specific task</option>
+                                {pendingTasks.map(task => (
+                                    <option key={task.id} value={task.id}>
+                                        {task.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Select Goal (Optional)</label>
+                            <select
+                                value={selectedGoalId || ''}
+                                onChange={(e) => setSelectedGoalId(e.target.value ? parseInt(e.target.value) : undefined)}
+                                className="w-full p-2 border rounded-md"
+                            >
+                                <option value="">No specific goal</option>
+                                {pendingGoals.map(goal => (
+                                    <option key={goal.id} value={goal.id}>
+                                        {goal.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>);
+                }}
+            >
+                Set Your Goal
+            </button>
+
+            {/* Selected Task/Goal Info */}
+            {(selectedTaskId || selectedGoalId) && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
+                    <p className="text-sm text-blue-800">
+                        {selectedTaskId && (
+                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                        )}
+                        {selectedGoalId && (
+                            <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                        )}
+                    </p>
+                </div>
+            )}
+
         </div>
     );
 }

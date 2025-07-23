@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Icon } from '../../small/icons';
 import { ButtonSecondary } from '../../small/buttons';
 import DashboardQuests from './DasboardQuests';
+import Badges from '../../profile/Badges';
 
 export default function ProfileDashboard() {
 
@@ -110,6 +111,7 @@ export default function ProfileDashboard() {
       </div>
 
       <DashboardQuests />
+      <Badges />
     </div>
   );
 }
