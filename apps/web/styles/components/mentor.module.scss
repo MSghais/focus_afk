@@ -1,6 +1,5 @@
 .mentor {
-  padding: 2rem;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
 
   .title {
@@ -16,7 +15,7 @@
   .mentorGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
+    gap: 1rem;
   }
 
   .feedbackCard,
