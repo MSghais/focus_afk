@@ -14,24 +14,50 @@ import styles from '../../../styles/components/chat-ai.module.scss';
 import { useAuthStore } from '../../../store/auth';
 import ProfileUser from '../../profile/ProfileUser';
 import { Icon } from '../../small/icons';
-import MarkdownIt from 'markdown-it';
 
-// Add a simple markdown renderer as fallback
-const simpleMarkdownRenderer = (text: string) => {
+// Enhanced markdown renderer without external dependencies
+const enhancedMarkdownRenderer = (text: string) => {
     if (!text || typeof text !== 'string') {
         return '';
     }
     
     return text
+        // HTML escaping
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
+        // Headers
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        // Bold and italic
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/__(.*?)__/g, '<strong>$1</strong>')
+        .replace(/_(.*?)_/g, '<em>$1</em>')
+        // Code blocks
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
         .replace(/`(.*?)`/g, '<code>$1</code>')
-        .replace(/\n/g, '<br>');
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+        // Lists
+        .replace(/^\* (.*$)/gim, '<li>$1</li>')
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
+        // Blockquotes
+        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+        // Line breaks
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        // Wrap in paragraphs
+        .replace(/^(?!<[h|p|b|u|o|li|pre|code])(.*)$/gim, '<p>$1</p>')
+        // Clean up empty paragraphs
+        .replace(/<p><\/p>/g, '')
+        .replace(/<p><br><\/p>/g, '<br>')
+        // Clean up consecutive breaks
+        .replace(/<br><br>/g, '<br>');
 };
 
 interface ChatAiProps {
@@ -165,25 +191,10 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         });
     };
 
-    // Initialize markdown-it with error handling
+    // Use the enhanced markdown renderer
     const renderMarkdown = (content: string) => {
-        if (!content || typeof content !== 'string') {
-            return '';
-        }
-        
-        try {
-            const md = new MarkdownIt({
-                html: true,
-                linkify: true,
-                typographer: true
-            });
-            return md.render(content);
-        } catch (error) {
-            console.warn('Markdown-it failed, using fallback renderer:', error);
-            return simpleMarkdownRenderer(content);
-        }
+        return enhancedMarkdownRenderer(content);
     };
-
 
     return (
         <div className={styles.chatAi}>
