@@ -11,11 +11,11 @@ export default function NotFoundPage() {
   const router = useRouter();
   const { ui } = useFocusAFKStore();
 
-  useEffect(() => {
-    if (ready && !authenticated) {
-      router.push('/profile');
-    }
-  }, [ready, authenticated, router]);
+  // useEffect(() => {
+  //   if (ready && !authenticated) {
+  //     router.push('/profile');
+  //   }
+  // }, [ready, authenticated, router]);
 
 
 

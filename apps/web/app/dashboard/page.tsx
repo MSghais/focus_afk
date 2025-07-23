@@ -19,15 +19,15 @@ export default function DashboardPage() {
   const router = useRouter();
   const { ui } = useFocusAFKStore();
 
-  useEffect(() => {
-    if (ready && !authenticated) {
-      router.push('/profile');
-    }
-  }, [ready, authenticated, router]);
+  // useEffect(() => {
+  //   if (ready && !authenticated) {
+  //     router.push('/profile');
+  //   }
+  // }, [ready, authenticated, router]);
 
-  if (!ready) {
-    return <div className="w-full h-full flex items-center justify-center bg-[var(--background)]"><TimeLoading /></div>;
-  }
+  // if (!ready) {
+  //   return <div className="w-full h-full flex items-center justify-center bg-[var(--background)]"><TimeLoading /></div>;
+  // }
 
   const renderCurrentModule = () => {
     switch (ui.currentModule) {

@@ -17,7 +17,11 @@ interface MentorFeedback {
   nextSteps: string[];
 }
 
-export default function Mentor() {
+interface MentorProps {
+  isSetupEnabled?: boolean;
+}
+
+export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { showToast } = useUIStore();
   const apiService = useApi();
