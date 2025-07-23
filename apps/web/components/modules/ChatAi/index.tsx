@@ -10,6 +10,10 @@ import { logClickedEvent } from '../../../lib/analytics';
 import { useUIStore } from '../../../store/uiStore';
 import { Message } from '../../../lib/api';
 import { useApi } from '../../../hooks/useApi';
+import styles from '../../../styles/components/chat-ai.module.scss';
+import { useAuthStore } from '../../../store/auth';
+import ProfileUser from '../../profile/ProfileUser';
+import { Icon } from '../../small/icons';
 
 interface ChatAiProps {
     taskId?: number | string;
@@ -18,8 +22,9 @@ interface ChatAiProps {
 export default function ChatAi({ taskId }: ChatAiProps) {
     const router = useRouter();
     const params = useParams();
-    const {showToast} = useUIStore();
+    const {showToast, showModal} = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
+    const {userConnected} = useAuthStore();
     const apiService = useApi();
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
@@ -61,6 +66,12 @@ export default function ChatAi({ taskId }: ChatAiProps) {
     const loadMessages = async () => {
         try {
             setIsLoadingMessages(true);
+
+            if(!userConnected) {
+                showModal(<ProfileUser />);
+                return;
+            }
+
             const response = await apiService.getMessages({ limit: 50 });
             
             console.log('response', response);
@@ -94,6 +105,10 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         const userMessage = chatMessage;
         setChatMessage('');
         setIsLoading(true);
+        // if(!userConnected) {
+        //     showModal(<ProfileUser />);
+        //     return;
+        // }
 
         logClickedEvent('send_message_deep_mode');
 
@@ -131,77 +146,75 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         });
     };
 
-    if (isLoadingMessages) {
-        return (
-            <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
-                <TimeLoading />
-            </div>
-        );
-    }
-
     return (
-        <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[var(--background)]">
-            {/* Right Column - Mentor Chat */}
-            <div className="rounded-lg p-6 shadow-lg">
+        <div className={styles.chatAi}>
+            <h1 className={styles.title}>AI Mentor</h1>
+            
+            <div className={styles.chatGrid}>
+                <div className={styles.chatCard}>
+                    <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
 
-                <button onClick={() => loadMessages()}>Load Messages</button>
-                <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
-                <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
-                    {messages.length === 0 ? (
-                        <div className="text-center text-gray-500 py-8">
-                            <p>Ask your mentor for guidance on this task!</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {messages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div
-                                        className={`max-w-xs p-3 rounded-lg ${
-                                            message.role === 'user'
-                                                ? 'bg-[var(--brand-primary)] text-white'
-                                                : 'bg-gray-200 text-gray-800'
-                                        }`}
-                                    >
-                                        <div className="text-sm">{message.content}</div>
-                                        <div className="text-xs opacity-70 mt-1">
-                                            {formatMessageTime(message.createdAt)}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="max-w-xs p-3 rounded-lg bg-gray-200 text-gray-800">
-                                        <div className="flex items-center space-x-2">
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                                            <span>Thinking...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                    <div>
+                        <button onClick={() => {
+                            loadMessages();
+                        }}>
+                            <Icon name="refresh" />
+                        </button>
+                    </div>
+
+                    {isLoadingMessages && (
+                        <div className={styles.loadingState}>
+                            <div className={styles.loadingContent}>
+                                <div className={styles.spinner}></div>
+                                <p>Loading chat history...</p>
+                                <TimeLoading /> 
+                            </div>
                         </div>
                     )}
-                </div>
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={chatMessage}
-                        onChange={(e) => setChatMessage(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="Ask your mentor..."
-                        className="flex-1 p-3 border rounded-lg"
-                        disabled={isLoading}
-                    />
-                    <button
-                        onClick={handleSendMessage}
-                        disabled={isLoading || !chatMessage.trim()}
-                        className="px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? 'Sending...' : 'Send'}
-                    </button>
+                
+                    <div className={styles.chatMessages}>
+                        {messages.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <p>Start a conversation with your AI mentor!</p>
+                            </div>
+                        ) : (
+                            messages.map((message) => (
+                                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                                    <div className={styles.messageContent}>{message.content}</div>
+                                    <div className={styles.messageTime}>
+                                        {formatMessageTime(message.createdAt)}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        {isLoading && (
+                            <div className={`${styles.message} ${styles.ai}`}>
+                                <div className={styles.typingIndicator}>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div className={styles.chatInput}>
+                        <input
+                            type="text"
+                            value={chatMessage}
+                            onChange={(e) => setChatMessage(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                            placeholder="Ask me anything about productivity, focus, or your goals..."
+                            className={styles.input}
+                            disabled={isLoading}
+                        />
+                        <button
+                            onClick={handleSendMessage}
+                            disabled={isLoading || !chatMessage.trim()}
+                            className={styles.sendButton}
+                        >
+                            ➤
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

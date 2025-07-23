@@ -113,6 +113,7 @@ model Message {
   tokens    Int?     // Token count for cost tracking
   metadata  Json?    // Additional metadata (model params, etc.)
   createdAt DateTime @default(now())
+  taskId String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)

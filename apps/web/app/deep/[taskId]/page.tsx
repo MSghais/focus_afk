@@ -241,6 +241,7 @@ export default function DeepModePage() {
                 </div>
 
                 {/* Right Column - Mentor Chat */}
+                <ChatAi taskId={taskId} />
                 
                 <div className="rounded-lg p-6 shadow-lg">
                     {/* Check if user is logged in */}
@@ -248,7 +249,6 @@ export default function DeepModePage() {
                     
                     <AuthDebug /> */}
                     
-                    <ChatAi taskId={taskId} />
                     {/* <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                     <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
                         {chatHistory.length === 0 ? (

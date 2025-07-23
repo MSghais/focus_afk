@@ -133,12 +133,12 @@ async function mentorRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      const { prompt, model, mentorId } = request.body as { prompt: string; model?: string; mentorId?: string };
+      const { prompt, model, mentorId, taskId } = request.body as { prompt: string; model?: string; mentorId?: string; taskId?: string };
 
       console.log('prompt', prompt);
       console.log('model', model);
       console.log('mentorId', mentorId);
-
+      console.log('taskId', taskId);
       if (!prompt) {
         return reply.code(400).send({ message: 'Prompt is required' });
       }
@@ -159,7 +159,8 @@ async function mentorRoutes(fastify: FastifyInstance) {
           role: 'user',
           content: prompt,
           model: modelName,
-        },
+          // taskId,
+          },
       });
 
       // Save assistant response
@@ -170,6 +171,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
           role: 'assistant',
           content: response?.text ?? '',
           model: modelName,
+          // taskId,
         },
       });
 
