@@ -95,6 +95,13 @@ model Mentor {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  isPublic Boolean?
+  imageUrl String?
+  metadata Json?
+  personality Json?
+  knowledge Json?
+  sources String[]
+
   accountEvmAddress String?
   evmAddressAgent String?
 

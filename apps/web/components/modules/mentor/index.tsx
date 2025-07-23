@@ -9,6 +9,7 @@ import { useApi } from '../../../hooks/useApi';
 import type { Message, Mentor } from '../../../types';
 import MentorList from './MentorList';
 import ProgressMentor from './Progress';
+import { ButtonPrimary } from '../../small/buttons';
 
 interface MentorFeedback {
   sessionId: string;
@@ -233,15 +234,18 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
 
 
 
-        <button onClick={() => setIsOpenInsights(!isOpenInsights)}>
+        <ButtonPrimary
+          onClick={() => setIsOpenInsights(!isOpenInsights)}
+          className={styles.insightsButton}
+        >
           {isOpenInsights ? 'Close Insights' : 'Open Insights'}
-        </button>
+        </ButtonPrimary>
 
         {isOpenInsights &&
           <>
             <ProgressMentor />
 
-            <div className={styles.actionsCard}>
+            {/* <div className={styles.actionsCard}>
               <h2 className={styles.cardTitle}>Quick Actions</h2>
               <div className={styles.actionButtons}>
                 <button className={styles.actionButton}>
@@ -257,7 +261,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
                   📚 Learning Recommendations
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {recentFeedback && (
               <div className={styles.feedbackCard}>

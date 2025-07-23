@@ -130,7 +130,8 @@ export default function DashboardQuests() {
           </div>
         </div>
 
-        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>AI-Verified Proof of Focus</div>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Proof of Focus</div>
+        {/* <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>AI-Verified Proof of Focus</div> */}
         <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'center', marginBottom: 16 }}>
           <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
             <div style={{ position: 'relative', width: 64, height: 64, marginBottom: 8 }}>
