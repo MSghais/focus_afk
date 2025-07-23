@@ -366,7 +366,7 @@ export default function Dashboard() {
                                         <div className={styles.itemInfo}>
                                             <p className={styles.itemTitle}>{formatTime(session.duration / 60)}</p>
                                             <p className={styles.itemSubtitle}>
-                                                {formatDate(session.startTime)}
+                                                {formatDate(new Date(session.startTime))}
                                             </p>
                                         </div>
                                     </div>

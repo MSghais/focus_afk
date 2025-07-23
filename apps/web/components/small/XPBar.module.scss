@@ -1,0 +1,23 @@
+.xpBarContainer {
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  height: 24px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.xpBar {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+  height: 100%;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.xpText {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+} 

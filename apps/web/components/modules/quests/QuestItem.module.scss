@@ -1,0 +1,66 @@
+.questItem {
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  outline: none;
+}
+.questItem:focus, .questItem:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.difficulty {
+  font-size: 0.95rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+.description {
+  color: var(--color-text-secondary);
+  font-size: 0.98rem;
+  margin-bottom: 10px;
+}
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.xp {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+.badge {
+  color: var(--color-badge, #FFD700);
+  font-size: 1.1em;
+}
+.status {
+  margin-left: auto;
+  font-size: 0.92em;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: var(--color-bg-primary);
+}
+.status.pending {
+  color: var(--color-warning, #FFA500);
+}
+.status.active {
+  color: var(--color-accent);
+}
+.status.completed {
+  color: var(--color-success, #4CAF50);
+}
+.status.failed {
+  color: var(--color-error, #E53935);
+} 

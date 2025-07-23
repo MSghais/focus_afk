@@ -7,6 +7,10 @@ import mentorRoutes from './routes/mentor';
 import gamificationRoutes from './routes/gamification';
 import focusRoutes from './routes/focus';
 import badgesRoutes from './routes/badges';
+import timerRoutes from './routes/timer';
+import goalsRoutes from './routes/goals';
+import tasksRoutes from './routes/tasks';
+
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -18,6 +22,9 @@ function declareRoutes(
   fastify.register(gamificationRoutes, { prefix: '/gamification' });
   fastify.register(focusRoutes, { prefix: '/focus' });
   fastify.register(badgesRoutes, { prefix: '/badges' });
+  fastify.register(timerRoutes, { prefix: '/timer' });
+  fastify.register(goalsRoutes, { prefix: '/goals' });
+  fastify.register(tasksRoutes, { prefix: '/tasks' });
 }
 
 export default declareRoutes;

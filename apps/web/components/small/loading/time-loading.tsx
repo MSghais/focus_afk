@@ -9,7 +9,7 @@ function AnimatedClock() {
   useEffect(() => {
     let frame: number;
     let start: number | null = null;
-    let currentSpeed = 1;
+    let currentSpeed = 3;
 
     const animate = (timestamp: number) => {
       if (start === null) start = timestamp;

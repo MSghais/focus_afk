@@ -102,6 +102,7 @@ export function useApi() {
         });
       },
       getBadges: apiService.getBadges,
+      awardBadge: apiService.awardBadge,
       // Keep other methods from the original apiService
       evmLogin: apiService.evmLogin,
       starknetLogin: apiService.starknetLogin,

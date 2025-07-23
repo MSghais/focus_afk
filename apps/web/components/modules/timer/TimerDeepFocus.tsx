@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useFocusAFKStore } from '../../../store/store';
-import { Task, Goal } from '../../../lib/database';
 import { logClickedEvent } from "../../../lib/analytics";
 import { useUIStore } from "../../../store/uiStore";
+import { Task, Goal } from "../../../types";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
