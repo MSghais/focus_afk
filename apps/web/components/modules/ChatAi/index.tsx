@@ -63,9 +63,10 @@ export default function ChatAi({ taskId }: ChatAiProps) {
             setIsLoadingMessages(true);
             const response = await apiService.getMessages({ limit: 50 });
             
-            if (response && response.data) {
+            console.log('response', response);
+            if (response && response) {
                 // Sort messages by creation date (oldest first for chat display)
-                const sortedMessages = response.data.sort((a: Message, b: Message) => 
+                const sortedMessages = response?.sort((a: Message, b: Message) => 
                     new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                 );
                 setMessages(sortedMessages);
@@ -142,6 +143,8 @@ export default function ChatAi({ taskId }: ChatAiProps) {
         <div className="w-full flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 bg-[var(--background)]">
             {/* Right Column - Mentor Chat */}
             <div className="rounded-lg p-6 shadow-lg">
+
+                <button onClick={() => loadMessages()}>Load Messages</button>
                 <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                 <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
                     {messages.length === 0 ? (
