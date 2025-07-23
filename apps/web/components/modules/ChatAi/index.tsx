@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useFocusAFKStore } from '../../../store/store';
-import { Task } from '../../../lib/database';
+import { Task, Message } from '../../../types';
 import { useRouter } from 'next/navigation';
 import TimeLoading from '../../small/loading/time-loading';
 import { logClickedEvent } from '../../../lib/analytics';
 import { useUIStore } from '../../../store/uiStore';
-import { Message } from '../../../lib/api';
 import { useApi } from '../../../hooks/useApi';
 import styles from '../../../styles/components/chat-ai.module.scss';
 import { useAuthStore } from '../../../store/auth';
@@ -21,7 +20,8 @@ const enhancedMarkdownRenderer = (text: string) => {
         return '';
     }
 
-    return text
+    // First, handle line breaks properly for long text
+    let processedText = text
         // HTML escaping
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -47,17 +47,25 @@ const enhancedMarkdownRenderer = (text: string) => {
         .replace(/^- (.*$)/gim, '<li>$1</li>')
         .replace(/^\d+\. (.*$)/gim, '<li>$1</li>')
         // Blockquotes
-        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-        // Line breaks
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>')
-        // Wrap in paragraphs
-        .replace(/^(?!<[h|p|b|u|o|li|pre|code])(.*)$/gim, '<p>$1</p>')
-        // Clean up empty paragraphs
-        .replace(/<p><\/p>/g, '')
-        .replace(/<p><br><\/p>/g, '<br>')
-        // Clean up consecutive breaks
-        .replace(/<br><br>/g, '<br>');
+        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+    // Handle line breaks and paragraphs more carefully
+    // Split by double line breaks first
+    const paragraphs = processedText.split(/\n\n+/);
+    const processedParagraphs = paragraphs.map(paragraph => {
+        if (paragraph.trim() === '') return '';
+        
+        // Check if paragraph already contains HTML tags
+        if (/<[^>]+>/.test(paragraph)) {
+            return paragraph;
+        }
+        
+        // Replace single line breaks with <br> tags
+        const withBreaks = paragraph.replace(/\n/g, '<br>');
+        return `<p>${withBreaks}</p>`;
+    });
+
+    return processedParagraphs.join('');
 };
 
 interface ChatAiProps {
@@ -72,6 +80,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
     const { userConnected } = useAuthStore();
     const apiService = useApi();
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const [task, setTask] = useState<Task | null>(null);
     const [goal, setGoal] = useState({
         id: '',
@@ -86,6 +95,15 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
+    // Auto-scroll to bottom when messages change
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     useEffect(() => {
         if (taskId && tasks.length > 0) {
             const foundTask = tasks.find(t => t.id === taskId);
@@ -97,7 +115,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                     taskId: foundTask?.id?.toString() || '',
                     title: `Complete: ${foundTask.title}`,
                     description: foundTask.description || '',
-                    targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                    targetDate: foundTask.dueDate ? foundTask.dueDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                     category: foundTask.category || ''
                 });
             }
@@ -120,19 +138,30 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
 
             const response = await apiService.getMessages({ limit: 50 });
 
-            // console.log('response', response);
-            if (response && response) {
+            // console.log('Messages response:', response);
+            
+            // Handle both direct array response and wrapped response
+            let messagesArray: Message[] = [];
+            if (Array.isArray(response)) {
+                messagesArray = response;
+            } else if (response && response.data && Array.isArray(response.data)) {
+                messagesArray = response.data;
+            } else if (response && response.success && response.data && Array.isArray(response.data)) {
+                messagesArray = response.data;
+            }
+
+            if (messagesArray.length > 0) {
                 // Sort messages by creation date (oldest first for chat display)
-                const sortedMessages = response?.sort((a: Message, b: Message) =>
-                    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                );
-                setMessages(sortedMessages);
-            } else {
-                console.error('Failed to load messages:', response.error);
-                showToast({
-                    message: 'Failed to load chat history',
-                    type: 'error',
+                const sortedMessages = messagesArray.sort((a: Message, b: Message) => {
+                    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                    return dateA - dateB;
                 });
+                setMessages(sortedMessages);
+                console.log('Loaded messages:', sortedMessages.length);
+            } else {
+                console.log('No messages found or empty response');
+                setMessages([]);
             }
         } catch (error) {
             console.error('Error loading messages:', error);
@@ -217,8 +246,6 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
 
                     </div>
 
-
-
                     {isLoadingMessages && (
                         <div className={styles.loadingState}>
                             <div className={styles.loadingContent}>
@@ -236,12 +263,19 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                             </div>
                         ) : (
                             messages.map((message) => {
-                                // console.log('message', message.content);
+                                // console.log('Rendering message:', message.role, message.content?.substring(0, 50) + '...');
                                 return (
                                     <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
 
                                         {message?.role === "assistant" && (
-                                            <div className={`${styles.messageContent} ${styles.markdownContent}`} dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                            <div className={`${styles.messageContent} ${styles.markdownContent}`}>
+                                                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                                {message.content && message.content.length > 1000 && (
+                                                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                        (Message length: {message.content.length} characters)
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
 
                                         {message?.role === "user" && (
@@ -249,14 +283,14 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                                         )}
 
                                         <div className={styles.messageTime}>
-                                            {formatMessageTime(message.createdAt)}
+                                            {message.createdAt ? formatMessageTime(message.createdAt) : ''}
                                         </div>
                                     </div>
                                 );
                             })
                         )}
                         {isLoading && (
-                            <div className={`${styles.message} ${styles.ai}`}>
+                            <div className={`${styles.message} ${styles.assistant}`}>
                                 <div className={styles.typingIndicator}>
                                     <span></span>
                                     <span></span>
@@ -264,6 +298,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                                 </div>
                             </div>
                         )}
+                        <div ref={messagesEndRef} />
                     </div>
                     <div className={styles.chatInput}>
                         <input

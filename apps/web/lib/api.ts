@@ -1,6 +1,5 @@
 import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, FundingAccount, AuthResponse, User } from '../types';
-
-
+import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
   private baseUrl: string;
@@ -10,18 +9,8 @@ class ApiService {
   } 
 
   private getAuthToken(): string | null {
-    // Try to get token from Zustand store first
-    if (typeof window !== 'undefined') {
-      // Access the auth store directly
-      const authStore = (window as any).__ZUSTAND_AUTH_STORE__;
-      if (authStore?.getState()?.jwtToken) {
-        return authStore.getState().jwtToken;
-      }
-      
-      // Fallback to localStorage for backward compatibility
-      return localStorage.getItem('accessToken');
-    }
-    return null;
+    // Use the centralized auth utility to get JWT token
+    return getJwtToken();
   }
 
   private async request<T>(
@@ -35,6 +24,10 @@ class ApiService {
     };
 
     const token = this.getAuthToken();
+    console.log('🔐 API Request - Endpoint:', endpoint);
+    console.log('🔐 API Request - Token available:', !!token);
+    console.log('🔐 API Request - Token preview:', token ? `${token.substring(0, 20)}...` : 'None');
+    
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -44,6 +37,9 @@ class ApiService {
         ...options,
         headers,
       });
+
+      console.log('🔐 API Response - Status:', response.status);
+      console.log('🔐 API Response - URL:', url);
 
       if (response.status === 401) {
         // For 401 errors, we'll just throw an error since we don't have refresh token logic
@@ -311,11 +307,11 @@ class ApiService {
 
   // Utility methods
   isAuthenticated(): boolean {
-    return !!this.getAuthToken();
+    return isUserAuthenticated();
   }
 
   getAccessToken(): string | null {
-    return this.getAuthToken();
+    return getJwtToken();
   }
 
   async getBadges(userId: string) {

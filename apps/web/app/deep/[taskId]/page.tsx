@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useFocusAFKStore } from '../../../store/store';
-import { Task } from '../../../lib/database';
 import { useRouter } from 'next/navigation';
 // import Timer from '../../../components/modules/timer';
 // import SimpleTimer from '../../../components/modules/timer/TimerBreak';
@@ -14,6 +13,7 @@ import ChatAi from '../../../components/modules/ChatAi';
 import GoalsOverview from '../../../components/modules/goals/GoalsOverview';
 import { useUIStore } from '../../../store/uiStore';
 import { ButtonPrimary } from '../../../components/small/buttons';
+import { Task } from '../../../types';
 // import AuthDebug from '../../../components/modules/mentor/AuthDebug';
 // import LoginCheck from '../../../components/modules/mentor/LoginCheck';
 
@@ -59,78 +59,6 @@ export default function DeepModePage() {
         }
     }, [taskId, tasks]);
 
-    const handleStartTimer = () => {
-        setIsTimerRunning(true);
-        setTimerSeconds(0);
-    };
-
-    const handleStopTimer = () => {
-        setIsTimerRunning(false);
-        // Award XP based on time spent
-        const minutesSpent = Math.floor(timerSeconds / 60);
-        const xpGained = minutesSpent * 10;
-        setXp(prev => prev + xpGained);
-
-        // Level up logic
-        const newLevel = Math.floor(xp / 100) + 1;
-        if (newLevel > level) {
-            setLevel(newLevel);
-        }
-    };
-
-    const handleSendMessage = () => {
-        if (!chatMessage.trim()) return;
-
-        const userMessage = chatMessage;
-        setChatHistory(prev => [...prev, { role: 'user', message: userMessage }]);
-        setChatMessage('');
-
-        logClickedEvent('send_message_deep_mode');
-
-        // Simulate AI response
-        setTimeout(() => {
-            const responses = [
-                "Great question! Let me help you break this down into smaller steps.",
-                "I can see you're making progress. What specific challenge are you facing?",
-                "That's a good approach. Have you considered trying it this way?",
-                "You're on the right track! Keep going and don't forget to take breaks.",
-                "I'm here to support you. What would help you move forward?"
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            setChatHistory(prev => [...prev, { role: 'assistant', message: randomResponse || '' }]);
-        }, 1000);
-    };
-
-    const handleCreateGoal = async () => {
-        if (!goal.title.trim()) return;
-
-        logClickedEvent('create_goal');
-        await addGoal({
-            title: goal.title,
-            description: goal.description,
-            targetDate: goal.targetDate ? new Date(goal.targetDate) : undefined,
-            completed: false,
-            progress: 0,
-            category: goal.category,
-            relatedTasks: taskId ? [taskId] : undefined
-        });
-
-        setGoal({
-            id: '',
-            taskId: '',
-            title: '',
-            description: '',
-            targetDate: '',
-            category: ''
-        });
-    };
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (isTimerRunning) {
@@ -143,7 +71,7 @@ export default function DeepModePage() {
 
     if (!task) {
         return (
-            <div className="w-full h-full flex items-center justify-center bg-[var(--background)]">
+            <div className="w-full h-full flex items-center justify-center bg-[var(--background)] align-middle">
                 <TimeLoading />
             </div>
         );
@@ -194,6 +122,7 @@ export default function DeepModePage() {
                 </div>
             </div>
             {/* Main Content Grid */}
+
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
@@ -202,7 +131,9 @@ export default function DeepModePage() {
                     // goalId={goal?.} 
 
                     />
-{/* 
+
+
+                    {/* 
                     <ButtonPrimary  
                         className="max-w-100"
                         onClick={() => showModal(

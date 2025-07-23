@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { constants } from 'http2';
 dotenv.config();
 
 // Validation schemas
@@ -51,8 +52,13 @@ const UserSettingsSchema = z.object({
 });
 
 async function focusRoutes(fastify: FastifyInstance) {
+  // Test endpoint to verify server is running
+  fastify.get('/test', async (request, reply) => {
+    return reply.send({ success: true, message: 'Tasks server is running' });
+  });
+
   // Task routes
-  fastify.post('/tasks', {
+  fastify.post('/', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   body: TaskSchema,
@@ -77,7 +83,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.get('/tasks', {
+  fastify.get('/', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   querystring: z.object({
@@ -108,7 +114,7 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.get('/tasks/:id', {
+  fastify.get('/:id', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
@@ -130,24 +136,53 @@ async function focusRoutes(fastify: FastifyInstance) {
     }
   });
 
-  fastify.put('/tasks/:id', {
+  fastify.put('/:id', {
     onRequest: [fastify.authenticate],
     // schema: {
     //   body: TaskSchema.partial(),
     // },
   }, async (request, reply) => {
     try {
+      console.log('🔐 PUT /tasks/:id - Request received');
+      console.log('🔐 PUT /tasks/:id - User ID:', request.user.id);
+      console.log('🔐 PUT /tasks/:id - Task ID:', request.params);
+      console.log('🔐 PUT /tasks/:id - Update data:', request.body);
+      
       const userId = request.user.id;
       const { id } = request.params as { id: string };
       const updateData = request.body as Partial<z.infer<typeof TaskSchema>>;
+
+      console.log('🔐 PUT /tasks/:id - Looking for task with ID:', id, 'and userId:', userId);
 
       const task = await fastify.prisma.task.findFirst({
         where: { id, userId },
       });
 
+      console.log('🔐 PUT /tasks/:id - Found task:', !!task);
+
       if (!task) {
-        return reply.code(404).send({ error: 'Task not found' });
+        console.log('🔐 PUT /tasks/:id - Task not found, creating new task');
+        
+        // Ensure we have required fields for task creation
+        if (!updateData.title) {
+          return reply.code(400).send({ error: 'Title is required to create a new task' });
+        }
+
+        const taskInstance = await fastify.prisma.task.create({
+          data: {
+            title: updateData.title,
+            description: updateData.description,
+            priority: updateData.priority || 'medium',
+            category: updateData.category,
+            dueDate: updateData.dueDate ? new Date(updateData.dueDate) : null,
+            estimatedMinutes: updateData.estimatedMinutes,
+            userId,
+          },
+        });   
+        return reply.code(201).send({ success: true, data: taskInstance });
       }
+
+      console.log('🔐 PUT /tasks/:id - Updating task...');
 
       const updatedTask = await fastify.prisma.task.update({
         where: { id },
@@ -158,14 +193,16 @@ async function focusRoutes(fastify: FastifyInstance) {
         },
       });
 
+      console.log('🔐 PUT /tasks/:id - Task updated successfully');
       return reply.send({ success: true, data: updatedTask });
     } catch (error) {
+      console.error('🔐 PUT /tasks/:id - Error:', error);
       request.log.error(error);
       return reply.code(500).send({ error: 'Internal server error' });
     }
   });
 
-  fastify.delete('/tasks/:id', {
+  fastify.delete('/:id', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
@@ -196,7 +233,7 @@ async function focusRoutes(fastify: FastifyInstance) {
 
 
   // Statistics routes
-  fastify.get('/stats/tasks', {
+  fastify.get('/stats', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {

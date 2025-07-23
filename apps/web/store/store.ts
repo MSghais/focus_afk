@@ -4,6 +4,7 @@ import { dbUtils } from '../lib/database';
 import { useAuthStore } from './auth';
 import { Task, Goal, TimerSession, UserSettings } from '../types';
 import { api } from '../lib/api';
+import { isUserAuthenticated, getJwtToken } from '../lib/auth';
 
 // Timer state interface
 interface TimerState {
@@ -52,6 +53,7 @@ interface FocusAFKStore {
   deleteTask: (id: number) => Promise<void>;
   toggleTaskComplete: (id: number) => Promise<void>;
   loadTasks: () => Promise<void>;
+  syncTasksToBackend: () => Promise<void>;
 
   // Actions - Goals
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
@@ -189,15 +191,19 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         tasks: [newTask, ...state.tasks],
       }));
 
-      // If signed in, also send to backend
-      const { isAuthenticated, userConnected } = useAuthStore.getState();
-      if (isAuthenticated && userConnected && userConnected.id) {
+      // If authenticated, also send to backend
+      if (isUserAuthenticated()) {
         try {
-          await api.createTask({
-            ...task,
-            // Add any required fields for backend
-          });
+          const token = getJwtToken();
+          if (token) {
+            await api.createTask({
+              ...task,
+              // Add any required fields for backend
+            });
+            console.log('✅ Task synced to backend');
+          }
         } catch (err) {
+          console.error('❌ Failed to sync task to backend:', err);
           // Optionally handle error (e.g., show toast)
         }
       }
@@ -210,6 +216,19 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           task.id === id ? { ...task, ...updates, updatedAt: new Date() } : task
         ),
       }));
+
+      // If authenticated, also update in backend
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.updateTask(id.toString(), updates);
+            console.log('✅ Task update synced to backend');
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync task update to backend:', err);
+        }
+      }
     },
 
     deleteTask: async (id) => {
@@ -217,6 +236,19 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       set((state) => ({
         tasks: state.tasks.filter((task) => task.id !== id),
       }));
+
+      // If authenticated, also delete from backend
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.deleteTask(id.toString());
+            console.log('✅ Task deletion synced to backend');
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync task deletion to backend:', err);
+        }
+      }
     },
 
     toggleTaskComplete: async (id) => {
@@ -235,6 +267,65 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         console.error('Failed to load tasks:', error);
       } finally {
         set((state) => ({ loading: { ...state.loading, tasks: false } }));
+      }
+    },
+
+    // Sync all local tasks to backend
+    syncTasksToBackend: async () => {
+      if (!isUserAuthenticated()) {
+        console.log('⚠️ Not authenticated, skipping task sync');
+        return;
+      }
+
+      try {
+        const token = getJwtToken();
+        if (!token) {
+          console.log('⚠️ No JWT token available, skipping task sync');
+          return;
+        }
+
+        const { tasks } = get();
+        console.log(`🔄 Syncing ${tasks.length} tasks to backend...`);
+
+        for (const task of tasks) {
+          console.log(`🔄 Processing task: ${task.id} - ${task.title}`);
+          
+          try {
+            // Check if task exists in backend
+            console.log(`🔄 Checking if task ${task.id} exists in backend...`);
+            await api.getTask(task.id!.toString());
+            console.log(`🔄 Task ${task.id} exists, updating...`);
+            
+            // If it exists, update it
+            await api.updateTask(task.id!.toString(), {
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              category: task.category,
+              completed: task.completed,
+              dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
+              estimatedMinutes: task.estimatedMinutes,
+            } as any);
+            console.log(`✅ Task ${task.id} updated successfully`);
+          } catch (error) {
+            console.log(`🔄 Task ${task.id} not found in backend, creating...`);
+            // If task doesn't exist, create it
+            await api.createTask({
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              category: task.category,
+              completed: task.completed,
+              dueDate: task.dueDate ? task.dueDate.toISOString() : undefined,
+              estimatedMinutes: task.estimatedMinutes,
+            } as any);
+            console.log(`✅ Task ${task.id} created successfully`);
+          }
+        }
+
+        console.log('✅ All tasks synced to backend successfully');
+      } catch (error) {
+        console.error('❌ Failed to sync tasks to backend:', error);
       }
     },
 

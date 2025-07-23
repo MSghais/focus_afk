@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { User } from '@prisma/client';
+import { initializeAuthFromStorage, saveAuthToStorage, clearAuthFromStorage } from '../lib/auth';
 
   interface AuthState {
   
@@ -17,9 +18,11 @@ import { User } from '@prisma/client';
   setStarknetAddress: (address: string) => void;
   setLoginType: (type: "ethereum" | "starknet") => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
+  initializeAuth: () => void;
+  logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   userConnected: undefined,
   token: undefined,
   jwtToken: undefined,
@@ -34,4 +37,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   setStarknetAddress: (address) => set({ starknetAddress: address }),
   setLoginType: (type) => set({ loginType: type }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
+  
+  // Initialize auth state from localStorage
+  initializeAuth: () => {
+    initializeAuthFromStorage();
+  },
+  
+  // Logout and clear all auth data
+  logout: () => {
+    clearAuthFromStorage();
+    set({
+      userConnected: undefined,
+      token: undefined,
+      jwtToken: undefined,
+      evmAddress: undefined,
+      starknetAddress: undefined,
+      loginType: undefined,
+      isAuthenticated: false,
+    });
+  },
 })); 
