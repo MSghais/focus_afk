@@ -86,6 +86,34 @@ export default function DashboardQuests() {
 
   // TODO daily streak
 
+  // Calculate daily streak
+  const calculateStreak = (sessionsByDay: { date: string; sessions: number; minutes: number }[]) => {
+    if (!sessionsByDay || sessionsByDay.length === 0) return 0;
+    // Sort by date descending
+    const sorted = [...sessionsByDay].sort((a, b) => b.date.localeCompare(a.date));
+    let streak = 0;
+    let current = new Date();
+    for (let i = 0; i < sorted.length; i++) {
+      const day = new Date(sorted[i].date);
+      // If first day, check if today or yesterday
+      if (i === 0) {
+        const diff = Math.floor((current.getTime() - day.getTime()) / (1000 * 60 * 60 * 24));
+        if (diff > 1) break; // streak broken
+        streak++;
+        current = day;
+      } else {
+        // Check if previous day
+        const diff = Math.floor((current.getTime() - day.getTime()) / (1000 * 60 * 60 * 24));
+        if (diff !== 1) break;
+        streak++;
+        current = day;
+      }
+    }
+    return streak;
+  };
+
+  const streak = calculateStreak(focusStats.sessionsByDay || []);
+
   return (
     <div className={styles.dashboardContainer}>
       {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
@@ -118,9 +146,11 @@ export default function DashboardQuests() {
             </div>
           </div>
           <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
-            <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🐉</div>
-            <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Draggis</div>
-            <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem' }}>45-day streak</div>
+            <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🔥</div>
+            <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Daily Streak</div>
+            <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem', fontWeight: 700 }}>
+              {streak > 0 ? `${streak}-day streak` : 'No streak yet'}
+            </div>
           </div>
         </div>
       </div>

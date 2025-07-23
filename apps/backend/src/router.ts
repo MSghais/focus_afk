@@ -6,7 +6,7 @@ import uploadFile from './routes/upload/upload-file';
 import mentorRoutes from './routes/mentor';
 import gamificationRoutes from './routes/gamification';
 import focusRoutes from './routes/focus';
-
+import badgesRoutes from './routes/badges';
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -17,6 +17,7 @@ function declareRoutes(
   fastify.register(mentorRoutes, { prefix: '/mentor' });
   fastify.register(gamificationRoutes, { prefix: '/gamification' });
   fastify.register(focusRoutes, { prefix: '/focus' });
+  fastify.register(badgesRoutes, { prefix: '/badges' });
 }
 
 export default declareRoutes;
