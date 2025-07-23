@@ -175,6 +175,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
       <div className={styles.mentorGrid}>
         {/* Productivity Insights */}
 
+        <MentorList />
 
         {/* Chat Interface */}
         <ChatAi taskId={tasks[0]?.id} mentorId={mentors[0]?.id} />
@@ -230,13 +231,12 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
           </div>
         </div> */}
 
-        <MentorList />
 
 
 
         <ButtonPrimary
+          className={styles.insightsButton + "max-w-100 align-center"}
           onClick={() => setIsOpenInsights(!isOpenInsights)}
-          className={styles.insightsButton}
         >
           {isOpenInsights ? 'Close Insights' : 'Open Insights'}
         </ButtonPrimary>

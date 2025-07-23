@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import GoalList, { Goal as LocalGoal, Task as LocalTask } from './GoalList';
 import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
 import { useFocusAFKStore } from '../../../store/store';
-import { Task as StoreTask, Goal as StoreGoal } from '../../../lib/database';
-
+  import { ButtonPrimary } from '../../small/buttons';
+import { Goal, Task } from '../../../types';
 export interface GoalsOverviewProps {}
 
-function normalizeTask(task: StoreTask): LocalTask {
+function normalizeTask(task: Task): LocalTask {
   return {
     ...task,
     id: task.id ?? '',
@@ -15,7 +15,7 @@ function normalizeTask(task: StoreTask): LocalTask {
   };
 }
 
-function normalizeGoal(goal: StoreGoal): LocalGoal {
+function normalizeGoal(goal: Goal): LocalGoal {
   return {
     ...goal,
     id: goal.id ?? '',
@@ -58,12 +58,12 @@ export default function GoalsOverview({}: GoalsOverviewProps) {
     <div className="w-full max-w-2xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Goals / KPIs / Aims</h1>
-        <button
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+        <ButtonPrimary
+          className="px-4 py-2 bg-var(--brand-primary) rounded-lg hover:bg-var(--brand-secondary) transition"
           onClick={() => setShowCreate(v => !v)}
         >
           {showCreate ? 'Back to List' : 'Add Goal'}
-        </button>
+        </ButtonPrimary>
       </div>
       {showCreate ? (
         <GoalCreate tasks={normalizedTasks} onCreate={handleCreate} onCancel={() => setShowCreate(false)} />

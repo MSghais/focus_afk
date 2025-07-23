@@ -38,7 +38,7 @@
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
   }
 
   .chatMessages {
@@ -90,7 +90,7 @@
 
       .messageContent {
         background: rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
+        color: var(--text-primary);
         border-radius: 18px 18px 18px 4px;
         padding: 0.75rem 1rem;
         max-width: 85%;
@@ -105,7 +105,7 @@
 
       .messageContent {
         background: rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
+        color: var(--text-primary);
         border-radius: 18px 18px 18px 4px;
         padding: 0.75rem 1rem;
         max-width: 85%;
@@ -117,7 +117,7 @@
 
     .messageTime {
       font-size: 0.75rem;
-      color: #94a3b8;
+      color: var(--text-primary);
       margin-top: 0.25rem;
     }
   }
@@ -130,7 +130,7 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
     background: rgba(255, 255, 255, 0.1);
-    color: #e2e8f0;
+    color: var(--text-primary);
     
     // Markdown content styling
     p {
@@ -223,7 +223,7 @@
     span {
       width: 8px;
       height: 8px;
-      background: #94a3b8;
+      background: var(--text-primary);
       border-radius: 50%;
       animation: typing 1.4s infinite ease-in-out;
 
@@ -239,17 +239,21 @@
     margin-top: auto;
     flex-shrink: 0;
 
+
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
     .input {
       flex: 1;
       padding: 0.75rem 1rem;
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
       background: rgba(255, 255, 255, 0.05);
-      color: #e2e8f0;
+      color: var(--text-primary);
       font-size: 0.875rem;
 
       &::placeholder {
-        color: #94a3b8;
+        color: var(--text-primary);
       }
 
       &:focus {
@@ -265,7 +269,7 @@
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border: none;
-      color: white;
+      color: var(--text-primary);
       font-size: 1rem;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -288,7 +292,7 @@
 
   .emptyState {
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-primary);
     padding: 2rem;
 
     p {
@@ -302,7 +306,7 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #94a3b8;
+    color: var(--text-primary);
 
     .loadingContent {
       text-align: center;

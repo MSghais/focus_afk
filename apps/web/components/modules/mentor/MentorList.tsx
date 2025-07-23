@@ -8,7 +8,8 @@ import { useUIStore } from '../../../store/uiStore';
 import { useApi } from '../../../hooks/useApi';
 import { Message, Mentor } from '../../../types';
 import { useAuthStore } from '../../../store/auth';
-
+import MentorForm from './MentorForm';
+import { ButtonPrimary } from '../../small/buttons';
 
 export default function MentorList() {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
@@ -17,6 +18,9 @@ export default function MentorList() {
   const apiService = useApi();
   const [messages, setMessages] = useState<Message[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingMentor, setEditingMentor] = useState<Mentor | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if(userConnected) loadMentors();
@@ -28,11 +32,9 @@ export default function MentorList() {
     }
   }, [userConnected]);
 
-
-
   const loadMentors = async () => {
     try {
-
+      setIsLoading(true);
       if(!userConnected) return;
       
       const response = await apiService.getMentors();
@@ -42,26 +44,162 @@ export default function MentorList() {
       }
     } catch (error) {
       console.error('Error loading mentors:', error);
+      showToast({
+        message: 'Failed to load mentors',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
+    loadMentors();
+  };
+
+  const handleEditSuccess = () => {
+    setEditingMentor(null);
+    loadMentors();
+  };
+
+  const handleDeleteMentor = async (mentorId: string) => {
+    if (!confirm('Are you sure you want to delete this mentor? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await apiService.deleteMentor(mentorId);
+      if (response.success || response.message) {
+        showToast({
+          message: 'Mentor deleted successfully',
+          type: 'success'
+        });
+        loadMentors();
+      } else {
+        throw new Error(response.error || 'Failed to delete mentor');
+      }
+    } catch (error) {
+      console.error('Error deleting mentor:', error);
+      showToast({
+        message: 'Failed to delete mentor',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleEditMentor = (mentor: Mentor) => {
+    setEditingMentor(mentor);
+  };
 
   console.log('mentors', mentors);
+
+  if (showCreateForm) {
+    return (
+      <MentorForm
+        mode="create"
+        onSuccess={handleCreateSuccess}
+        onCancel={() => setShowCreateForm(false)}
+      />
+    );
+  }
+
+  if (editingMentor) {
+    return (
+      <MentorForm
+        mode="edit"
+        mentor={editingMentor}
+        onSuccess={handleEditSuccess}
+        onCancel={() => setEditingMentor(null)}
+      />
+    );
+  }
+
   return (
     <div className={styles.mentor}>
-      <h1 className={styles.title}>AI Mentors</h1>
-
-      <button onClick={loadMentors}>Load Mentors</button>
-
-      <div className={styles.mentorGrid}>
-        {mentors.map((mentor) => (
-          <div className={styles.mentorCard} key={mentor.id}>
-            <h2 className={styles.cardTitle}>{mentor.name}</h2>
-            <p className={styles.cardDescription}>{mentor.role}</p>
-          </div>
-        ))}
+      <div className={styles.mentorHeader}>
+        <h1 className={styles.title}>AI Mentors</h1>
+        <ButtonPrimary
+          onClick={() => setShowCreateForm(true)}
+          className={styles.createButton}
+        >
+          + Create New Mentor
+        </ButtonPrimary>
       </div>
 
+      {isLoading ? (
+        <div className={styles.loadingState}>
+          <div className={styles.spinner}></div>
+          <p>Loading mentors...</p>
+        </div>
+      ) : mentors.length === 0 ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🤖</div>
+          <h3>No mentors yet</h3>
+          <p>Create your first AI mentor to get personalized guidance and support</p>
+          <ButtonPrimary
+            onClick={() => setShowCreateForm(true)}
+            className={styles.createFirstButton}
+          >
+            Create Your First Mentor
+          </ButtonPrimary>
+        </div>
+      ) : (
+        <div className={styles.mentorGrid}>
+          {mentors.map((mentor) => (
+            <div className={styles.mentorCard} key={mentor.id}>
+              <div className={styles.cardHeader}>
+                <h2 className={styles.cardTitle}>{mentor.name}</h2>
+                <div className={styles.cardActions}>
+                  <button
+                    onClick={() => handleEditMentor(mentor)}
+                    className={styles.editButton}
+                    title="Edit mentor"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => handleDeleteMentor(mentor.id!)}
+                    className={styles.deleteButton}
+                    title="Delete mentor"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              
+              <p className={styles.cardRole}>{mentor.role}</p>
+              
+              {mentor.about && (
+                <p className={styles.cardDescription}>{mentor.about}</p>
+              )}
+              
+              <div className={styles.knowledgeTags}>
+                {mentor.knowledges.slice(0, 3).map((knowledge, index) => (
+                  <span key={index} className={styles.knowledgeTag}>
+                    {knowledge}
+                  </span>
+                ))}
+                {mentor.knowledges.length > 3 && (
+                  <span className={styles.moreTag}>
+                    +{mentor.knowledges.length - 3} more
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.cardFooter}>
+                <span className={styles.createdDate}>
+                  Created {new Date(mentor.createdAt || '').toLocaleDateString()}
+                </span>
+                <div className={styles.statusIndicator}>
+                  <span className={`${styles.statusDot} ${mentor.isActive ? styles.active : styles.inactive}`}></span>
+                  {mentor.isActive ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 } 
