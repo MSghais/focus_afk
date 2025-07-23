@@ -17,7 +17,11 @@ interface MentorFeedback {
   nextSteps: string[];
 }
 
-export default function Mentor() {
+interface MentorProps {
+  isSetupEnabled?: boolean;
+}
+
+export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { showToast } = useUIStore();
   const apiService = useApi();
@@ -188,7 +192,8 @@ export default function Mentor() {
         </div>
 
         {/* Chat Interface */}
-        <div className={styles.chatCard}>
+        <ChatAi taskId={tasks[0]?.id} mentorId={mentors[0]?.id} />  
+        {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
             {isLoadingMessages ? (
@@ -238,7 +243,7 @@ export default function Mentor() {
               ➤
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <div className={styles.actionsCard}>

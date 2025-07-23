@@ -21,11 +21,11 @@ export default function ClientLayout({
   const { ready, authenticated, user } = usePrivy();
   const router = useRouter();
 
-  useEffect(() => {
-    if (ready && !authenticated) {
-      router.push('/profile');
-    }
-  }, [ready, authenticated, router]);
+  // useEffect(() => {
+  //   if (ready && !authenticated) {
+  //     router.push('/onboarding');
+  //   }
+  // }, [ready, authenticated, router]);
   // Set dark theme by default on first load
   React.useEffect(() => {
     if (typeof window !== 'undefined') {

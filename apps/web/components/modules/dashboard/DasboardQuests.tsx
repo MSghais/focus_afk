@@ -89,21 +89,9 @@ export default function DashboardQuests() {
   return (
     <div className={styles.dashboardContainer}>
       {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
-      <div style={{ color: 'var(--foreground)', fontWeight: 500, textAlign: 'center', marginBottom: '2rem', width: '100%' }}>
+      {/* <div style={{ color: 'var(--foreground)', fontWeight: 500, textAlign: 'center', marginBottom: '2rem', width: '100%' }}>
         Bet. Focus. Prove. Earn.
-      </div>
-
-
-      <div className="flex flex-row gap-4 justify-center my-4">
-
-
-          <Link href="/settings" className="">
-            <Icon name="settings" size={24} />
-          </Link>
-
-       
-
-      </div>
+      </div> */}
 
       <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>

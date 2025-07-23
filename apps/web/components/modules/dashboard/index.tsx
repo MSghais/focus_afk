@@ -229,8 +229,8 @@ export default function Dashboard() {
 
                 <button
                     onClick={() => {
-                        setCurrentModule('learning');
-                        router.push('/learning');
+                        setCurrentModule('goals');
+                        router.push('/goals');
                     }}
                     className={styles.actionButton}
                     style={{ background: 'linear-gradient(to right, #8B5CF6, #7C3AED)', color: 'white' }}
