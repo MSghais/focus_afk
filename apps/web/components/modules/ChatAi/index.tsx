@@ -130,6 +130,12 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
         setIsLoadingMessagesInitial(true);
     }, []);
 
+    useEffect(() => {
+        if (mentorId) {
+            loadMessages();
+        }
+    }, [mentorId]);
+
     const loadMessages = async () => {
         try {
 

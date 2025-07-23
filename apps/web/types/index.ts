@@ -52,6 +52,7 @@ export interface TimerSession {
 export interface Task {
     id?: number;
     title: string;
+    subTaskId?: number;
     description?: string;
     completed: boolean;
     priority: 'low' | 'medium' | 'high';

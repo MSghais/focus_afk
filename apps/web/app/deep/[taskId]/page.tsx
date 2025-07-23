@@ -76,9 +76,9 @@ export default function DeepModePage() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
+        <div className="w-full h-full flex flex-col p-2 bg-[var(--background)]">
             {/* Header */}
-            <div className="mb-6">
+            <div className="mb-6 px-2">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-3xl font-bold text-[var(--brand-primary)]">DEEP Mode</h1>
                     <div className="flex items-center gap-4">
