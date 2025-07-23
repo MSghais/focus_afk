@@ -122,6 +122,7 @@ export default function DeepModePage() {
                 </div>
             </div>
             {/* Main Content Grid */}
+
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
@@ -130,7 +131,9 @@ export default function DeepModePage() {
                     // goalId={goal?.} 
 
                     />
-{/* 
+
+
+                    {/* 
                     <ButtonPrimary  
                         className="max-w-100"
                         onClick={() => showModal(

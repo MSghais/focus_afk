@@ -3,10 +3,9 @@
 import { useAuthStore } from '../../../store/auth';
 import { useApi } from '../../../hooks/useApi';
 import { isUserAuthenticated, getJwtToken } from '../../../lib/auth';
-import { useEvmLogin } from '../../../hooks/useEvmLogin';
-import { useStarknetLogin } from '../../../hooks/useStarknetLogin';
-import { useEvmLogin } from '../../../hooks/useEvmLogin';
-import { useStarknetLogin } from '../../../hooks/useStarknetLogin';
+// import { useStarknetLogin } from '../../../hooks/useStarknetLogin';
+// import { useEvmLogin } from '../../../hooks/useEvmLogin';
+// import { useStarknetLogin } from '../../../hooks/useStarknetLogin';
 
 export default function AuthDebug() {
   const { jwtToken, userConnected, isAuthenticated } = useAuthStore();

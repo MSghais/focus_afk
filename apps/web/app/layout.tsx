@@ -11,6 +11,7 @@ const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || '';
 export const metadata: Metadata = {
   title: "Focus AFK - Productivity & Focus",
   description: "Boost your productivity with Focus AFK - the ultimate focus and task management app",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   icons: {
     icon: [
       { url: '/favicon.ico' },
