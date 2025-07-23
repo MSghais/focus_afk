@@ -103,7 +103,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           await fastify.prisma.mentor.create({
             data: {
               userId: user.id,
-              accountEvmAddress: address?.toLowerCase() || "" ,
+              // accountEvmAddress: address?.toLowerCase() || "" ,
               isActive: true,
               name: `Mentor ${address?.toLowerCase() || ""}`,
             },

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 dotenv.config();
 
 const TimerSessionSchema = z.object({
@@ -10,16 +11,16 @@ const TimerSessionSchema = z.object({
   endTime: z.string().datetime().optional(),
   duration: z.number().positive(),
   notes: z.string().optional(),
-});
+}).partial();
 
 async function timerRoutes(fastify: FastifyInstance) {
 
   // Timer session routes
   fastify.post('/timer-sessions', {
     onRequest: [fastify.authenticate],
-    schema: {
-      body: TimerSessionSchema,
-    },
+    // schema: {
+    //     body: TimerSessionSchema,
+    // },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
@@ -27,7 +28,7 @@ async function timerRoutes(fastify: FastifyInstance) {
 
       const data: any = {
         userId,
-        startTime: new Date(sessionData.startTime),
+        startTime: sessionData.startTime ? new Date(sessionData.startTime) : new Date(),
         endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
         duration: sessionData.duration,
         notes: sessionData.notes,
@@ -85,7 +86,14 @@ async function timerRoutes(fastify: FastifyInstance) {
     onRequest: [fastify.authenticate],
     schema: {
       body: TimerSessionSchema.partial(),
-    },
+      querystring: z.object({
+        taskId: z.string().optional(),
+        goalId: z.string().optional(),
+        completed: z.string().optional(),
+        startDate: z.string().datetime().optional(),
+        endDate: z.string().datetime().optional(),
+      }),
+      },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;

@@ -29,6 +29,14 @@ export default function LoginBackend() {
                 setStarknetAddress(result?.user?.starknetAddress);
                 setLoginType(result?.user?.loginType || "ethereum");
                 setIsAuthenticated(true);
+
+                localStorage?.setItem('token', result.token);
+                localStorage?.setItem('user', JSON.stringify(result.user));
+                localStorage?.setItem('evmAddress', result?.user?.evmAddress);
+                localStorage?.setItem('starknetAddress', result?.user?.starknetAddress);
+                localStorage?.setItem('loginType', result?.user?.loginType || "ethereum");
+                localStorage?.setItem('isAuthenticated', 'true');
+
                 // Handle success (e.g., store session, redirect)
                 showToast({ message: "Login successful!", type: "success" });
             }
