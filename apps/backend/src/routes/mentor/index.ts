@@ -159,6 +159,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
           role: 'user',
           content: prompt,
           model: modelName,
+          prompt: prompt,
         },
       });
 

@@ -23,7 +23,8 @@ export default function LoginBackend() {
                 logClickedEvent('login_backend_success');
                 setUserConnected(result.user);
                 setToken(result.token);
-                setJwtToken(result.jwtToken || result?.token);
+                // The backend returns 'token', not 'jwtToken'
+                setJwtToken(result.token);
                 setEvmAddress(result?.user?.evmAddress);
                 setStarknetAddress(result?.user?.starknetAddress);
                 setLoginType(result?.user?.loginType || "ethereum");

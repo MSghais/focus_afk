@@ -108,6 +108,7 @@ model Message {
   mentorId  String?
   role      String   // user, assistant, system
   content   String   // The message content
+  prompt String?
   model     String?  // AI model used for response
   tokens    Int?     // Token count for cost tracking
   metadata  Json?    // Additional metadata (model params, etc.)

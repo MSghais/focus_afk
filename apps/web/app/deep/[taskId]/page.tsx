@@ -11,6 +11,8 @@ import TimeLoading from '../../../components/small/loading/time-loading';
 import TimerMain from '../../../components/modules/timer';
 import { logClickedEvent } from '../../../lib/analytics';
 import ChatAi from '../../../components/modules/ChatAi';
+import AuthDebug from '../../../components/modules/mentor/AuthDebug';
+import LoginCheck from '../../../components/modules/mentor/LoginCheck';
 
 export default function DeepModePage() {
     const router = useRouter();
@@ -241,7 +243,12 @@ export default function DeepModePage() {
                 {/* Right Column - Mentor Chat */}
                 
                 <div className="rounded-lg p-6 shadow-lg">
-
+                    {/* Check if user is logged in */}
+                    <LoginCheck />
+                    
+                    {/* Add debug component to check authentication */}
+                    <AuthDebug />
+                    
                     <ChatAi taskId={taskId} />
                     {/* <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
                     <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">

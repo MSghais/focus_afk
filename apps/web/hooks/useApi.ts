@@ -16,8 +16,15 @@ export function useApi() {
           ...(options.headers as Record<string, string> || {}),
         };
 
+        // Debug: Log the JWT token status
+        console.log('🔐 useApi - JWT Token available:', !!jwtToken);
+        console.log('🔐 useApi - JWT Token preview:', jwtToken ? jwtToken.substring(0, 20) + '...' : 'None');
+
         if (jwtToken) {
           headers.Authorization = `Bearer ${jwtToken}`;
+          console.log('🔐 useApi - Authorization header set');
+        } else {
+          console.log('🔐 useApi - No JWT token available, request will fail');
         }
 
         try {
@@ -26,13 +33,16 @@ export function useApi() {
             headers,
           });
 
+          console.log('🔐 useApi - Response status:', response.status);
+
           if (response.status === 401) {
+            console.log('🔐 useApi - 401 Unauthorized - JWT token may be invalid or missing');
             throw new Error('Authentication failed - please login again');
           }
 
           return await response.json();
         } catch (error) {
-          console.error('API request failed:', error);
+          console.error('🔐 useApi - API request failed:', error);
           throw error;
         }
       },
