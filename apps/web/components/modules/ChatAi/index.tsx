@@ -100,7 +100,6 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
     const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
 
-    console.log('mentorId', mentorId);
     // Auto-scroll to bottom when messages change
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

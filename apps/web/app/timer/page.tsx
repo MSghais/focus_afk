@@ -1,6 +1,5 @@
-import TimerMain from "../../components/modules/timer";
+import TimePageComponent from "./TimePageComponent";
 import { Metadata } from "next";
-import ChatAi from "../../components/modules/ChatAi";
 
 export const metadata: Metadata = {
     title: "Timer Focus AFK",
@@ -10,10 +9,9 @@ export const metadata: Metadata = {
 export default function TimerPage() {
     return (
         <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
-            <TimerMain isSetupEnabled={false}
-                timerTypeProps="deep"
-            />
-            <ChatAi isSelectMentorViewEnabled={true}></ChatAi>
+            <TimePageComponent />
+
+           
         </div>
     )
 }
