@@ -94,6 +94,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+    const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
 
     // Auto-scroll to bottom when messages change
     const scrollToBottom = () => {
@@ -125,11 +126,11 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
     // Load messages from backend
     useEffect(() => {
         loadMessages();
+        setIsLoadingMessagesInitial(true);
     }, []);
 
     const loadMessages = async () => {
         try {
-            setIsLoadingMessages(true);
 
             if (!userConnected) {
                 showModal(<ProfileUser />);
@@ -247,13 +248,7 @@ export default function ChatAi({ taskId, mentorId }: ChatAiProps) {
                     </div>
 
                     {isLoadingMessages && (
-                        <div className={styles.loadingState}>
-                            <div className={styles.loadingContent}>
-                                <div className={styles.spinner}></div>
-                                <p>Loading chat history...</p>
-                                <TimeLoading />
-                            </div>
-                        </div>
+                        <TimeLoading />
                     )}
 
                     <div className={styles.chatMessages}>

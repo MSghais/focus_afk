@@ -26,13 +26,14 @@ const LeftSidebar = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'tasks', label: 'Tasks', icon: '📋' },
-    { id: 'timer', label: 'Timer', icon: '⏱️' },
-    { id: 'goals', label: 'Goals', icon: '🎯' },
-    // { id: 'learning', label: 'Learning', icon: '🎓' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     { id: 'profile', label: 'User', icon: '👤' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    // { id: 'tasks', label: 'Tasks', icon: '📋' },
+    // { id: 'timer', label: 'Timer', icon: '⏱️' },
+    // { id: 'goals', label: 'Goals', icon: '🎯' },
+    // { id: 'learning', label: 'Learning', icon: '🎓' },
+ 
+    // { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
