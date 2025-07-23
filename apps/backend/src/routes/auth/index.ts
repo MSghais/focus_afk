@@ -90,6 +90,28 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
       console.log("user", user);
 
+      try {
+        const mentor = await fastify.prisma.mentor.findFirst({
+          where: {
+            // userId: user.id,
+            accountEvmAddress: address.toLowerCase(),
+          },
+        });
+        if (!mentor) {
+          await fastify.prisma.mentor.create({
+            data: {
+              userId: user.id,
+              accountEvmAddress: address.toLowerCase(),
+              isActive: true,
+              name: `Mentor ${address.toLowerCase()}`,
+            },
+          });
+        }
+        console.log("mentor", mentor);
+      } catch (error) {
+        console.log("error", error);
+      }
+
       // 3. Create JWT
       const token = fastify.jwt.sign({ id: user.id, userAddress: user.userAddress });
 

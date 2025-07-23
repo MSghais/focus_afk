@@ -95,6 +95,9 @@ model Mentor {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  accountEvmAddress String?
+  evmAddressAgent String?
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages Message[]
 
