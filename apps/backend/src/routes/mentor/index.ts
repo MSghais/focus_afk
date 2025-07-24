@@ -4,12 +4,15 @@ import dotenv from 'dotenv';
 import { pinata } from '../../services/pinata';
 import { DEFAULT_MODEL, LLM_FREE_MODELS_NAME, LLM_MODELS_NAME } from '../../config/models';
 import { AiService } from '../../services/ai/ai';
+import { EnhancedAiService } from '../../services/ai/enhancedAiService';
+import { buildContextString } from '../../services/helpers/contextHelper';
 import { mentorSchema } from '../../validations/mentor.validation';
 import type { CreateMentorInput, UpdateMentorInput, CreateMessageInput, GetMessagesInput, CreateFundingAccountInput, UpdateFundingAccountInput } from '../../validations/mentor.validation';
 dotenv.config();
 
 async function mentorRoutes(fastify: FastifyInstance) {
   const aiService = new AiService();
+  const enhancedAiService = new EnhancedAiService(fastify.prisma);
 
   // Check if the plugin is already registered
   if (!fastify.hasContentTypeParser('multipart/form-data')) {
@@ -116,7 +119,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Chat endpoint with message saving
+  // Chat endpoint with message saving and context/memory support
   fastify.post('/chat', {
     preHandler: [fastify.authenticate],
     schema: {
@@ -127,56 +130,123 @@ async function mentorRoutes(fastify: FastifyInstance) {
           prompt: { type: 'string', minLength: 1 },
           model: { type: 'string' },
           mentorId: { type: 'string' },
+          sessionId: { type: 'string' },
+          enableMemory: { type: 'boolean' },
+          contextSources: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings']
+            }
+          },
+          systemPrompt: { type: 'string' },
+          extraData: { type: 'object' }
         },
       },
     },
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      const { prompt, model, mentorId, taskId } = request.body as { prompt: string; model?: string; mentorId?: string; taskId?: string };
+      const {
+        prompt,
+        model = DEFAULT_MODEL,
+        mentorId,
+        sessionId,
+        enableMemory = true,
+        contextSources = ['tasks', 'goals', 'sessions', 'profile', 'mentor'],
+        systemPrompt,
+        extraData
+      } = request.body as any;
 
-      console.log('prompt', prompt);
-      console.log('model', model);
-      console.log('mentorId', mentorId);
-      console.log('taskId', taskId);
       if (!prompt) {
         return reply.code(400).send({ message: 'Prompt is required' });
       }
 
-      const modelName = DEFAULT_MODEL;
-      const response = await aiService.generateTextLlm({
-        model: modelName,
-        prompt: prompt,
+      let memory = await enhancedAiService.getMemoryContext(userId, mentorId, sessionId);
+      // If extraData is provided, merge it into the context
+      if (enableMemory && extraData && memory) {
+        // Merge extraData into the userContext
+        memory = await enhancedAiService.memoryManager.updateMemory(
+          sessionId || `${userId}_${mentorId || 'default'}`,
+          { userContext: { ...memory.userContext, ...extraData } }
+        );
+      }
+
+      // Use the context helper to build the context string
+      let enhancedPrompt = prompt;
+      if (enableMemory && memory) {
+        const contextString = buildContextString(memory, contextSources);
+        enhancedPrompt = `${contextString}\n\nCurrent User Message: ${prompt}\n\nPlease respond as the AI mentor, taking into account the user's current context and conversation history. Provide personalized, actionable advice.`;
+      }
+
+      // Generate response using the enhanced AI service
+      const response = await enhancedAiService.generateTextWithMemory({
+        model,
+        systemPrompt,
+        prompt,
+        userId,
+        mentorId,
+        sessionId,
+        enableMemory,
+        contextSources
       });
 
-      console.log('response', response);
+      if (!response) {
+        return reply.code(500).send({ message: 'Failed to generate response' });
+      }
 
       // Save user message
-      await fastify.prisma.message.create({
+      const userMessage = await fastify.prisma.message.create({
         data: {
           userId,
           mentorId,
           role: 'user',
           content: prompt,
-          model: modelName,
-          // taskId,
-          },
+          model,
+          metadata: {
+            sessionId: response.memory.sessionId,
+            enableMemory,
+            contextSources,
+            originalPrompt: prompt,
+            enhancedPrompt: enhancedPrompt,
+            extraData: extraData || null
+          }
+        },
       });
 
       // Save assistant response
-      await fastify.prisma.message.create({
+      const assistantMessage = await fastify.prisma.message.create({
         data: {
           userId,
           mentorId,
           role: 'assistant',
-          content: response?.text ?? '',
-          model: modelName,
-          // taskId,
+          content: response.text,
+          model,
+          tokens: response.usage?.total_tokens,
+          metadata: {
+            sessionId: response.memory.sessionId,
+            contextVersion: response.memory.contextVersion,
+            memorySize: response.memory.memorySize,
+            dataSources: response.memory.dataSources,
+            sources: response.sources,
+            usage: response.usage,
+            originalPrompt: prompt,
+            enhancedPrompt: enhancedPrompt,
+            extraData: extraData || null
+          }
         },
       });
 
       return reply.code(200).send({
-        response,
+        success: true,
+        data: {
+          response: response.text,
+          messageId: assistantMessage.id,
+          memory: response.memory,
+          usage: response.usage,
+          originalPrompt: prompt,
+          enhancedPrompt: enhancedPrompt
+        }
       });
     } catch (error) {
       fastify.log.error(error);
