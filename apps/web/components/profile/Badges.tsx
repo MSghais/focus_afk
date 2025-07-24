@@ -14,7 +14,10 @@ interface Badge {
     dateAwarded: string;
 }
 
-export default function Badges() {
+interface IBadgesProps {
+    isEnabledRefreshButton?: boolean;
+}
+export default function Badges({ isEnabledRefreshButton = true }: IBadgesProps) {
     const apiService = useApi();
     const { userConnected } = useAuthStore();
     const [badges, setBadges] = useState<Badge[]>([]);
@@ -122,14 +125,15 @@ export default function Badges() {
             <h2 className="text-xl font-bold mb-4">Your Badges</h2>
             {error && <div className="text-red-500">{error}</div>}
 
-            <div className='flex  rounded-lg py-4'>
+            {isEnabledRefreshButton && <div className='flex  rounded-lg py-4'>
                 <button
                     className='flex items-center gap-2'
                     onClick={() => {
                         if (!userConnected?.id) return;
                         loadBadges();
                     }}> <Icon name='refresh' /></button>
-            </div>
+
+            </div>}
 
             <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
                 <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🔥</div>

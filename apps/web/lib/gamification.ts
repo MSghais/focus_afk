@@ -147,8 +147,8 @@ export interface Quest {
   description: string;
   type: string;
   status: 'pending' | 'active' | 'completed' | 'failed';
-  progress: number; // 0-100
-  goal: number;
+  progress?: number; // 0-100
+  goal?: number;
   rewardXp: number;
   rewardBadge?: string;
   badgeReward?: string;

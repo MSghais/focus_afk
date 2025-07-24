@@ -43,7 +43,7 @@ const Navbar = () => {
 
           <div className="w-full h-full">
             <QuestList quests={[]} />
-            <Badges />
+            <Badges isEnabledRefreshButton={false} />
           </div>
 
 

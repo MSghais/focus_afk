@@ -9,10 +9,11 @@ import { Icon } from '../../small/icons';
 
 interface QuestListProps {
   quests: Quest[];
+  isEnabledRefreshButton?: boolean;
   onSelect?: (id: string) => void;
 }
 
-const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => {
+const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefreshButton = true }) => {
   const { userConnected } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,10 +63,10 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => {
     <div className="flex flex-col gap-2">
       <h1 className="text-2xl font-bold">Quests</h1>
 
-      <button onClick={() => loadQuests()}><Icon name="refresh" /></button>
+      {isEnabledRefreshButton && <button onClick={() => loadQuests()}><Icon name="refresh" /></button>}
       <div className={styles.questList}>
         {questsState.map((quest) => (
-          <QuestItem key={quest.id} {...quest} onClick={() => onSelect?.(quest.id)} />
+          <QuestItem key={quest.id} quest={quest} onClick={() => onSelect?.(quest.id)} />
         ))}
       </div>
     </div>
