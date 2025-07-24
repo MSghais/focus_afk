@@ -81,6 +81,24 @@ span {
   // background: var(--background);
 }
 
+strong {
+  color: var(--text-primary);
+}
+
+ul {
+  color:var(--text-primary)
+}
+
+li {
+  color: var(--text-primary);
+}
+
+
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+}
+
+
 option {
   color: var(--text-primary); 
   background: var(--background);

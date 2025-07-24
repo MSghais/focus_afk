@@ -59,8 +59,6 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => {
   console.log("questsState", questsState);
   return (
 
-
-
     <div className="flex flex-col gap-2">
       <h1 className="text-2xl font-bold">Quests</h1>
 

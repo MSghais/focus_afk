@@ -39,7 +39,10 @@ const Navbar = () => {
       <div className={styles.navbarActions}>
           <button 
           className={styles.navbarItem}
-          onClick={() => showModal(<div className="w-full h-full"><QuestList quests={[]} />
+          onClick={() => showModal(
+
+          <div className="w-full h-full">
+            <QuestList quests={[]} />
             <Badges />
           </div>
 
