@@ -35,7 +35,7 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
-  const {selectedMentor} = useMentorsStore();
+  const { selectedMentor } = useMentorsStore();
 
   const [isOpenInsights, setIsOpenInsights] = useState(false);
   const [isViewChatAi, setIsViewChatAi] = useState(false);
@@ -113,14 +113,15 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
 
         <MentorList />
 
-        <div className="flex flex-row gap-4 justify-center"> 
+        <div className="flex flex-col gap-4 justify-center">
           <ButtonSecondary onClick={() => setIsViewChatAi(!isViewChatAi)}>
-              {isViewChatAi ? "Hide Chat AI" : "Show Chat AI"}
+            {isViewChatAi ? "Hide Chat AI" : "Show Chat AI"}
           </ButtonSecondary>
+          {isViewChatAi && <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />}
+
         </div>
 
         {/* Chat Interface */}
-        {isViewChatAi && <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />}
         {/* <div className={styles.chatCard}>
           <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
           <div className={styles.chatMessages}>
