@@ -55,6 +55,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const token = getJwtToken();
     let authedSocket: Socket | null = null;
     if (token) {
+      console.log('Authed WebSocket connection:', token);
       authedSocket = io(backendUrl, {
         transports: ['websocket'],
         autoConnect: true,
@@ -69,7 +70,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsAuthedConnected(true);
         authedSocket!.emit('authed_connection'); // Custom event for authed connection
       });
-      authedSocket.on('disconnect', () => setIsAuthedConnected(false));
+
+      authedSocket.on('quest_of_the_day', (quest: any) => {
+        console.log('Quest of the day:', quest);
+      });
+   
+      // authedSocket.on('disconnect', () => setIsAuthedConnected(false));
       authedSocket.on('connect_error', (err) => {
         setError(err instanceof Error ? err : new Error(String(err)));
         console.error('Authed WebSocket error:', err);
