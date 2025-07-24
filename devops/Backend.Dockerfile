@@ -26,9 +26,10 @@ COPY . .
 ARG BACKEND_DATABASE_URL
 ENV BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL}
 
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV}
 ARG FRONTEND_URL
 ENV FRONTEND_URL=${FRONTEND_URL}
-ENV NODE_ENV=production
 
 # Debug: print working directory and files
 RUN pwd && ls -la
@@ -46,4 +47,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 EXPOSE ${PORT:-5000}
 
 # Start the backend app
-CMD ["pnpm", "--filter", "./apps/backend...", "start"]
+# CMD ["pnpm", "--filter", "./apps/backend...", "start"]
+# Command to start the application
+CMD ["node", "apps/backend/dist/index.js"]
+

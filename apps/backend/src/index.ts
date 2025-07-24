@@ -34,82 +34,82 @@ async function buildServer() {
   console.log('FRONTEND_URL', process.env.FRONTEND_URL);
   console.log('NODE_ENV', process.env.NODE_ENV);
 
-  await fastify.register(fastifyCors, {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    // origin: '*',
-    credentials: true
-  });
+  // await fastify.register(fastifyCors, {
+  //   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  //   // origin: '*',
+  //   credentials: true
+  // });
 
 
   // // CORS configuration - Register this first before other plugins
-  // await fastify.register(fastifyCors, {
-  //   origin: '*',
-  //   // origin: (origin, cb) => {
-  //   //   // Allow requests with no origin (like mobile apps or curl requests)
-  //   //   if (!origin) return cb(null, true);
+  await fastify.register(fastifyCors, {
+    // origin: '*',
+    origin: (origin, cb) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return cb(null, true);
       
-  //   //   const allowedOrigins = [
-  //   //     process.env.FRONTEND_URL,
-  //   //     'https://focus.afk-community.xyz',
-  //   //     'https://focus.afk-community.xyz/',
-  //   //     'https://www.focus.afk-community.xyz/',
-  //   //     'https://www.focus.afk-community.xyz',
-  //   //     "https://focus-afk-web.vercel.app",
-  //   //     "https://focus-afk-web.vercel.app/",
-  //   //     'http://localhost:3000',
-  //   //     'http://localhost:3001'
-  //   //   ].filter(Boolean);
+      const allowedOrigins = [
+        process.env.FRONTEND_URL,
+        'https://focus.afk-community.xyz',
+        'https://focus.afk-community.xyz/',
+        'https://www.focus.afk-community.xyz/',
+        'https://www.focus.afk-community.xyz',
+        "https://focus-afk-web.vercel.app",
+        "https://focus-afk-web.vercel.app/",
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ].filter(Boolean);
       
-  //   //   console.log('CORS check - Origin:', origin);
-  //   //   console.log('CORS check - Allowed origins:', allowedOrigins);
-  //   //   console.log('CORS check - NODE_ENV:', process.env.NODE_ENV);
-  //   //   console.log('CORS check - FRONTEND_URL:', process.env.FRONTEND_URL);
+      console.log('CORS check - Origin:', origin);
+      console.log('CORS check - Allowed origins:', allowedOrigins);
+      console.log('CORS check - NODE_ENV:', process.env.NODE_ENV);
+      console.log('CORS check - FRONTEND_URL:', process.env.FRONTEND_URL);
       
-  //   //   // Check exact match
-  //   //   if (allowedOrigins.includes(origin)) {
-  //   //     console.log('CORS check - Exact match found');
-  //   //     return cb(null, true);
-  //   //   }
+      // Check exact match
+      if (allowedOrigins.includes(origin)) {
+        console.log('CORS check - Exact match found');
+        return cb(null, true);
+      }
       
-  //   //   // Check if it's a subdomain of afk-community.xyz
-  //   //   if (origin.endsWith('.afk-community.xyz') || origin === 'https://afk-community.xyz') {
-  //   //     console.log('CORS check - Subdomain match found');
-  //   //     return cb(null, true);
-  //   //   }
+      // Check if it's a subdomain of afk-community.xyz
+      if (origin.endsWith('.afk-community.xyz') || origin === 'https://afk-community.xyz') {
+        console.log('CORS check - Subdomain match found');
+        return cb(null, true);
+      }
       
-  //   //   // For development, allow all origins
-  //   //   if (process.env.NODE_ENV === 'development') {
-  //   //     console.log('CORS check - Development mode, allowing all origins');
-  //   //     return cb(null, true);
-  //   //   }
+      // For development, allow all origins
+      if (process.env.NODE_ENV === 'development') {
+        console.log('CORS check - Development mode, allowing all origins');
+        return cb(null, true);
+      }
       
-  //   //   // For production, be more permissive with afk-community.xyz domains
-  //   //   if (process.env.NODE_ENV === 'production' && origin.includes('afk-community.xyz')) {
-  //   //     console.log('CORS check - Production afk-community.xyz domain allowed');
-  //   //     return cb(null, true);
-  //   //   }
+      // For production, be more permissive with afk-community.xyz domains
+      if (process.env.NODE_ENV === 'production' && origin.includes('afk-community.xyz')) {
+        console.log('CORS check - Production afk-community.xyz domain allowed');
+        return cb(null, true);
+      }
       
-  //   //   // Temporary: Allow all origins in production for debugging
-  //   //   if (process.env.NODE_ENV === 'production') {
-  //   //     console.log('CORS check - Production mode, temporarily allowing all origins for debugging');
-  //   //     return cb(null, true);
-  //   //   }
+      // Temporary: Allow all origins in production for debugging
+      if (process.env.NODE_ENV === 'production') {
+        console.log('CORS check - Production mode, temporarily allowing all origins for debugging');
+        return cb(null, true);
+      }
       
-  //   //   console.log('CORS check - Origin not allowed:', origin);
-  //   //   return cb(new Error('Not allowed by CORS'), false);
-  //   // },
-  //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  //   allowedHeaders: [
-  //     'Content-Type', 
-  //     'Authorization', 
-  //     'X-Requested-With',
-  //     'Accept',
-  //     'Origin'
-  //   ],
-  //   // credentials: true, // Enable credentials for auth
-  //   preflightContinue: false, // Handle preflight requests properly
-  //   optionsSuccessStatus: 204, // Return 204 for successful preflight
-  // });
+      console.log('CORS check - Origin not allowed:', origin);
+      return cb(new Error('Not allowed by CORS'), false);
+    },
+    // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    // allowedHeaders: [
+    //   'Content-Type', 
+    //   'Authorization', 
+    //   'X-Requested-With',
+    //   'Accept',
+    //   'Origin'
+    // ],
+    credentials: true, // Enable credentials for auth
+    // preflightContinue: false, // Handle preflight requests properly
+    // optionsSuccessStatus: 204, // Return 204 for successful preflight
+  });
 
   // Socket.IO setup
   await fastify.register(fastifyIO, {
