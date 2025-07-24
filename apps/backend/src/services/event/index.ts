@@ -16,4 +16,5 @@ export const STREAM_EVENTS = {
   RECONNECT_ATTEMPT: 'reconnect_attempt',
   STREAM_TEXT_LLM: 'stream_text_llm',
   STREAM_VOICE_LLM: 'stream_voice_llm',
+  GENERATE_DAILY_QUEST: 'generate_daily_quest',
 } as const;

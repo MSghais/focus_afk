@@ -1,6 +1,4 @@
 import { Server, Socket } from 'socket.io';
-import { streamEvents, STREAM_EVENTS } from './index';
-import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AiService } from '../ai/ai';
 import { DEFAULT_MODEL } from '../../config/models';
@@ -18,7 +16,7 @@ function isToday(date) {
 }
 
 
-export const generateQuest = async (socket: Socket) => {
+export const generateDailyQuest = async (socket: Socket) => {
   try {
     const userId = socket.data.user?.id;
     if (!userId) return;
@@ -32,6 +30,8 @@ export const generateQuest = async (socket: Socket) => {
           dateAwarded: { gte: today },
         },
       });
+
+      console.log('Existing quest:', existingQuest);
       if (existingQuest) {
         socket.emit('quest_of_the_day', existingQuest);
         return;

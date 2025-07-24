@@ -1,8 +1,13 @@
 import React from "react";
 
-type IconName = "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge";
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge";
 
 const iconPaths: Record<IconName, React.ReactNode> = {
+  add: (
+    <>
+      <path d="M12 4v16m8-8H4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
   create: (
     <>
       <rect x="11" y="4" width="2" height="16" fill="currentColor" />

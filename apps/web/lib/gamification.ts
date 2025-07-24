@@ -1,5 +1,4 @@
-import { Session, Task } from './database';
-
+import { Task, TimerSession } from "../types";
 export interface Badge {
   id: string;
   name: string;
@@ -22,7 +21,7 @@ export function getAwardedBadges({
   goals,
   badges,
 }: {
-  timerSessions: Session[];
+  timerSessions: TimerSession[];
   tasks: Task[];
   mentorChats: number;
   streak: number;
@@ -143,6 +142,7 @@ export async function saveBadgesToBackend(api: any, userId: string, badges: Badg
 
 export interface Quest {
   id: string;
+  name?: string;
   title: string;
   description: string;
   type: string;
@@ -151,6 +151,7 @@ export interface Quest {
   goal: number;
   rewardXp: number;
   rewardBadge?: string;
+  badgeReward?: string;
   levelRequired?: number;
 }
 
@@ -164,7 +165,7 @@ export function generateQuests({
   level,
   completedQuests,
 }: {
-  timerSessions: Session[];
+  timerSessions: TimerSession[];
   tasks: Task[];
   goals: { completed: boolean }[];
   mentorChats: number;

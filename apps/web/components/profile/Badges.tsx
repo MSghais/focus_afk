@@ -3,6 +3,7 @@ import { useApi } from '../../hooks/useApi';
 import { useAuthStore } from '../../store/auth';
 import { Icon } from '../small/icons';
 import { useFocusAFKStore } from '../../store/store';
+import { useUIStore } from '../../store/uiStore';
 
 interface Badge {
     id: string;
@@ -19,6 +20,7 @@ export default function Badges() {
     const [badges, setBadges] = useState<Badge[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { showToast } = useUIStore();
     const {
         tasks,
         goals,
@@ -49,6 +51,7 @@ export default function Badges() {
             setLoading(false);
         } catch (error) {
             setError('Failed to load badges');
+            showToast({ message: 'Failed to load badges', type: 'error' });
             setLoading(false);
         }
         finally {
@@ -77,14 +80,11 @@ export default function Badges() {
             ]);
             // setTaskStats(taskStatsData);
             setFocusStats(focusStatsData);
-            console.log("breakStatsData", breakStatsData);
             // setBreakStats(breakStatsData);
         };
 
         loadStats();
     }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
-
-
 
     // if (!userConnected?.id) return null;
     // if (loading) return <div>Loading badges...</div>;
@@ -116,7 +116,6 @@ export default function Badges() {
     };
 
     const streak = calculateStreak(focusStats.sessionsByDay || []);
-
     console.log("badges", badges);
     return (
         <div className="w-full max-w-xl mx-auto p-4 shadow-md rounded-lg my-2">

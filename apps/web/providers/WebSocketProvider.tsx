@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getJwtToken } from '../lib/auth'; // adjust import as needed
+import { useWebSocketStore } from '../store/websocket';
+import { useUIStore } from '../store/uiStore';
+import { Quest } from '../lib/gamification';
+import QuestItem from '../components/modules/quests/QuestItem';
 
 interface WebSocketContextType {
   publicSocket: Socket | null;
@@ -21,10 +25,13 @@ const WebSocketContext = createContext<WebSocketContextType>({
 export const useWebSocket = () => useContext(WebSocketContext);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
+  const { setQuestOfTheDay, questOfTheDay } = useWebSocketStore();
   const [isPublicConnected, setIsPublicConnected] = useState(false);
   const [isAuthedConnected, setIsAuthedConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  const {showModal, showToast} = useUIStore();
   const publicSocketRef = useRef<Socket | null>(null);
   const authedSocketRef = useRef<Socket | null>(null);
 
@@ -68,13 +75,22 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       authedSocket.on('connect', () => {
         setIsAuthedConnected(true);
-        authedSocket!.emit('authed_connection'); // Custom event for authed connection
+        if (authedSocket) {
+          authedSocket.emit('authed_connection'); // Custom event for authed connection
+          // Ping-pong test
+          authedSocket.emit('ping');
+          console.log('Sent ping to backend');
+        }
+      });
+      authedSocket.on('pong', () => {
+        console.log('Received pong from backend');
       });
 
-      authedSocket.on('quest_of_the_day', (quest: any) => {
+      authedSocket.on('quest_of_the_day', (quest: Quest) => {
         console.log('Quest of the day:', quest);
+        showModal(<QuestItem quest={quest} />)
+        setQuestOfTheDay(quest);
       });
-   
       // authedSocket.on('disconnect', () => setIsAuthedConnected(false));
       authedSocket.on('connect_error', (err) => {
         setError(err instanceof Error ? err : new Error(String(err)));

@@ -51,7 +51,7 @@ interface FocusAFKStore {
   };
 
   // Actions - Tasks
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task | null | undefined>;
   updateTask: (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
   toggleTaskComplete: (id: number) => Promise<void>;
@@ -208,17 +208,19 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         try {
           const token = getJwtToken();
           if (token) {
-            await api.createTask({
+            const newTask = await api.createTask({
               ...task,
               // Add any required fields for backend
             });
             console.log('✅ Task synced to backend');
+            return newTask.data;
           }
         } catch (err) {
           console.error('❌ Failed to sync task to backend:', err);
           // Optionally handle error (e.g., show toast)
         }
       }
+      return newTask;
     },
 
     updateTask: async (id, updates) => {

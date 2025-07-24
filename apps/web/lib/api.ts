@@ -335,6 +335,10 @@ class ApiService {
       body: JSON.stringify(badge),
     });
   }
+
+  async getQuests(userId: string) {
+    return this.request(`/quests/user/${userId}`);
+  }
 }
 
 export const api = new ApiService(); 

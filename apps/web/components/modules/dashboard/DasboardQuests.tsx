@@ -51,7 +51,6 @@ export default function DashboardQuests() {
       ]);
       // setTaskStats(taskStatsData);
       setFocusStats(focusStatsData);
-      console.log("breakStatsData", breakStatsData);
       setBreakStats(breakStatsData);
     };
 
@@ -75,7 +74,6 @@ export default function DashboardQuests() {
       ]);
       setTaskStats(taskStatsData);
       setFocusStats(focusStatsData);
-      console.log("breakStatsData", breakStatsData);
       setBreakStats(breakStatsData);
     };
 

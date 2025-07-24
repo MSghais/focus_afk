@@ -3,7 +3,7 @@ import { streamEvents, STREAM_EVENTS } from './index';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { AiService } from '../ai/ai';
-import { generateQuest } from './generate_quest';
+import { generateDailyQuest } from './generate_quest';
 
 const prisma = new PrismaClient();
 const aiService = new AiService();
@@ -18,7 +18,7 @@ function isToday(date) {
 }
 
 export const setupWebSocket = (io: Server) => {
-  io.on('connection', (socket: Socket) => {
+  io.on(STREAM_EVENTS.CONNECT, (socket: Socket) => {
     const token = socket.handshake.auth?.token;
     if (token) {
       // Try to verify JWT
@@ -31,12 +31,26 @@ export const setupWebSocket = (io: Server) => {
           console.log('Authenticated WebSocket user:', (decoded as any)?.id ?? 'unknown');
           // Attach authed_connection handler to this socket
           socket.on('authed_connection', async () => {
-            console.log('Authed WebSocket connection:', socket.id);
             try {
-              await generateQuest(socket);
+              await generateDailyQuest(socket);
             } catch (err) {
               // ignore
             }
+          });
+          // Attach quest_of_the_day handler to this socket
+          socket.on(STREAM_EVENTS.GENERATE_DAILY_QUEST, async () => {
+            console.log('Quest of the day requested:', socket.id);
+            try {
+              await generateDailyQuest(socket);
+            } catch (err) {
+              // ignore
+            }
+          });
+          // Attach ping-pong test handler
+          socket.on('ping', () => {
+            console.log('Received ping from client:', socket.id);
+            socket.emit('pong');
+            console.log('Sent pong to client:', socket.id);
           });
         }
       } catch (err) {
@@ -48,23 +62,15 @@ export const setupWebSocket = (io: Server) => {
       // Handle public streams/events
     }
   });
-  io.on('authed_connection', async (socket: Socket) => {
-    console.log('Authed WebSocket connection:', socket.id);
-    try {
-      await generateQuest(socket);
-    } catch (err) {
-      // ignore
-    }
-  });
-  io.on('quest_of_the_day', async (socket: Socket) => {
-    console.log('Quest of the day:', socket.id);
-    try {
-      await generateQuest(socket);
-    } catch (err) {
-      // ignore
-    }
-  });
-  io.on('disconnect', (socket: Socket) => {
+  io.on(STREAM_EVENTS.DISCONNECT, (socket: Socket) => {
     console.log('Client disconnected:', socket.id);
   });
+  io.on(STREAM_EVENTS.GENERATE_DAILY_QUEST, async (socket: Socket) => {
+    console.log('quest_of_the_day error:', socket.id);
+    try {
+      await generateDailyQuest(socket);
+    } catch (err) {
+      // ignore
+    }
+  }); 
 };

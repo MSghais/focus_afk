@@ -57,7 +57,6 @@ export default function ProfileDashboard() {
       ]);
       // setTaskStats(taskStatsData);
       setFocusStats(focusStatsData);
-      console.log("breakStatsData", breakStatsData);
       setBreakStats(breakStatsData);
     };
 
@@ -81,7 +80,6 @@ export default function ProfileDashboard() {
       ]);
       setTaskStats(taskStatsData);
       setFocusStats(focusStatsData);
-      console.log("breakStatsData", breakStatsData);
       setBreakStats(breakStatsData);
     };
 

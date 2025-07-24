@@ -62,7 +62,6 @@ export default function Dashboard() {
             ]);
             setTaskStats(taskStatsData);
             setFocusStats(focusStatsData);
-            console.log("breakStatsData", breakStatsData);
             setBreakStats(breakStatsData);
             setDeepFocusStats(deepFocusStatsData);
         };
