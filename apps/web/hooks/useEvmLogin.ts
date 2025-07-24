@@ -25,8 +25,11 @@ export function useEvmLogin() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ address: user?.wallet?.address, signature: signature.signature, message }),
+            credentials: 'include', // Required for CORS with credentials
+            mode: 'cors', // Explicitly set CORS mode
         });
 
+        console.log("🔐 EVM Login Response:", res);
         if (!res.ok) throw new Error("Login failed");
 
         const data = await res.json();
