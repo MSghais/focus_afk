@@ -14,7 +14,7 @@ import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
 
 export default function Tasks() {
-    const { showModal } = useUIStore(); 
+    const { showModal } = useUIStore();
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
@@ -184,17 +184,24 @@ export default function Tasks() {
                         </Link>
                     </div>
 
+                    <button
+                                onClick={() => setShowAddForm(!showAddForm)}
+                                className="flex items-center gap-2 px-4 py-2 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                            >
+                                <Icon name="add" />
+                                Add
+                            </button>
 
-                    <button onClick={() => 
+                    <button onClick={() =>
                         showModal(<div className="flex flex-col gap-2">
                             <h1 className="text-2xl font-bold">Tasks</h1>
                             <p className="text-sm text-gray-500">
                                 Tasks are the core of your focus and productivity. They help you break down your goals into actionable steps.
                             </p>
-                            <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2">
+                            {/* <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2">
                                 <Icon name="refresh" />
                                 Refresh
-                            </button>
+                            </button> */}
 
                             <button
                                 onClick={handleRefreshTasks}
@@ -203,7 +210,11 @@ export default function Tasks() {
                                 title="Refresh tasks from local and API"
                             >
                                 {refreshing ? 'Refreshing...' : 'Refresh'}
-                                <span aria-hidden="true">🔄</span>
+                                <Icon name="refresh" />
+
+                                <span aria-hidden="true">🔄
+
+                                </span>
                             </button>
                             {isUserAuthenticated() && (
                                 <button
@@ -324,7 +335,9 @@ export default function Tasks() {
                         <p className="text-sm">Create your first task to get started!</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div 
+                    className="space-y-4"
+                    >
                         {tasks.map((task) => (
                             <div
                                 key={task.id}

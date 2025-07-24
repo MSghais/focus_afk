@@ -16,8 +16,9 @@ interface Badge {
 
 interface IBadgesProps {
     isEnabledRefreshButton?: boolean;
+    isDailyBadgeEnabled?: boolean;
 }
-export default function Badges({ isEnabledRefreshButton = true }: IBadgesProps) {
+export default function Badges({ isEnabledRefreshButton = true, isDailyBadgeEnabled }: IBadgesProps) {
     const apiService = useApi();
     const { userConnected } = useAuthStore();
     const [badges, setBadges] = useState<Badge[]>([]);
@@ -121,7 +122,7 @@ export default function Badges({ isEnabledRefreshButton = true }: IBadgesProps) 
     const streak = calculateStreak(focusStats.sessionsByDay || []);
     console.log("badges", badges);
     return (
-        <div className="w-full max-w-xl mx-auto p-4 shadow-md rounded-lg my-2">
+        <div className="w-full  mx-auto p-4 shadow-md rounded-lg my-2">
             <h2 className="text-xl font-bold mb-4">Your Badges</h2>
             {error && <div className="text-red-500">{error}</div>}
 
@@ -135,14 +136,15 @@ export default function Badges({ isEnabledRefreshButton = true }: IBadgesProps) 
 
             </div>}
 
-            <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
-                <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🔥</div>
-                <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Daily Streak</div>
-                <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem', fontWeight: 700 }}>
-                    {streak > 0 ? `${streak}-day streak` : 'No streak yet'}
+            {isDailyBadgeEnabled && (
+                <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                    <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🔥</div>
+                    <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Daily Streak</div>
+                    <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem', fontWeight: 700 }}>
+                        {streak > 0 ? `${streak}-day streak` : 'No streak yet'}
+                    </div>
                 </div>
-            </div>
-
+            )}
             {badges.length === 0 ? (
                 <div className="text-gray-500">No badges yet. Start focusing to earn some!</div>
             ) : (

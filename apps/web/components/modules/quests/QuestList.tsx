@@ -27,7 +27,6 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefres
       const res = await apiService.getQuests(userConnected.id)
       console.log("res", res);
       if (
-        res.success &&
         Array.isArray((res as any).quests)
       ) {
         setQuestsState((res as any).quests);
@@ -62,7 +61,7 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefres
   return (
 
     <div className="flex flex-col gap-2">
-      <h1 className="text-2xl font-bold">Quests</h1>
+      {/* <h1 className="text-2xl font-bold">Quests</h1> */}
 
       {isEnabledRefreshButton && <button onClick={() => loadQuests()}><Icon name="refresh" /></button>}
       <div className={styles.questList}>

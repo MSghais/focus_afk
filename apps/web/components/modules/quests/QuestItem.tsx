@@ -19,7 +19,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
   quest,
   onClick,
   badgeReward,
-  isQuestActionDisabled=false,
+  isQuestActionDisabled = false,
 }: IQuestItemProps) => {
   if (!quest) return null;
 
@@ -92,6 +92,24 @@ const QuestItem: React.FC<IQuestItemProps> = ({
         }
       }}
     >
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-green-600 font-bold">+{rewardXp} XP</span>
+        {badgeReward && (
+          <span className="text-xs flex items-center gap-1 text-yellow-600">
+            <Icon name="badge" /> {badgeReward}
+          </span>
+        )}
+        <span
+          className={`text-xs rounded px-2 py-0.5 ${styles.status} ${styles[status]}`}
+        >
+          {status}
+        </span>
+
+        <span className="text-xs text-gray-500 ml-2 bg-gray-100/10 rounded px-2 py-0.5">
+          Lvl {goal}
+        </span>
+      </div>
+
       {/* Minimal header row */}
       <div className="flex items-center justify-between gap-2 px-2 py-2">
         <div className="flex items-center gap-2 min-w-0">
@@ -99,42 +117,28 @@ const QuestItem: React.FC<IQuestItemProps> = ({
             className="font-semibold text-base truncate"
             dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(name || '') }}
           />
-          <span className="text-xs text-gray-500 ml-2 bg-gray-100/10 rounded px-2 py-0.5">
-            Lvl {goal}
-          </span>
+
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-green-600 font-bold">+{rewardXp} XP</span>
-          {badgeReward && (
-            <span className="text-xs flex items-center gap-1 text-yellow-600">
-              <Icon name="badge" /> {badgeReward}
-            </span>
-          )}
-          <span
-            className={`text-xs rounded px-2 py-0.5 ${styles.status} ${styles[status]}`}
-          >
-            {status}
-          </span>
-          <button
-            className="ml-2 p-1 rounded hover:bg-gray-100/20 transition"
-            aria-label={expanded ? 'Collapse details' : 'Expand details'}
-            tabIndex={-1}
-            onClick={e => {
-              e.stopPropagation();
-              setExpanded(exp => !exp);
-            }}
-          >
-            {/* <Icon name={expanded ? 'chevronUp' : 'chevronDown'} /> */}
-          </button>
-        </div>
+
       </div>
+
+      <button
+        className="ml-2 p-1 rounded hover:bg-gray-100/20 transition"
+        aria-label={expanded ? 'Collapse details' : 'Expand details'}
+        tabIndex={-1}
+        onClick={e => {
+          e.stopPropagation();
+          setExpanded(exp => !exp);
+        }}
+      >
+      </button>
 
       {/* Expandable details */}
       {expanded && (
         <div className="px-3 pb-3 pt-1">
           {description && (
             <div
-              className="text-sm text-gray-700 mb-2"
+              className="text-sm mb-2"
               dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(description) }}
             />
           )}
@@ -165,7 +169,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
                   </ButtonSecondary>
                   <ButtonPrimary
                     className={styles.actionButton}
-                    onClick={ () =>  {
+                    onClick={() => {
                       // e.stopPropagation();
                       router?.push(`/quests/${quest?.id}`);
                     }}

@@ -9,7 +9,7 @@ import Onboarding from "../onboarding/Onboarding";
 import LoginBackend from "./LoginBackend";
 import { logClickedEvent } from "../../lib/analytics";
 
-export default function PrivyUser({isLoggoutViewActive}: {isLoggoutViewActive: boolean}) {
+export default function PrivyUser({isLoggoutViewActive = true}: {isLoggoutViewActive?: boolean}) {
     const { ready, authenticated, user, logout } = usePrivy();
     const { logout: logoutBackend , isAuthenticated} = useAuthStore();
 

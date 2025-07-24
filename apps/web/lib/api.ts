@@ -25,9 +25,9 @@ class ApiService {
     };
 
     const token = this.getAuthToken();
-    console.log('🔐 API Request - Endpoint:', endpoint);
-    console.log('🔐 API Request - Token available:', !!token);
-    console.log('🔐 API Request - Token preview:', token ? `${token.substring(0, 20)}...` : 'None');
+    // console.log('🔐 API Request - Endpoint:', endpoint);
+    // console.log('🔐 API Request - Token available:', !!token);
+    // console.log('🔐 API Request - Token preview:', token ? `${token.substring(0, 20)}...` : 'None');
     
     if (token) {
       headers.Authorization = `Bearer ${token}`;
@@ -41,9 +41,9 @@ class ApiService {
         // mode: 'cors', // Explicitly set CORS mode
       });
 
-      console.log('🔐 API Response - Status:', response.status);
-      console.log('🔐 API Response - URL:', url);
-      console.log('🔐 API Response - Headers:', Object.fromEntries(response.headers.entries()));
+      // console.log('🔐 API Response - Status:', response.status);
+      // console.log('🔐 API Response - URL:', url);
+      // console.log('🔐 API Response - Headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.status === 401) {
         // For 401 errors, we'll just throw an error since we don't have refresh token logic
@@ -54,7 +54,7 @@ class ApiService {
       if (!response.ok) {
         console.error('🔐 API Response - Error status:', response.status);
         const errorText = await response.text();
-        console.error('🔐 API Response - Error body:', errorText);
+        // console.error('🔐 API Response - Error body:', errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove";
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete";
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   add: (
@@ -69,11 +69,31 @@ const iconPaths: Record<IconName, React.ReactNode> = {
   ),
   lfg: (
     <>
-      <path d="M19 21v-2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" strokeWidth="2"/>
-      <path d="M22 9l-10-7-10 7L2 11v12h20V11L22 9z" fill="none" stroke="currentColor" strokeWidth="2"/>
-      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <polygon points="12,6 13,11 18,12 13,13 12,18 11,13 6,12 11,11" fill="currentColor" />
+      <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="2" y1="12" x2="4" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </>
   ),
+  "lfg-complete" : (
+    <>
+      <polygon points="12,6 13,11 18,12 13,13 12,18 11,13 6,12 11,11" fill="currentColor" />
+      <line x1="12" y1="2" x2="12" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="2" y1="12" x2="4" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </>
+  ),
+
 
   mentoring: (
     <>
@@ -132,9 +152,10 @@ const iconPaths: Record<IconName, React.ReactNode> = {
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   name: IconName;
   size?: number | string;
+  className?: string;
 }
 
-export function Icon({ name, size = 24, ...props }: IconProps) {
+export function Icon({ name, size = 24, className, ...props }: IconProps) {
   return (
     <svg
       width={size}
@@ -143,6 +164,8 @@ export function Icon({ name, size = 24, ...props }: IconProps) {
       fill="none"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
+      color="var(--text-primary)"
+      className={className}
       {...props}
     >
       {iconPaths[name]}

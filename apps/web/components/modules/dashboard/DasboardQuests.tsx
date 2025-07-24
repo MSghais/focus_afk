@@ -9,6 +9,8 @@ import { useUIStore } from '../../../store/uiStore';
 import Link from 'next/link';
 import { Icon } from '../../small/icons';
 import { ButtonSecondary } from '../../small/buttons';
+import QuestList from '../quests/QuestList';
+import Badges from '../../profile/Badges';
 
 export default function DashboardQuests() {
 
@@ -121,9 +123,7 @@ export default function DashboardQuests() {
         Bet. Focus. Prove. Earn.
       </div> */}
 
-      <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
-
-
+      <div className={styles.dashboardContent} style={{  width: '100%' }}>
         <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Proof of Focus</div>
         {/* <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>AI-Verified Proof of Focus</div> */}
         <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'center', marginBottom: 16 }}>
@@ -149,22 +149,28 @@ export default function DashboardQuests() {
           </div>
         </div>
 
-        <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>
-          <div style={{ fontSize: '1.1rem', marginBottom: 8 }}>Complete 20 Pomodoros<br />in a week</div>
-          <div style={{ color: 'var(--feed-text, var(--foreground))', fontWeight: 500, fontSize: '1rem' }}>
-            Tokens <span style={{ fontSize: '1.2rem' }}>🪙</span> 20
-          </div>
+
+      </div>
+      <QuestList quests={[]} isEnabledRefreshButton={false} />
+
+      <Badges isEnabledRefreshButton={false} />
+
+
+      <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
+        <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>
+        <div style={{ fontSize: '1.1rem', marginBottom: 8 }}>Complete 20 Pomodoros<br />in a week</div>
+        <div style={{ color: 'var(--feed-text, var(--foreground))', fontWeight: 500, fontSize: '1rem' }}>
+          Tokens <span style={{ fontSize: '1.2rem' }}>🪙</span> 20
         </div>
       </div>
 
-      <div className={styles.dashboardContent} style={{ width: '100%' }}>
+      {/* <div className={styles.dashboardContent} style={{ width: '100%' }}>
         <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Social & Viral Mechanics</div>
         <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--foreground)', background: 'rgba(255,255,255,0.01)' }}>
           <span style={{ fontSize: '1.5rem' }}>👥</span>
           <span style={{ fontWeight: 600, fontSize: '1.1rem' }}>Join Guild</span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
