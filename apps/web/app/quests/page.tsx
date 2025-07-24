@@ -1,6 +1,5 @@
 import QuestList from "../../components/modules/quests/QuestList";
 
-
 export default function QuestPage() {
     return (
         <div>

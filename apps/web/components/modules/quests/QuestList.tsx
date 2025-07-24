@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 import QuestItem from './QuestItem';
 import styles from './QuestList.module.scss';
