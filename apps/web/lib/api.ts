@@ -339,6 +339,9 @@ class ApiService {
   async getQuests(userId: string) {
     return this.request(`/quests/user/${userId}`);
   }
+  async getQuest(id: string) {
+    return this.request(`/quests/${id}`);
+  }
 }
 
 export const api = new ApiService(); 

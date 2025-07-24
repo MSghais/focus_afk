@@ -15,7 +15,7 @@ import ProfileUser from '../../profile/ProfileUser';
 import { Icon } from '../../small/icons';
 import { useMentorsStore } from '../../../store/mentors';
 import MentorList from '../mentor/MentorList';
-import { enhancedMarkdownRenderer } from '../../../lib/helpers';
+import { enhancedMarkdownRenderer, tryMarkdownToHtml } from '../../../lib/helpers';
 
 
 
@@ -183,7 +183,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
     // Use the enhanced markdown renderer
     const renderMarkdown = (content: string) => {
-        return enhancedMarkdownRenderer(content);
+        return tryMarkdownToHtml(content);
     };
 
     return (

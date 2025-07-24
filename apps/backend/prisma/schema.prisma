@@ -318,6 +318,15 @@ model Quests {
   imageUrl String?
 
 
+  difficulty Int?
+
+  rewardXp Int?
+  rewardBadge String?
+  badgeReward String?
+  levelRequired Int?
+  progress Int?
+
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type], map: "quests_userId_type_idx")

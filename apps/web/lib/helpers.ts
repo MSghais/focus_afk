@@ -25,7 +25,7 @@ export const markdownToHtml = (text: string) => {
         const md = new MarkdownIt();
         // console.log("md", md);
         const rendered = md.render(text);
-        console.log("rendered", rendered);
+        // console.log("rendered", rendered);
         return rendered;
     } catch (error) {
         console.error("Error rendering markdown", error);
