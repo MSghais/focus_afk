@@ -99,8 +99,8 @@ async function buildServer() {
       'Origin'
     ],
     credentials: true, // Enable credentials for auth
-    preflightContinue: false, // Handle preflight requests properly
-    optionsSuccessStatus: 204, // Return 204 for successful preflight
+    // preflightContinue: false, // Handle preflight requests properly
+    // optionsSuccessStatus: 204, // Return 204 for successful preflight
   });
 
   // Socket.IO setup

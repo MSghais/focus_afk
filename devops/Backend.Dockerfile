@@ -38,8 +38,12 @@ RUN pnpm --filter ./apps/backend... build:prisma
 
 RUN pnpm --filter ./apps/backend... build
 
-# Expose backend port
-EXPOSE 5000
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:${PORT:-5000}/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Expose port (Railway will set PORT environment variable)
+EXPOSE ${PORT:-5000}
 
 # Start the backend app
 CMD ["pnpm", "--filter", "./apps/backend...", "start"]
