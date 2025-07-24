@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list";
+type IconName = "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge";
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   create: (
@@ -43,8 +43,9 @@ const iconPaths: Record<IconName, React.ReactNode> = {
   ),
   refresh: (
     <>
+      {/* Circular arrow for refresh */}
       <path
-        d="M4 12a8 8 0 1 1 8 8"
+        d="M17.65 6.35A8 8 0 1 0 20 12"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -52,7 +53,7 @@ const iconPaths: Record<IconName, React.ReactNode> = {
         strokeLinejoin="round"
       />
       <polyline
-        points="8 16 12 20 16 16"
+        points="21 6 17 6 17 10"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -81,6 +82,32 @@ const iconPaths: Record<IconName, React.ReactNode> = {
       <rect x="4" y="6" width="16" height="2" rx="1" fill="currentColor" />
       <rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor" />
       <rect x="4" y="16" width="16" height="2" rx="1" fill="currentColor" />
+    </>
+  ),
+  // Quest icon for game: a map with a location marker
+  questMap: (
+    <>
+      {/* Map outline */}
+      <rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+      {/* Fold lines */}
+      <path d="M8 5v14M16 5v14" stroke="currentColor" strokeWidth="2" fill="none"/>
+      {/* Location marker */}
+      <path
+        d="M12 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 0c0 2.5 2 4.5 2 4.5s2-2 2-4.5a4 4 0 1 0-8 0c0 2.5 2 4.5 2 4.5s2-2 2-4.5z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </>
+  ),
+  badge: (
+    <>
+      <circle cx="12" cy="8" r="4" fill="currentColor" />
+      <path d="M4 20v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M12 22v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M2 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M20 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </>
   )
 };

@@ -46,7 +46,15 @@
 .navbarActions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
+
+  .navbarItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
 }
 
 .themeToggle {

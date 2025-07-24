@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuthStore } from '../../store/auth';
 import { Icon } from '../small/icons';
+import { useFocusAFKStore } from '../../store/store';
 
 interface Badge {
     id: string;
@@ -18,7 +19,16 @@ export default function Badges() {
     const [badges, setBadges] = useState<Badge[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
+    const {
+        tasks,
+        goals,
+        timerSessions,
+        settings,
+        getTaskStats,
+        getFocusStats,
+        getBreakStats,
+        setCurrentModule
+    } = useFocusAFKStore();
     const loadBadges = async () => {
         console.log("userConnected", userConnected);
 
@@ -51,10 +61,61 @@ export default function Badges() {
         loadBadges();
     }, [userConnected?.id]);
 
+    const [focusStats, setFocusStats] = useState({
+        totalSessions: 0,
+        totalMinutes: 0,
+        averageSessionLength: 0,
+        sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
+    });
+
+    useEffect(() => {
+        const loadStats = async () => {
+            const [taskStatsData, focusStatsData, breakStatsData] = await Promise.all([
+                getTaskStats(),
+                getFocusStats(7),
+                getBreakStats(7)
+            ]);
+            // setTaskStats(taskStatsData);
+            setFocusStats(focusStatsData);
+            console.log("breakStatsData", breakStatsData);
+            // setBreakStats(breakStatsData);
+        };
+
+        loadStats();
+    }, [tasks, goals, timerSessions, getTaskStats, getFocusStats]);
+
+
+
     // if (!userConnected?.id) return null;
     // if (loading) return <div>Loading badges...</div>;
     // if (error) return;
 
+    const calculateStreak = (sessionsByDay: { date: string; sessions: number; minutes: number }[]) => {
+        if (!sessionsByDay || sessionsByDay.length === 0) return 0;
+        // Sort by date descending
+        const sorted = [...sessionsByDay].sort((a, b) => b.date.localeCompare(a.date));
+        let streak = 0;
+        let current = new Date();
+        for (let i = 0; i < sorted.length; i++) {
+            const day = new Date(sorted[i]?.date || new Date().toISOString());
+            // If first day, check if today or yesterday
+            if (i === 0) {
+                const diff = Math.floor((current.getTime() - day.getTime()) / (1000 * 60 * 60 * 24));
+                if (diff > 1) break; // streak broken
+                streak++;
+                current = day;
+            } else {
+                // Check if previous day
+                const diff = Math.floor((current.getTime() - day.getTime()) / (1000 * 60 * 60 * 24));
+                if (diff !== 1) break;
+                streak++;
+                current = day;
+            }
+        }
+        return streak;
+    };
+
+    const streak = calculateStreak(focusStats.sessionsByDay || []);
 
     console.log("badges", badges);
     return (
@@ -62,13 +123,21 @@ export default function Badges() {
             <h2 className="text-xl font-bold mb-4">Your Badges</h2>
             {error && <div className="text-red-500">{error}</div>}
 
-            <div className='flex  rounded-lg'>
-                <button 
-                className='flex items-center gap-2'
-                onClick={() => {
-                    if (!userConnected?.id) return;
-                    loadBadges();
-                }}>Get Badges <Icon name='refresh' /></button>
+            <div className='flex  rounded-lg py-4'>
+                <button
+                    className='flex items-center gap-2'
+                    onClick={() => {
+                        if (!userConnected?.id) return;
+                        loadBadges();
+                    }}> <Icon name='refresh' /></button>
+            </div>
+
+            <div style={{ flex: 1, border: '1px solid var(--border)', borderRadius: 14, padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                <div style={{ fontSize: '2.2rem', marginBottom: 4 }}>🔥</div>
+                <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: 4 }}>Daily Streak</div>
+                <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem', fontWeight: 700 }}>
+                    {streak > 0 ? `${streak}-day streak` : 'No streak yet'}
+                </div>
             </div>
 
             {badges.length === 0 ? (

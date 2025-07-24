@@ -7,6 +7,8 @@ import ProfileUser from "../profile/ProfileUser";
 import { Icon } from "../small/icons";
 import Link from "next/link";
 import ToggleTheme from "./ToggleTheme";
+import QuestList from "../modules/quests/QuestList";
+import Badges from "../profile/Badges";
 
 const Navbar = () => {
   const { setTheme, ui } = useFocusAFKStore();
@@ -35,7 +37,18 @@ const Navbar = () => {
 
       {/* Actions */}
       <div className={styles.navbarActions}>
-        <button onClick={() => showModal(<ProfileUser />)}> <Icon name="user" /> </button>
+          <button 
+          className={styles.navbarItem}
+          onClick={() => showModal(<div className="w-full h-full"><QuestList quests={[]} />
+            <Badges />
+          </div>
+
+
+        )}> <Icon name="questMap" /> </button>
+        <button 
+        className={styles.navbarItem}
+        onClick={() => showModal(<ProfileUser isLoggoutViewActive={true} />)}> <Icon name="user" /> </button>
+
 
         <ToggleTheme />
       </div>

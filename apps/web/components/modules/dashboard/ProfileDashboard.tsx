@@ -12,6 +12,10 @@ import { ButtonSecondary } from '../../small/buttons';
 import DashboardQuests from './DasboardQuests';
 import Badges from '../../profile/Badges';
 import { logClickedEvent } from '../../../lib/analytics';
+import QuestList from '../quests/QuestList';
+import LfgSession from '../LfgSession';
+import Settings from '../settings';
+import { ButtonSimple } from '../../small/buttons';
 
 export default function ProfileDashboard() {
 
@@ -28,6 +32,7 @@ export default function ProfileDashboard() {
   } = useFocusAFKStore();
   const { userConnected } = useAuthStore();
 
+  const [activeTab, setActiveTab] = useState<'main' | "settings" | 'quests' | 'badges' | "lfg_session">('main');
 
   const [taskStats, setTaskStats] = useState({
     total: 0,
@@ -94,9 +99,24 @@ export default function ProfileDashboard() {
       {/* <div className={styles.dashboardHeader}>FOCUSFI</div> */}
 
 
-      <div className="flex flex-row gap-4 justify-center my-4 shadow-md rounded-lg p-2">
+      <div className="flex flex-row gap-4 justify-center space-x-8 my-4 shadow-md rounded-lg p-2 w-full">
 
 
+        <ButtonSimple
+          className={activeTab === 'main' ? 'bg-[var(--brand-primary)] text-white' : ''}
+        onClick={() => { setActiveTab('main'); logClickedEvent("main_button_clicked ") }}>
+
+
+          <Icon name="home" size={24} />
+
+        </ButtonSimple>
+
+        <ButtonSimple
+          className={activeTab === 'settings' ? 'bg-[var(--brand-primary)] text-white' : ''}
+          onClick={() => { setActiveTab('settings'); logClickedEvent("settings_button_clicked ") }}>
+
+
+          {/* 
         <Link
           title="Settings"
           href="/settings"
@@ -105,17 +125,25 @@ export default function ProfileDashboard() {
             logClickedEvent("settings_button_clicked ");
           }}
         >
+        </Link> */}
           <Icon name="settings" size={24} />
-        </Link>
 
-        <Link title="Lfg Session"
-          onClick={() => {
-            logClickedEvent("lfg_session_button_clicked ");
-          }}
-          href="/lfg_session" className="flex items-center justify-center">
+        </ButtonSimple>
+
+        <ButtonSimple
+          className={activeTab === 'quests' ? 'bg-[var(--brand-primary)] text-white' : ''}
+          onClick={() => { setActiveTab('quests'); logClickedEvent("quests_button_clicked ") }}>
+
+          {/* 
+          <Link title="Lfg Session"
+            onClick={() => {
+              logClickedEvent("lfg_session_button_clicked ");
+            }}
+            href="/lfg_session" className="flex items-center justify-center">
+          </Link> */}
           <Icon name="lfg" size={24} />
-        </Link>
 
+        </ButtonSimple>
 
 
       </div>
@@ -126,8 +154,11 @@ export default function ProfileDashboard() {
 
       </div>
 
-      <DashboardQuests />
-      <Badges />
+      {activeTab === 'main' && <DashboardQuests />}
+      {activeTab === 'settings' && <Settings />}
+      {activeTab === 'quests' && <QuestList quests={[]} />}
+      {activeTab === 'badges' && <Badges />}
+      {activeTab === 'lfg_session' && <LfgSession />}
     </div>
   );
 }
