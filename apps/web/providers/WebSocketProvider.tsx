@@ -1,84 +1,101 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getJwtToken } from '../lib/auth'; // adjust import as needed
 
-// Define the shape of the context
 interface WebSocketContextType {
-  socket: Socket | null;
-  isConnected: boolean;
+  publicSocket: Socket | null;
+  authedSocket: Socket | null;
+  isPublicConnected: boolean;
+  isAuthedConnected: boolean;
   error: Error | null;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
-  socket: null,
-  isConnected: false,
+  publicSocket: null,
+  authedSocket: null,
+  isPublicConnected: false,
+  isAuthedConnected: false,
   error: null,
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
 
-interface WebSocketProviderProps {
-  children: React.ReactNode;
-}
-
-export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
-  const [isConnected, setIsConnected] = useState(false);
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isPublicConnected, setIsPublicConnected] = useState(false);
+  const [isAuthedConnected, setIsAuthedConnected] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+
+  const publicSocketRef = useRef<Socket | null>(null);
+  const authedSocketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // Use env variable or fallback to localhost
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_WS_URL || 'ws://localhost:5000';
-    let didUnmount = false;
-    let socket: Socket | null = null;
-    try {
-      socket = io(backendUrl, {
-        withCredentials: true,
+
+    // Public socket (no auth)
+    const publicSocket = io(backendUrl, {
+      transports: ['websocket'],
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+    publicSocketRef.current = publicSocket;
+
+    publicSocket.on('connect', () => {
+      setIsPublicConnected(true);
+      publicSocket.emit('connection'); // Custom event for public connection
+    });
+    publicSocket.on('disconnect', () => setIsPublicConnected(false));
+    publicSocket.on('connect_error', (err) => {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      console.error('Public WebSocket error:', err);
+    });
+
+    // Authed socket (with JWT)
+    const token = getJwtToken();
+    let authedSocket: Socket | null = null;
+    if (token) {
+      authedSocket = io(backendUrl, {
         transports: ['websocket'],
-        autoConnect: true, // ensure auto connect
+        autoConnect: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
+        auth: { token },
       });
-      socketRef.current = socket;
+      authedSocketRef.current = authedSocket;
 
-      const onConnect = () => {
-        if (!didUnmount) setIsConnected(true);
-      };
-      const onDisconnect = () => {
-        if (!didUnmount) setIsConnected(false);
-      };
-      const onError = (err: any) => {
-        if (!didUnmount) {
-          setError(err instanceof Error ? err : new Error(String(err)));
-          // Log but do not throw
-          console.error('WebSocket connection error:', err);
-        }
-      };
-
-      socket.on('connect', onConnect);
-      socket.on('disconnect', onDisconnect);
-      socket.on('connect_error', onError);
-      socket.on('error', onError);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error(String(err)));
-      console.error('WebSocket connection error:', err);
+      authedSocket.on('connect', () => {
+        setIsAuthedConnected(true);
+        authedSocket!.emit('authed_connection'); // Custom event for authed connection
+      });
+      authedSocket.on('disconnect', () => setIsAuthedConnected(false));
+      authedSocket.on('connect_error', (err) => {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        console.error('Authed WebSocket error:', err);
+      });
     }
 
-    // Clean up on unmount
     return () => {
-      didUnmount = true;
-      if (socket) {
-        socket.off('connect');
-        socket.off('disconnect');
-        socket.off('connect_error');
-        socket.off('error');
-        socket.disconnect();
+      publicSocket.disconnect();
+      publicSocket.off();
+      if (authedSocket) {
+        authedSocket.disconnect();
+        authedSocket.off();
       }
     };
   }, []);
 
   return (
-    <WebSocketContext.Provider value={{ socket: socketRef.current, isConnected, error }}>
+    <WebSocketContext.Provider
+      value={{
+        publicSocket: publicSocketRef.current,
+        authedSocket: authedSocketRef.current,
+        isPublicConnected,
+        isAuthedConnected,
+        error,
+      }}
+    >
       {children}
     </WebSocketContext.Provider>
   );
