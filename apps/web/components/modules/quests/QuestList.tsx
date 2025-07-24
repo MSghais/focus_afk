@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import QuestItem, { QuestItemProps } from './QuestItem';
+import QuestItem from './QuestItem';
 import styles from './QuestList.module.scss';
 import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
