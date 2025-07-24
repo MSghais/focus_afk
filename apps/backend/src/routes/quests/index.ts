@@ -57,7 +57,7 @@ async function questsRoutes(fastify: FastifyInstance) {
       if (quest.user.id !== request.user?.id) {
         return reply.status(403).send({ success: false, error: 'User not authorized' });
       }
-      return reply.status(200).send({ success: true, quest });
+      return reply.status(200).send({ success: true, data: quest });
     });
 }
 
