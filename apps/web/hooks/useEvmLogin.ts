@@ -23,10 +23,12 @@ export function useEvmLogin() {
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/evm-login`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json",
+                Origin: process.env.NEXT_PUBLIC_FRONTEND_URL || window?.location?.origin || 'http://localhost:3000',
+             },
             body: JSON.stringify({ address: user?.wallet?.address, signature: signature.signature, message }),
-            credentials: 'include', // Required for CORS with credentials
-            mode: 'cors', // Explicitly set CORS mode
+            // credentials: 'include', // Required for CORS with credentials
+            // mode: 'cors', // Explicitly set CORS mode
         });
 
         console.log("🔐 EVM Login Response:", res);
