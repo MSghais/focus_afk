@@ -84,13 +84,13 @@ async function buildServer() {
     //   return cb(new Error('Not allowed by CORS'), false);
     // },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
-      'X-Requested-With',
-      'Accept',
-      'Origin'
-    ],
+    // allowedHeaders: [
+    //   'Content-Type', 
+    //   'Authorization', 
+    //   'X-Requested-With',
+    //   'Accept',
+    //   'Origin'
+    // ],
     credentials: false,
   });
 
