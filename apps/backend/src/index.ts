@@ -31,6 +31,8 @@ async function buildServer() {
     logger: true,
   });
 
+  console.log('FRONTEND_URL', process.env.FRONTEND_URL);
+
   // CORS configuration
   await fastify.register(fastifyCors, {
     origin: process.env.FRONTEND_URL,
