@@ -7,4 +7,7 @@ export const setupWebSocket = (io: Server) => {
     console.log('Client connected:', socket.id);
 
   });
+  io.on('disconnect', (socket: Socket) => {
+    console.log('Client disconnected:', socket.id);
+  });
 };
