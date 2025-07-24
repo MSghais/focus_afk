@@ -36,6 +36,7 @@ class ApiService {
       const response = await fetch(url, {
         ...options,
         headers,
+        credentials: 'include', // Add this for CORS with credentials
       });
 
       console.log('🔐 API Response - Status:', response.status);
