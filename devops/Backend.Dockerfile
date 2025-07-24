@@ -28,6 +28,7 @@ ENV BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL}
 
 ARG FRONTEND_URL
 ENV FRONTEND_URL=${FRONTEND_URL}
+ENV NODE_ENV=production
 
 # Debug: print working directory and files
 RUN pwd && ls -la
