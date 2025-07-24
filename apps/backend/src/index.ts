@@ -35,8 +35,8 @@ async function buildServer() {
 
   // CORS configuration
   await fastify.register(fastifyCors, {
-    // origin: "*",
-    origin: process.env.FRONTEND_URL,
+    origin: "*",
+    // origin: process.env.FRONTEND_URL,
     // origin: (origin, cb) => {
     //   // Allow requests with no origin (like mobile apps or curl requests)
     //   if (!origin) return cb(null, true);
