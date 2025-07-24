@@ -57,7 +57,6 @@ export default function RecentGoals() {
             ]);
             setTaskStats(taskStatsData);
             setFocusStats(focusStatsData);
-            console.log("breakStatsData", breakStatsData);
             setBreakStats(breakStatsData);
             setDeepFocusStats(deepFocusStatsData);
         };

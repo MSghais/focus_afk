@@ -1,19 +1,38 @@
-export const formatTime = (minutes: number) => {
-    if (minutes === 0) return '0m';
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.floor(minutes % 60);
-    const secs = Math.floor((minutes * 60) % 60);
-    if (hours > 0) {
-        return `${hours}h ${mins > 0 ? `${mins}m` : ''}`.trim();
+import MarkdownIt from 'markdown-it';
+
+
+export const tryMarkdownToHtml = (text: string) => {
+    try {
+        let textRendered = markdownToHtml(text);
+        // console.log("textRendered", textRendered);
+        if (!textRendered) {
+            textRendered = enhancedMarkdownRenderer(text);
+        }
+        if (!textRendered) {
+            textRendered = text;
+        }
+
+        return textRendered;
+    } catch (error) {
+        console.error("Error rendering markdown", error);
+        return '';
     }
-    return `${mins}m ${secs > 0 ? `${secs}s` : ''}`.trim();
+}
+
+export const markdownToHtml = (text: string) => {
+    try {
+        // Enhanced markdown renderer without external dependencies
+        const md = new MarkdownIt();
+        // console.log("md", md);
+        const rendered = md.render(text);
+        console.log("rendered", rendered);
+        return rendered;
+    } catch (error) {
+        console.error("Error rendering markdown", error);
+        return '';
+    }
 };
 
-export const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString();
-};
-
-// Enhanced markdown renderer without external dependencies
 export const enhancedMarkdownRenderer = (text: string) => {
     if (!text || typeof text !== 'string') {
         return '';
@@ -53,12 +72,12 @@ export const enhancedMarkdownRenderer = (text: string) => {
     const paragraphs = processedText.split(/\n\n+/);
     const processedParagraphs = paragraphs.map(paragraph => {
         if (paragraph.trim() === '') return '';
-        
+
         // Check if paragraph already contains HTML tags
         if (/<[^>]+>/.test(paragraph)) {
             return paragraph;
         }
-        
+
         // Replace single line breaks with <br> tags
         const withBreaks = paragraph.replace(/\n/g, '<br>');
         return `<p>${withBreaks}</p>`;

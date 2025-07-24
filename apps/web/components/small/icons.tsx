@@ -1,11 +1,16 @@
 import React from "react";
 
-type IconName = "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge";
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove";
 
 const iconPaths: Record<IconName, React.ReactNode> = {
+  add: (
+    <>
+      <path d="M12 4v16m8-8H4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
   create: (
     <>
-      <rect x="11" y="4" width="2" height="16" fill="currentColor" />
+      <rect x="11" y="4" width="2" height="16" fill="currentColor" /> 
       <rect x="4" y="11" width="16" height="2" fill="currentColor" />
     </>
   ),
@@ -108,6 +113,18 @@ const iconPaths: Record<IconName, React.ReactNode> = {
       <path d="M12 22v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path d="M2 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path d="M20 12h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M12 12m-1 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0z" fill="currentColor" />
+      <path d="M12 12m-9 0a9 9 0 1 0 18 0 9 9 0 0 0-18 0z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  remove: (
+    <>
+      <path d="M19 11l-7-7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="5" y1="11" x2="19" y2="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </>
   )
 };

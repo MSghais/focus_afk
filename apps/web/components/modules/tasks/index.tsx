@@ -10,8 +10,11 @@ import { useAuthStore } from '../../../store/auth';
 import { isUserAuthenticated } from '../../../lib/auth';
 import { ButtonPrimary } from '../../small/buttons';
 import { Task } from '../../../types';
+import { Icon } from '../../small/icons';
+import { useUIStore } from '../../../store/uiStore';
 
 export default function Tasks() {
+    const { showModal } = useUIStore(); 
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
@@ -162,32 +165,67 @@ export default function Tasks() {
     return (
         <div className="w-full h-full flex flex-col p-2 md:p-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
-                <h1 className="text-2xl font-bold">Tasks</h1>
+                <div className="flex flex-row gap-2">
+                    <div>
+                        <h1 className="text-2xl font-bold">Tasks</h1>
+                        <p className="text-sm text-gray-500">
+                            Tasks are the core of your focus and productivity. They help you break down your goals into actionable steps.
+                        </p>
+                    </div>
+
+
+
+                </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={handleRefreshTasks}
-                        disabled={refreshing}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2"
-                        title="Refresh tasks from local and API"
-                    >
-                        {refreshing ? 'Refreshing...' : 'Refresh'}
-                        <span aria-hidden="true">🔄</span>
+
+                    <div className="flex flex-col gap-2">
+                        <Link href="/goals" className="flex flex-row gap-2 text-sm text-gray-500 shadow-md p-2 rounded-lg hover:bg-gray-100 transition border border-gray-200 max-w-20 max-h-auto text-center">
+                            🎯 Goals
+                        </Link>
+                    </div>
+
+
+                    <button onClick={() => 
+                        showModal(<div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold">Tasks</h1>
+                            <p className="text-sm text-gray-500">
+                                Tasks are the core of your focus and productivity. They help you break down your goals into actionable steps.
+                            </p>
+                            <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2">
+                                <Icon name="refresh" />
+                                Refresh
+                            </button>
+
+                            <button
+                                onClick={handleRefreshTasks}
+                                disabled={refreshing}
+                                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2"
+                                title="Refresh tasks from local and API"
+                            >
+                                {refreshing ? 'Refreshing...' : 'Refresh'}
+                                <span aria-hidden="true">🔄</span>
+                            </button>
+                            {isUserAuthenticated() && (
+                                <button
+                                    onClick={handleSyncToBackend}
+                                    disabled={syncing}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                                >
+                                    {syncing ? 'Syncing...' : 'Sync to Backend'}
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setShowAddForm(!showAddForm)}
+                                className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                            >
+                                {showAddForm ? 'Cancel' : 'Add Task'}
+                            </button>
+                        </div>)
+                    }>
+
+                        <Icon name="settings" />
                     </button>
-                    {isUserAuthenticated() && (
-                        <button
-                            onClick={handleSyncToBackend}
-                            disabled={syncing}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-                        >
-                            {syncing ? 'Syncing...' : 'Sync to Backend'}
-                        </button>
-                    )}
-                    <button
-                        onClick={() => setShowAddForm(!showAddForm)}
-                        className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
-                    >
-                        {showAddForm ? 'Cancel' : 'Add Task'}
-                    </button>
+
                 </div>
             </div>
             {error && <div className="text-red-600 mb-2">{error}</div>}
@@ -396,7 +434,7 @@ export default function Tasks() {
                                                 onClick={() => setEditingTask(task)}
                                                 className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
                                             >
-                                              ✏️ Edit
+                                                ✏️ Edit
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteTask(task.id!)}

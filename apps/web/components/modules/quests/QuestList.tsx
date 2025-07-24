@@ -1,22 +1,78 @@
-import React from 'react';
-import QuestItem, { QuestItemProps } from './QuestItem';
+import React, { useEffect, useState } from 'react';
+import QuestItem from './QuestItem';
 import styles from './QuestList.module.scss';
+import { useUIStore } from '../../../store/uiStore';
+import { useAuthStore } from '../../../store/auth';
+import { apiService } from '../../../lib/api';
+import { Quest } from '../../../lib/gamification';
+import { Icon } from '../../small/icons';
 
 interface QuestListProps {
-  quests: QuestItemProps[];
+  quests: Quest[];
   onSelect?: (id: string) => void;
 }
 
-const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => (
-  <div className="flex flex-col gap-2">
-    <h1 className="text-2xl font-bold">Quests</h1>
-    <div className={styles.questList}>
-      {quests.map((quest) => (
-        <QuestItem key={quest.id} {...quest} onClick={() => onSelect?.(quest.id)} />
-      ))}
-    </div>
-  </div>
+const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => {
+  const { userConnected } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadQuests = async () => {
+    console.log("userConnected", userConnected);
 
-);
+    try {
+      if (!userConnected?.id) return;
+      console.log("loadQuests", userConnected.id);
+      const res = await apiService.getQuests(userConnected.id)
+      console.log("res", res);
+      if (
+        res.success &&
+        Array.isArray((res as any).quests)
+      ) {
+        setQuestsState((res as any).quests);
+      } else {
+        setQuestsState([]);
+        setError('Failed to load quests');
+      }
+      setLoading(false);
+    } catch (error) {
+      setError('Failed to load quests');
+      showToast({ message: 'Failed to load quests', type: 'error' });
+      setLoading(false);
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    setLoading(true);
+    loadQuests();
+  }, [userConnected?.id]);
+
+  const { showToast } = useUIStore();
+  const [questsState, setQuestsState] = useState<Quest[]>([]);
+
+  useEffect(() => {
+    setQuestsState(quests);
+  }, [quests]);
+
+  console.log("questsState", questsState);
+  return (
+
+
+
+    <div className="flex flex-col gap-2">
+      <h1 className="text-2xl font-bold">Quests</h1>
+
+      <button onClick={() => loadQuests()}><Icon name="refresh" /></button>
+      <div className={styles.questList}>
+        {questsState.map((quest) => (
+          <QuestItem key={quest.id} {...quest} onClick={() => onSelect?.(quest.id)} />
+        ))}
+      </div>
+    </div>
+
+  );
+};
 
 export default QuestList; 
