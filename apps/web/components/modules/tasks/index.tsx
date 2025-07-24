@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
+import { useEffect } from 'react';
 
 import Link from 'next/link';
 import { logClickedEvent } from '../../../lib/analytics';
@@ -11,7 +12,7 @@ import { ButtonPrimary } from '../../small/buttons';
 import { Task } from '../../../types';
 
 export default function Tasks() {
-    const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend } = useFocusAFKStore();
+    const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
         description: '',
@@ -23,6 +24,8 @@ export default function Tasks() {
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -93,6 +96,48 @@ export default function Tasks() {
         }
     };
 
+    // Refresh handler: loads local tasks, then API tasks if authenticated, merges and dedupes
+    const handleRefreshTasks = async () => {
+        setRefreshing(true);
+        setError(null);
+        try {
+            // Load local tasks
+            await loadTasks();
+            let localTasks = useFocusAFKStore.getState().tasks;
+            let mergedTasks = [...localTasks];
+            // If authenticated, fetch API tasks and merge
+            if (isUserAuthenticated()) {
+                const apiResp = await import('../../../lib/api').then(m => m.api.getTasks());
+                if (apiResp.success && Array.isArray(apiResp.data)) {
+                    // Convert API task dates to Date objects for consistency
+                    const apiTasks = apiResp.data.map((t: any) => ({
+                        ...t,
+                        dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
+                        createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
+                        updatedAt: t.updatedAt ? new Date(t.updatedAt) : new Date(),
+                    }));
+                    // Merge and dedupe by title + createdAt (or id if present)
+                    const seen = new Set();
+                    mergedTasks = [...localTasks];
+                    for (const t of apiTasks) {
+                        const key = t.id ? `id-${t.id}` : `${t.title}-${t.createdAt?.toISOString?.()}`;
+                        if (!mergedTasks.some(lt => (lt.id && t.id && lt.id === t.id) || (lt.title === t.title && lt.createdAt?.toISOString?.() === t.createdAt?.toISOString?.()))) {
+                            mergedTasks.push(t);
+                        }
+                    }
+                } else if (apiResp.error) {
+                    setError('Failed to fetch tasks from API: ' + apiResp.error);
+                }
+            }
+            // Update the store with merged tasks
+            useFocusAFKStore.setState({ tasks: mergedTasks });
+        } catch (err: any) {
+            setError('Failed to refresh tasks: ' + (err?.message || err));
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
     const getPriorityColor = (priority: Task['priority']) => {
         switch (priority) {
             case 'high': return 'border-2 border-[var(--afk-danger)] text-[var(--afk-danger)] bg-[var(--afk-danger)]/10';
@@ -119,6 +164,15 @@ export default function Tasks() {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
                 <h1 className="text-2xl font-bold">Tasks</h1>
                 <div className="flex gap-2">
+                    <button
+                        onClick={handleRefreshTasks}
+                        disabled={refreshing}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition disabled:opacity-50 flex items-center gap-2"
+                        title="Refresh tasks from local and API"
+                    >
+                        {refreshing ? 'Refreshing...' : 'Refresh'}
+                        <span aria-hidden="true">🔄</span>
+                    </button>
                     {isUserAuthenticated() && (
                         <button
                             onClick={handleSyncToBackend}
@@ -136,6 +190,7 @@ export default function Tasks() {
                     </button>
                 </div>
             </div>
+            {error && <div className="text-red-600 mb-2">{error}</div>}
 
             {/* Add Task Form */}
             {showAddForm && (

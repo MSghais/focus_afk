@@ -12,7 +12,7 @@ import { ButtonSecondary } from '../../small/buttons';
 
 export default function DashboardQuests() {
 
-  const {showToast, showModal} = useUIStore();
+  const { showToast, showModal } = useUIStore();
   const {
     tasks,
     goals,
@@ -24,6 +24,8 @@ export default function DashboardQuests() {
     setCurrentModule
   } = useFocusAFKStore();
   const { userConnected } = useAuthStore();
+
+  const [activeTab, setActiveTab] = useState<'main' | 'quests' | 'badges' | "lfg_session">('main');
 
 
   const [taskStats, setTaskStats] = useState({
@@ -122,13 +124,7 @@ export default function DashboardQuests() {
       </div> */}
 
       <div className={styles.dashboardContent} style={{ marginBottom: '2rem', width: '100%' }}>
-        <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>
-          <div style={{ fontSize: '1.1rem', marginBottom: 8 }}>Complete 20 Pomodoros<br />in a week</div>
-          <div style={{ color: 'var(--feed-text, var(--foreground))', fontWeight: 500, fontSize: '1rem' }}>
-            Tokens <span style={{ fontSize: '1.2rem' }}>🪙</span> 20
-          </div>
-        </div>
+
 
         <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Proof of Focus</div>
         {/* <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>AI-Verified Proof of Focus</div> */}
@@ -152,6 +148,14 @@ export default function DashboardQuests() {
             <div style={{ color: 'var(--feed-text, var(--foreground))', fontSize: '0.95rem', fontWeight: 700 }}>
               {streak > 0 ? `${streak}-day streak` : 'No streak yet'}
             </div>
+          </div>
+        </div>
+
+        <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>
+          <div style={{ fontSize: '1.1rem', marginBottom: 8 }}>Complete 20 Pomodoros<br />in a week</div>
+          <div style={{ color: 'var(--feed-text, var(--foreground))', fontWeight: 500, fontSize: '1rem' }}>
+            Tokens <span style={{ fontSize: '1.2rem' }}>🪙</span> 20
           </div>
         </div>
       </div>

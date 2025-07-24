@@ -11,6 +11,20 @@ export async function authRoutes(fastify: FastifyInstance) {
   const signatureService = new SignatureService();
   const badgeService = new BadgeService(fastify.prisma);
 
+  // // Specific OPTIONS handler for auth routes
+  // fastify.options('/evm-login', async (request, reply) => {
+  //   console.log('🔐 Auth OPTIONS - evm-login endpoint');
+  //   console.log('🔐 Auth OPTIONS - Origin:', request.headers.origin);
+    
+  //   reply.header('Access-Control-Allow-Origin', request.headers.origin || '*');
+  //   reply.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  //   reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  //   reply.header('Access-Control-Allow-Credentials', 'true');
+  //   reply.header('Access-Control-Max-Age', '86400');
+    
+  //   return reply.send();
+  // });
+
   fastify.post<{ Body: LoginInput }>(
     '/auth',
     {

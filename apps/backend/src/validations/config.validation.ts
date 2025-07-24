@@ -17,4 +17,17 @@ export const ConfigSchema = z.object({
     api_key: z.string().min(1, 'Rpc apikey required'),
     network: z.string().min(1, 'Rpc network required'),
   }),
+  
+  // pinata: z.object({
+  //   jwt: z.string(),
+  //   ipfsGateway: z.string(),
+  //   uploadGatewayUrl: z.string(),
+  //   pinataSignUrl: z.string(),
+  //   uploadUrl: z.string(),
+  //   apiKey: z.string(),
+  //   apiSecret: z.string(),
+  //   apiUrl: z.string(),
+  //   apiVersion: z.string(),
+  //   apiTimeout: z.string(),
+  // }),
 });

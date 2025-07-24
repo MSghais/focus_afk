@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/dashboard.module.scss';
 import { useRouter } from 'next/navigation';
+import { logClickedEvent } from '../../../lib/analytics';
 
 export default function ActionsDashboard() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function ActionsDashboard() {
                 <button
                     onClick={() => {
                         setCurrentModule('tasks');
+                        logClickedEvent('open_task_list_from_dashboard');   
                         router.push('/tasks');
                     }}
                     className={styles.actionButton}
@@ -40,6 +42,7 @@ export default function ActionsDashboard() {
 
                 <button
                     onClick={() => {
+                        logClickedEvent('open_timer_from_dashboard');   
                         setCurrentModule('timer');
                         router.push('/timer');
                     }}
@@ -57,6 +60,7 @@ export default function ActionsDashboard() {
 
                 <button
                     onClick={() => {
+                        logClickedEvent('open_goal_list_from_dashboard');   
                         setCurrentModule('goals');
                         router.push('/goals');
                     }}

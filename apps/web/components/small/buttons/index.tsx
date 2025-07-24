@@ -9,3 +9,10 @@ export function ButtonSecondary({ children, onClick, className }: { children: Re
         {children}
     </button>;
 }
+
+
+export function ButtonSimple({ children, onClick, className }: { children: React.ReactNode, onClick?: () => void, className?: string }) {
+    return <button className={`border-2 border-[var(--gray-300)] justify-center rounded-md p-4 flex items-center gap-2 hover:bg-[var(--brand-primary)] ${className}`} onClick={onClick}>
+        {children}
+    </button>;
+}

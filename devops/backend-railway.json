@@ -6,6 +6,8 @@
     },
     "deploy": {
       "startCommand": "",
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 30000,
       "restartPolicyType": "ALWAYS"
     }
   }

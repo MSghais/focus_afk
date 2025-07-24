@@ -8,11 +8,15 @@ interface QuestListProps {
 }
 
 const QuestList: React.FC<QuestListProps> = ({ quests, onSelect }) => (
-  <div className={styles.questList}>
-    {quests.map((quest) => (
-      <QuestItem key={quest.id} {...quest} onClick={() => onSelect?.(quest.id)} />
-    ))}
+  <div className="flex flex-col gap-2">
+    <h1 className="text-2xl font-bold">Quests</h1>
+    <div className={styles.questList}>
+      {quests.map((quest) => (
+        <QuestItem key={quest.id} {...quest} onClick={() => onSelect?.(quest.id)} />
+      ))}
+    </div>
   </div>
+
 );
 
 export default QuestList; 

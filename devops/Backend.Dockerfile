@@ -26,6 +26,14 @@ COPY . .
 ARG BACKEND_DATABASE_URL
 ENV BACKEND_DATABASE_URL=${BACKEND_DATABASE_URL}
 
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV}
+ARG FRONTEND_URL
+ENV FRONTEND_URL=${FRONTEND_URL}
+
+ARG JWT_SECRET
+ENV JWT_SECRET=${JWT_SECRET}
+
 # Debug: print working directory and files
 RUN pwd && ls -la
 
@@ -34,8 +42,15 @@ RUN pnpm --filter ./apps/backend... build:prisma
 
 RUN pnpm --filter ./apps/backend... build
 
-# Expose backend port
-EXPOSE 5000
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:${PORT:-5000}/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Expose port (Railway will set PORT environment variable)
+EXPOSE ${PORT:-5000}
 
 # Start the backend app
-CMD ["pnpm", "--filter", "./apps/backend...", "start"]
+# CMD ["pnpm", "--filter", "./apps/backend...", "start"]
+# Command to start the application
+CMD ["node", "apps/backend/dist/index.js"]
+

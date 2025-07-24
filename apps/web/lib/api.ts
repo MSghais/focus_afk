@@ -6,6 +6,7 @@ class ApiService {
 
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    console.log('🔧 API Service - Backend URL:', this.baseUrl);
   } 
 
   private getAuthToken(): string | null {
@@ -36,15 +37,25 @@ class ApiService {
       const response = await fetch(url, {
         ...options,
         headers,
+        // credentials: 'include', // Required for CORS with credentials
+        // mode: 'cors', // Explicitly set CORS mode
       });
 
       console.log('🔐 API Response - Status:', response.status);
       console.log('🔐 API Response - URL:', url);
+      console.log('🔐 API Response - Headers:', Object.fromEntries(response.headers.entries()));
 
       if (response.status === 401) {
         // For 401 errors, we'll just throw an error since we don't have refresh token logic
         // in the current auth flow
         throw new Error('Authentication failed - please login again');
+      }
+
+      if (!response.ok) {
+        console.error('🔐 API Response - Error status:', response.status);
+        const errorText = await response.text();
+        console.error('🔐 API Response - Error body:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       return await response.json();

@@ -22,9 +22,9 @@ export function useApi() {
 
         if (jwtToken) {
           headers.Authorization = `Bearer ${jwtToken}`;
-          console.log('🔐 useApi - Authorization header set');
+          // console.log('🔐 useApi - Authorization header set');
         } else {
-          console.log('🔐 useApi - No JWT token available, request will fail');
+          console.log('🔐 useApi - No JWT token available, request with auth will fail');
         }
 
         try {

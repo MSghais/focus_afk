@@ -5,7 +5,7 @@ import Onboarding from "../onboarding/Onboarding";
 import LoginBackend from "./LoginBackend";
 import { useAuthStore } from "../../store/auth";
 
-export default function ProfileUser() {
+export default function ProfileUser({isLoggoutViewActive}: {isLoggoutViewActive: boolean}) {
 
     const { user } = usePrivy();
 
@@ -30,7 +30,7 @@ export default function ProfileUser() {
                         </div>
                     )}
 
-                    <PrivyUser />
+                    <PrivyUser isLoggoutViewActive={isLoggoutViewActive} />
 
 {/* 
                     {!userConnected && (

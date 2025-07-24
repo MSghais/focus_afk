@@ -251,7 +251,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                         {isSelectMentorViewEnabled && (
                             <div className="flex flex-row justify-between items-center">
                                 <button onClick={() => {
-                                    logClickedEvent('select_mentor_list');   
+                                    logClickedEvent('open_mentor_list_from_chat');   
                                     showModal(<MentorList />);
                                 }}>
                                     <Icon name="list" />

@@ -44,7 +44,7 @@ export default function Settings() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col overflow-y-auto">
+        <div className="">
             <h1 className="text-3xl font-bold mb-6">Settings</h1>
 
             <div className="max-w-2xl space-y-8 gap-2">
