@@ -5,7 +5,7 @@ import { useApi } from '../../../hooks/useApi';
 import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
 import { Mentor } from '../../../types';
-import styles from '../../../styles/components/mentor.module.scss';
+import styles from '../../../styles/components/mentor-form.module.scss';
 import { logClickedEvent } from '../../../lib/analytics'; 
 
 interface MentorFormProps {
@@ -51,7 +51,7 @@ const ROLE_OPTIONS = [
   'Custom'
 ];
 
-export default function MentorForm({ mentor, onSuccess, onCancel, mode }: MentorFormProps) {
+export default function   MentorForm({ mentor, onSuccess, onCancel, mode }: MentorFormProps) {
   const { userConnected } = useAuthStore();
   const { showToast } = useUIStore();
   const apiService = useApi();

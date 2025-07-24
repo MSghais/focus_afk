@@ -31,6 +31,9 @@ ENV NODE_ENV=${NODE_ENV}
 ARG FRONTEND_URL
 ENV FRONTEND_URL=${FRONTEND_URL}
 
+ARG JWT_SECRET
+ENV JWT_SECRET=${JWT_SECRET}
+
 # Debug: print working directory and files
 RUN pwd && ls -la
 

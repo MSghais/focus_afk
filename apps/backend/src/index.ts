@@ -190,6 +190,14 @@ async function buildServer() {
     };
   });
 
+  fastify.get('/', async (request, reply) => {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      nodeEnv: process.env.NODE_ENV,
+    };
+  });
+
   // Register routes
   // Auth
   // await fastify.register(authRoutes);
