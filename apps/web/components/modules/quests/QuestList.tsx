@@ -13,7 +13,7 @@ interface QuestListProps {
   onSelect?: (id: string) => void;
 }
 
-const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefreshButton = true }) => {
+const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefreshButton = false }) => {
   const { userConnected } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

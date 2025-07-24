@@ -19,7 +19,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
   quest,
   onClick,
   badgeReward,
-  isQuestActionDisabled,
+  isQuestActionDisabled=false,
 }: IQuestItemProps) => {
   if (!quest) return null;
 
