@@ -138,7 +138,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
         <div className="px-3 pb-3 pt-1">
           {description && (
             <div
-              className="text-sm text-gray-700 mb-2"
+              className="text-sm mb-2"
               dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(description) }}
             />
           )}

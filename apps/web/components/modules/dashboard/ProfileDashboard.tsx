@@ -101,62 +101,51 @@ export default function ProfileDashboard() {
 
 
         <ButtonSimple
-          className={activeTab === 'main' ? 'bg-[var(--brand-primary)] text-white' : ''}
-        onClick={() => { setActiveTab('main'); logClickedEvent("main_button_clicked ") }}>
+          className={activeTab === 'main' ? 'bg-[var(--brand-primary)] ' : ''}
+          onClick={() => { setActiveTab('main'); logClickedEvent("main_button_clicked ") }}>
 
 
-          <Icon name="home" size={24} />
+          <Icon name="home" size={24}
+            className="text-gray-500"
+          />
+
+        </ButtonSimple>
+
+
+
+        <ButtonSimple
+          className={activeTab === 'quests' ? 'bg-[var(--brand-primary)] ' : ''}
+          onClick={() => { setActiveTab('lfg_session'); logClickedEvent("quests_button_clicked ") }}>
+
+
+          <Icon name="lfg" size={24}
+            className="text-gray-500"
+          />
 
         </ButtonSimple>
 
         <ButtonSimple
-          className={activeTab === 'settings' ? 'bg-[var(--brand-primary)] text-white' : ''}
+          className={activeTab === 'settings' ? 'bg-[var(--brand-primary)] ' : ''}
           onClick={() => { setActiveTab('settings'); logClickedEvent("settings_button_clicked ") }}>
-
-
-          {/* 
-        <Link
-          title="Settings"
-          href="/settings"
-          className=""
-          onClick={() => {
-            logClickedEvent("settings_button_clicked ");
-          }}
-        >
-        </Link> */}
-          <Icon name="settings" size={24} />
+          <Icon name="settings" size={24}
+            className="text-gray-500"
+          />
 
         </ButtonSimple>
-
-        <ButtonSimple
-          className={activeTab === 'quests' ? 'bg-[var(--brand-primary)] text-white' : ''}
-          onClick={() => { setActiveTab('quests'); logClickedEvent("quests_button_clicked ") }}>
-
-          {/* 
-          <Link title="Lfg Session"
-            onClick={() => {
-              logClickedEvent("lfg_session_button_clicked ");
-            }}
-            href="/lfg_session" className="flex items-center justify-center">
-          </Link> */}
-          <Icon name="lfg" size={24} />
-
-        </ButtonSimple>
-
 
       </div>
 
 
       <div>
-
+        {activeTab === 'main' && <DashboardQuests />}
+        {activeTab === 'settings' && <Settings />}
+        {/* {activeTab === 'quests' && <QuestList quests={[]} />} */}
+        {activeTab === 'badges' && <Badges isDailyBadgeEnabled={false} />}
+        {activeTab === 'lfg_session' && <LfgSession />}
 
       </div>
 
-      {activeTab === 'main' && <DashboardQuests />}
-      {activeTab === 'settings' && <Settings />}
-      {activeTab === 'quests' && <QuestList quests={[]} />}
-      {activeTab === 'badges' && <Badges />}
-      {activeTab === 'lfg_session' && <LfgSession />}
+
     </div>
   );
 }

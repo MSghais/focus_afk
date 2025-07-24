@@ -40,8 +40,8 @@ export default function LfgSession() {
     // Add more as needed
   } = useFocusAFKStore();
   // For demo, use mock user data for level, streak, mentorChats
-  const [level, setLevel] = useState(5);
-  const [streak, setStreak] = useState(7);
+  const [level, setLevel] = useState(1);
+  const [streak, setStreak] = useState(0);
   const [mentorChats, setMentorChats] = useState(2);
   const [userId, setUserId] = useState('demo-user'); // Replace with real user id
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -128,16 +128,17 @@ export default function LfgSession() {
   }, [sessionStarted, sessionProgress, sessionCompleted]);
 
   return (
-    <div style={{ maxWidth: 540, margin: '0 auto', padding: 24 }}>
+    <div style={{ maxWidth: 540,  padding: 8 }}>
       {/* Top: XP, Level, Streak, Avatar, Badges */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
         <AvatarIcon avatar={'🦸'} />
+        <p>Level {level}</p>
         <LevelIcon level={level} />
-        <XPBar xp={320} maxXp={500} />
+        {/* <XPBar xp={320} maxXp={500} /> */}
         <StreakCounter streak={streak} />
-        {badges.map((b) => (
+        {/* {badges.map((b) => (
           <BadgeIcon key={b.id} icon={b.icon} label={b.name} />
-        ))}
+        ))} */}
       </div>
 
       {/* Live Quests */}
@@ -145,11 +146,11 @@ export default function LfgSession() {
         <h2 style={{ fontWeight: 700, fontSize: '1.1em', marginBottom: 8 }}>Your Quests</h2>
         {quests.length === 0 && <div>No quests right now. Keep focusing!</div>}
         {quests.map((q) => (
-          <div key={q.id} style={{ marginBottom: 12, border: '1px solid #eee', borderRadius: 8, padding: 12, background: '#fafbfc' }}>
+          <div key={q.id} style={{ marginBottom: 12, border: '1px solid #eee', borderRadius: 8, padding: 12, }}>
             <div style={{ fontWeight: 600 }}>{q.title}</div>
             <div style={{ fontSize: '0.95em', color: '#555' }}>{q.description}</div>
             <div style={{ margin: '6px 0' }}>
-              Progress: {Math.round(q.progress)}% {q.status === 'completed' && <span style={{ color: '#10B981', fontWeight: 600 }}>✓</span>}
+              Progress: {Math.round(q?.progress || 0)}% {q.status === 'completed' && <span style={{ fontWeight: 600 }}>✓</span>}
             </div>
             <div style={{ fontSize: '0.95em', color: '#888' }}>Reward: +{q.rewardXp} XP{q.rewardBadge && `, Badge: ${q.rewardBadge}`}</div>
           </div>
@@ -189,13 +190,15 @@ export default function LfgSession() {
           <div style={{ color: '#8B5CF6', fontWeight: 600, marginTop: 8 }}>
             Mentor: "Still focused? Need help?"
           </div>
+          <div style={{ color: '#10B981', fontWeight: 600, marginTop: 8 }}>
+            Mentor: "Great job! Here’s your feedback and encouragement."
+          </div>
         </div>
       )}
       {mentorCheckin === 'end' && sessionCompleted && (
         <div style={{ marginBottom: 24 }}>
-          <ChatAi />
           <div style={{ color: '#10B981', fontWeight: 600, marginTop: 8 }}>
-            Mentor: "Great job! Here’s your feedback and encouragement."
+           LFG Session Complete!
           </div>
         </div>
       )}
