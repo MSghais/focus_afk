@@ -35,47 +35,48 @@ async function buildServer() {
 
   // CORS configuration
   await fastify.register(fastifyCors, {
-    origin: (origin, cb) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return cb(null, true);
+    origin: "*",
+    // origin: (origin, cb) => {
+    //   // Allow requests with no origin (like mobile apps or curl requests)
+    //   if (!origin) return cb(null, true);
       
-      const allowedOrigins = [
-        process.env.FRONTEND_URL,
-        'https://focus.afk-community.xyz',
-        'https://www.focus.afk-community.xyz/',
-        'http://localhost:3000',
-        'http://localhost:3001'
-      ].filter(Boolean);
+    //   const allowedOrigins = [
+    //     process.env.FRONTEND_URL,
+    //     'https://focus.afk-community.xyz',
+    //     'https://www.focus.afk-community.xyz/',
+    //     'http://localhost:3000',
+    //     'http://localhost:3001'
+    //   ].filter(Boolean);
       
-      console.log('CORS check - Origin:', origin);
-      console.log('CORS check - Allowed origins:', allowedOrigins);
+    //   console.log('CORS check - Origin:', origin);
+    //   console.log('CORS check - Allowed origins:', allowedOrigins);
       
-      // Check exact match
-      if (allowedOrigins.includes(origin)) {
-        return cb(null, true);
-      }
+    //   // Check exact match
+    //   if (allowedOrigins.includes(origin)) {
+    //     return cb(null, true);
+    //   }
       
-      // Check if it's a subdomain of afk-community.xyz
-      if (origin.endsWith('.afk-community.xyz') || origin === 'https://afk-community.xyz') {
-        return cb(null, true);
-      }
+    //   // Check if it's a subdomain of afk-community.xyz
+    //   if (origin.endsWith('.afk-community.xyz') || origin === 'https://afk-community.xyz') {
+    //     return cb(null, true);
+    //   }
       
-      // For development, allow all origins
-      if (process.env.NODE_ENV === 'development') {
-        return cb(null, true);
-      }
+    //   // For development, allow all origins
+    //   if (process.env.NODE_ENV === 'development') {
+    //     return cb(null, true);
+    //   }
       
-      return cb(new Error('Not allowed by CORS'), false);
-    },
+    //   return cb(new Error('Not allowed by CORS'), false);
+    // },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
-      'X-Requested-With',
-      'Accept',
-      'Origin',
-      "User-Agent"
-    ],
+    // allowedHeaders: [
+    //   'Content-Type', 
+    //   'Authorization', 
+    //   'X-Requested-With',
+    //   'Accept',
+    //   'Origin',
+    //   "User-Agent"
+    // ],
     credentials: true,
   });
 
