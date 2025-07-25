@@ -25,7 +25,8 @@ export default function Dashboard() {
         getDeepFocusStats,
         setCurrentModule,
         syncTimerSessionsToBackend,
-        loadTimerSessionsFromBackend
+        loadTimerSessionsFromBackend,
+        mergeTimerSessionsFromLocalAndBackend
     } = useFocusAFKStore();
 
     const [level, setLevel] = useState(1);
@@ -61,7 +62,13 @@ export default function Dashboard() {
         isAuthenticated: false,
         isSyncing: false,
         lastSync: null as Date | null,
-        syncError: null as string | null
+        syncError: null as string | null,
+        mergeStats: null as {
+            localCount: number;
+            backendCount: number;
+            mergedCount: number;
+            duplicatesRemoved: number;
+        } | null
     });
 
     useEffect(() => {
@@ -129,6 +136,33 @@ export default function Dashboard() {
         }
     };
 
+    const handleMergeSessions = async () => {
+        if (!syncStatus.isAuthenticated) return;
+        
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await mergeTimerSessionsFromLocalAndBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: null,
+                mergeStats: {
+                    localCount: result.localCount,
+                    backendCount: result.backendCount,
+                    mergedCount: result.mergedCount,
+                    duplicatesRemoved: result.duplicatesRemoved
+                }
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Merge failed'
+            }));
+        }
+    };
+
     const formatTime = (minutes: number) => {
         if (minutes === 0) return '0m';
         const hours = Math.floor(minutes / 60);
@@ -171,8 +205,8 @@ export default function Dashboard() {
             </div>
 
             {/* Sync Status */}
-            {syncStatus.isAuthenticated && (
-                <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+            {/* {syncStatus.isAuthenticated && (
+                <div className="mb-2 p-2 rounded-lg border">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-sm font-medium text-gray-700 mb-1">Data Sync</h3>
@@ -188,8 +222,25 @@ export default function Dashboard() {
                                     <span className="text-red-600">Error: {syncStatus.syncError}</span>
                                 )}
                             </div>
+                            {syncStatus.mergeStats && (
+                                <div className="mt-2 text-xs text-gray-600">
+                                    <span>📱 {syncStatus.mergeStats.localCount} local</span>
+                                    <span className="mx-2">☁️ {syncStatus.mergeStats.backendCount} backend</span>
+                                    <span className="mx-2">🔄 {syncStatus.mergeStats.mergedCount} merged</span>
+                                    {syncStatus.mergeStats.duplicatesRemoved > 0 && (
+                                        <span className="text-orange-600">🗑️ {syncStatus.mergeStats.duplicatesRemoved} duplicates removed</span>
+                                    )}
+                                </div>
+                            )}
                         </div>
                         <div className="flex gap-2">
+                            <button
+                                onClick={handleMergeSessions}
+                                disabled={syncStatus.isSyncing}
+                                className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {syncStatus.isSyncing ? 'Merging...' : 'Merge'}
+                            </button>
                             <button
                                 onClick={handleSyncToBackend}
                                 disabled={syncStatus.isSyncing}
@@ -207,10 +258,9 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* Stats Overview */}
-
 
             <div className={styles.statsGrid}>
 

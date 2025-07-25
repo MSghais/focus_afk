@@ -18,7 +18,8 @@ export interface TimerSession {
     endTime?: string;
     duration: number;
     completed: boolean;
-    notes?: string;
+    notes?: string[];
+    note?:string;
     createdAt: string;
     updatedAt?: string;
 

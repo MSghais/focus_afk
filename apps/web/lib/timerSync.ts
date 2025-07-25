@@ -9,6 +9,110 @@ export interface TimerSyncResult {
   errors: string[];
 }
 
+export interface MergedTimerSessionsResult {
+  sessions: TimerSession[];
+  localCount: number;
+  backendCount: number;
+  mergedCount: number;
+  duplicatesRemoved: number;
+}
+
+/**
+ * Merge timer sessions from local and backend, removing duplicates
+ */
+export async function mergeTimerSessionsFromLocalAndBackend(): Promise<MergedTimerSessionsResult> {
+  const result: MergedTimerSessionsResult = {
+    sessions: [],
+    localCount: 0,
+    backendCount: 0,
+    mergedCount: 0,
+    duplicatesRemoved: 0
+  };
+
+  try {
+    // Get local sessions
+    const localSessions = await dbUtils.getSessions();
+    result.localCount = localSessions.length;
+    console.log(`📱 Found ${localSessions.length} local timer sessions`);
+
+    // Get backend sessions if authenticated
+    let backendSessions: TimerSession[] = [];
+    if (isUserAuthenticated()) {
+      try {
+        const response = await api.getTimerSessions();
+        if (response.success && response.data) {
+          backendSessions = response.data;
+          result.backendCount = backendSessions.length;
+          console.log(`☁️ Found ${backendSessions.length} backend timer sessions`);
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to load backend sessions, continuing with local only:', error);
+      }
+    }
+
+    // Create maps for efficient lookup
+    const localSessionsMap = new Map<string, TimerSession>();
+    const backendSessionsMap = new Map<string, TimerSession>();
+    const mergedSessionsMap = new Map<string, TimerSession>();
+
+    // Index local sessions by backendId (if synced) or by a unique key
+    localSessions.forEach(session => {
+      const key = session.backendId || `local_${session.id}`;
+      localSessionsMap.set(key, session);
+    });
+
+    // Index backend sessions by id
+    backendSessions.forEach(session => {
+      backendSessionsMap.set(session.id!, session);
+    });
+
+    // Merge strategy: Backend takes precedence for conflicts
+    const processedKeys = new Set<string>();
+
+    // First, add all backend sessions
+    backendSessions.forEach(backendSession => {
+      const key = backendSession.id!;
+      mergedSessionsMap.set(key, backendSession);
+      processedKeys.add(key);
+      console.log(`✅ Added backend session: ${key}`);
+    });
+
+    // Then add local sessions that don't have backend equivalents
+    localSessions.forEach(localSession => {
+      const backendKey = localSession.backendId;
+      const localKey = `local_${localSession.id}`;
+      
+      if (backendKey && processedKeys.has(backendKey)) {
+        // This local session has a backend equivalent that's already processed
+        console.log(`🔄 Skipped local session ${localSession.id} (has backend equivalent)`);
+        result.duplicatesRemoved++;
+      } else if (!backendKey && !processedKeys.has(localKey)) {
+        // This is a purely local session, add it
+        mergedSessionsMap.set(localKey, localSession);
+        processedKeys.add(localKey);
+        console.log(`📱 Added local-only session: ${localKey}`);
+      } else if (backendKey && !processedKeys.has(backendKey)) {
+        // This local session has a backendId but no backend equivalent found
+        // This might be a sync issue, keep the local version
+        mergedSessionsMap.set(localKey, localSession);
+        processedKeys.add(localKey);
+        console.log(`⚠️ Added local session with missing backend: ${localKey}`);
+      }
+    });
+
+    // Convert map to array
+    result.sessions = Array.from(mergedSessionsMap.values());
+    result.mergedCount = result.sessions.length;
+
+    console.log(`🔄 Merge completed: ${result.mergedCount} unique sessions (${result.duplicatesRemoved} duplicates removed)`);
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to merge timer sessions:', error);
+    throw error;
+  }
+}
+
 /**
  * Sync local timer sessions to backend
  */
@@ -128,33 +232,33 @@ export async function loadTimerSessionsFromBackend(): Promise<TimerSyncResult> {
           const existingLocal = localSessionsByBackendId.get(backendSession.id!);
           
           if (!existingLocal) {
-                         // This session doesn't exist locally, add it
-             const sessionData = {
-               userId: backendSession.userId || '',
-               taskId: backendSession.taskId,
-               goalId: backendSession.goalId,
-               type: backendSession.type,
-               startTime: backendSession.startTime,
-               endTime: backendSession.endTime,
-               duration: backendSession.duration,
-               completed: backendSession.completed,
-               notes: backendSession.notes,
-               syncedToBackend: true,
-               backendId: backendSession.id,
-             };
+            // This session doesn't exist locally, add it
+            const sessionData = {
+              userId: backendSession.userId || '',
+              taskId: backendSession.taskId,
+              goalId: backendSession.goalId,
+              type: backendSession.type,
+              startTime: backendSession.startTime,
+              endTime: backendSession.endTime,
+              duration: backendSession.duration,
+              completed: backendSession.completed,
+              notes: backendSession.notes,
+              syncedToBackend: true,
+              backendId: backendSession.id,
+            };
 
-             await dbUtils.addSession(sessionData);
+            await dbUtils.addSession(sessionData);
             result.syncedSessions++;
             console.log(`✅ Added backend session ${backendSession.id} to local DB`);
           } else {
-                         // Session exists locally, check if backend is more recent
-             const backendUpdated = new Date(backendSession.updatedAt || backendSession.createdAt);
-             const localUpdated = new Date(existingLocal.updatedAt || existingLocal.createdAt);
-             
-             if (backendUpdated > localUpdated) {
-               // Backend is more recent, update local
-               const sessionId = typeof existingLocal.id === 'string' ? parseInt(existingLocal.id) : existingLocal.id;
-               await dbUtils.updateSession(sessionId!, {
+            // Session exists locally, check if backend is more recent
+            const backendUpdated = new Date(backendSession.updatedAt || backendSession.createdAt);
+            const localUpdated = new Date(existingLocal.updatedAt || existingLocal.createdAt);
+            
+            if (backendUpdated > localUpdated) {
+              // Backend is more recent, update local
+              const sessionId = typeof existingLocal.id === 'string' ? parseInt(existingLocal.id) : existingLocal.id;
+              await dbUtils.updateSession(sessionId!, {
                 taskId: backendSession.taskId,
                 goalId: backendSession.goalId,
                 type: backendSession.type,

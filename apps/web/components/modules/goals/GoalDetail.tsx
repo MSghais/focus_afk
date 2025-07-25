@@ -12,6 +12,7 @@ import { useUIStore } from '../../../store/uiStore';
 import { Icon } from '../../small/icons';
 import { isUserAuthenticated } from '../../../lib/auth';
 import { dbUtils } from '../../../lib/database';
+import GoalTaskRecommended from './GoalTaskRecommended';
 
 export interface GoalDetailProps {
   goalIdProps?: string;
@@ -296,18 +297,13 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
       {tasksRecommendations.length > 0 && (
         <div className="flex flex-col gap-2 mt-6">
-          <h2 className="text-lg font-bold">🎯 Recommendations</h2>
+          <h2 className="text-lg font-bold">💡 Recommendations</h2>
           {tasksRecommendations.map((recommendation, index) => (
-            <div key={index} className="border rounded-lg p-4">
-              <p className="text-lg font-bold">{recommendation.title}</p> 
-              <p className="text-sm text-gray-500 mb-3">{recommendation.description}</p> 
-              <ButtonSimple 
-                className="w-full" 
-                onClick={() => handleAddTask(recommendation)}
-              >
-                Add Task
-              </ButtonSimple>
-            </div>
+              <GoalTaskRecommended key={index} recommendation={recommendation} 
+                onClose={onClose}
+                onDelete={onDelete}
+                goalProps={goal}
+              />
           ))}
         </div>
       )}

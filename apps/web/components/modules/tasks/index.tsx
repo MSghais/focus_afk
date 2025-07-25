@@ -74,6 +74,10 @@ export default function Tasks() {
         setEditingTask(null);
     };
 
+    useEffect(() => {
+        handleRefreshTasks();
+    }, []);
+
     const handleDeleteTask = async (id: string | number) => {
         if (confirm('Are you sure you want to delete this task?')) {
             logClickedEvent('task_delete');
