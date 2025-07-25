@@ -140,17 +140,17 @@ export default function TimerDeepFocus({
         updateSkill('deep_work', minutes * 2);
         recordSession('deep', minutes);
         updateFocusStreak(true);
+        if (intervalRef.current) clearInterval(intervalRef.current);
 
         await stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
 
-        // Sync to backend
-        try {
-            await syncTimerSessionsToBackend();
-        } catch (error) {
-            console.error('Failed to sync timer session to backend:', error);
-        }
+        // // Sync to backend
+        // try {
+        //     await syncTimerSessionsToBackend();
+        // } catch (error) {
+        //     console.error('Failed to sync timer session to backend:', error);
+        // }
 
-        if (intervalRef.current) clearInterval(intervalRef.current);
     };
 
     // Optionally, add pause/resume if needed
@@ -191,28 +191,7 @@ export default function TimerDeepFocus({
 
     return (
         <div className="w-full flex flex-col items-center justify-center p-6 space-y-6">
-            {/* Quest Header */}
-            <div className="text-center mb-6">
-                <div className="text-6xl mb-4">⚔️</div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-indigo-500 bg-clip-text text-transparent mb-2">
-                    Deep Quest: The Focus Journey
-                </h2>
-                <p className="text-gray-400 text-sm">Embark on an intense journey of focused productivity</p>
-            </div>
 
-            {/* Quest Progress Bar */}
-            <div className="w-full max-w-md">
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>Quest Progress</span>
-                    <span>{Math.round(questProgress)}%</span>
-                </div>
-                <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
-                    <div
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${questProgress}%` }}
-                    ></div>
-                </div>
-            </div>
 
             {/* Timer Display */}
             <div className="relative">
@@ -256,6 +235,95 @@ export default function TimerDeepFocus({
                     </div>
                 </div>
             )} */}
+
+            {/* Quest Header */}
+            {/* <div className="text-center mb-6">
+                <div className="text-sm mb-4">⚔️</div>
+                <p className="text-sm font-bold bg-gradient-to-r from-purple-400 to-indigo-500 bg-clip-text text-transparent mb-2">
+                    Deep Quest: The Focus Journey
+                </p>
+                <p className="text-gray-400 text-xs">Embark on an intense journey of focused productivity</p>
+            </div> */}
+
+
+            {/* Quest Setup Button */}
+            <button
+                className="w-full max-w-md py-3 px-6 border-2 border-purple-500/50 text-purple-400 rounded-xl hover:bg-purple-500/10 transition-all duration-300 font-medium"
+                onClick={() => {
+                    showModal(<div className="w-full max-w-md mb-6 space-y-4">
+                        <div className="text-center mb-4">
+                            <div className="text-3xl mb-2">⚔️</div>
+                            <h3 className="text-lg font-bold text-gray-300">Prepare Your Quest</h3>
+                            <p className="text-gray-400 text-sm">Choose your mission and objectives</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-300">Select Task (Optional)</label>
+                            {selectedTaskId && (
+                                <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg mb-3">
+                                    <p className="text-sm text-blue-300">
+                                        <span className="text-gray-400">Current Quest:</span> <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong>
+                                    </p>
+                                </div>
+                            )}
+
+                            <select
+                                value={selectedTaskId || ''}
+                                onChange={(e) => {
+                                    setSelectedTaskId(e.target.value ? e.target.value : undefined);
+                                    logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
+                                }}
+                                className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                            >
+                                <option value="">No specific task</option>
+                                {pendingTasks.map(task => (
+                                    <option key={task.id} value={task.id}>
+                                        {task.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-300">Select Goal (Optional)</label>
+                            <select
+                                value={selectedGoalId || ''}
+                                onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
+                                className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                            >
+                                <option value="">No specific goal</option>
+                                {pendingGoals.map(goal => (
+                                    <option key={goal.id} value={goal.id}>
+                                        {goal.title}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {selectedGoalId && (
+                            <div className="p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
+                                <span className="text-green-300">🎯 Goal: <strong>{goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}</strong></span>
+                            </div>
+                        )}
+                    </div>);
+                }}
+            >
+                ⚙️ Configure Quest Settings
+            </button>
+
+            {/* Quest Progress Bar */}
+            <div className="w-full max-w-md">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>Quest Progress</span>
+                    <span>{Math.round(questProgress)}%</span>
+                </div>
+                <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
+                    <div
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${questProgress}%` }}
+                    ></div>
+                </div>
+            </div>
 
             {/* XP and Level Progress */}
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
@@ -347,70 +415,6 @@ export default function TimerDeepFocus({
                 </div>
             )}
 
-            {/* Quest Setup Button */}
-            <button
-                className="w-full max-w-md py-3 px-6 border-2 border-purple-500/50 text-purple-400 rounded-xl hover:bg-purple-500/10 transition-all duration-300 font-medium"
-                onClick={() => {
-                    showModal(<div className="w-full max-w-md mb-6 space-y-4">
-                        <div className="text-center mb-4">
-                            <div className="text-3xl mb-2">⚔️</div>
-                            <h3 className="text-lg font-bold text-gray-300">Prepare Your Quest</h3>
-                            <p className="text-gray-400 text-sm">Choose your mission and objectives</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2 text-gray-300">Select Task (Optional)</label>
-                            {selectedTaskId && (
-                                <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg mb-3">
-                                    <p className="text-sm text-blue-300">
-                                        <span className="text-gray-400">Current Quest:</span> <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong>
-                                    </p>
-                                </div>
-                            )}
-
-                            <select
-                                value={selectedTaskId || ''}
-                                onChange={(e) => {
-                                    setSelectedTaskId(e.target.value ? e.target.value : undefined);
-                                    logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
-                                }}
-                                className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                            >
-                                <option value="">No specific task</option>
-                                {pendingTasks.map(task => (
-                                    <option key={task.id} value={task.id}>
-                                        {task.title}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium mb-2 text-gray-300">Select Goal (Optional)</label>
-                            <select
-                                value={selectedGoalId || ''}
-                                onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
-                                className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-                            >
-                                <option value="">No specific goal</option>
-                                {pendingGoals.map(goal => (
-                                    <option key={goal.id} value={goal.id}>
-                                        {goal.title}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {selectedGoalId && (
-                            <div className="p-3 bg-green-900/20 border border-green-500/30 rounded-lg">
-                                <span className="text-green-300">🎯 Goal: <strong>{goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}</strong></span>
-                            </div>
-                        )}
-                    </div>);
-                }}
-            >
-                ⚙️ Configure Quest Settings
-            </button>
         </div>
     );
 }

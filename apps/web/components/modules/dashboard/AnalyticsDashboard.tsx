@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/dashboard.module.scss';
 import { useRouter } from 'next/navigation';
+import { isUserAuthenticated } from '../../../lib/auth';
 
 export default function AnalyticsDashboard() {
     const router = useRouter();
@@ -16,9 +17,13 @@ export default function AnalyticsDashboard() {
         getFocusStats,
         getBreakStats,
         getDeepFocusStats,
-        setCurrentModule
+        setCurrentModule,
+        syncTimerSessionsToBackend,
+        loadTimerSessionsFromBackend,
+        mergeTimerSessionsFromLocalAndBackend
     } = useFocusAFKStore();
 
+    const [level, setLevel] = useState(1);
     const [taskStats, setTaskStats] = useState({
         total: 0,
         completed: 0,
@@ -47,6 +52,19 @@ export default function AnalyticsDashboard() {
         sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
     });
 
+    const [syncStatus, setSyncStatus] = useState({
+        isAuthenticated: false,
+        isSyncing: false,
+        lastSync: null as Date | null,
+        syncError: null as string | null,
+        mergeStats: null as {
+            localCount: number;
+            backendCount: number;
+            mergedCount: number;
+            duplicatesRemoved: number;
+        } | null
+    });
+
     useEffect(() => {
         const loadStats = async () => {
             const [taskStatsData, focusStatsData, breakStatsData, deepFocusStatsData] = await Promise.all([
@@ -62,7 +80,82 @@ export default function AnalyticsDashboard() {
         };
 
         loadStats();
+
+        // Check authentication status
+        setSyncStatus(prev => ({
+            ...prev,
+            isAuthenticated: isUserAuthenticated()
+        }));
     }, [tasks, goals, timerSessions, getTaskStats, getFocusStats, getBreakStats, getDeepFocusStats]);
+
+    const handleSyncToBackend = async () => {
+        if (!syncStatus.isAuthenticated) return;
+
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await syncTimerSessionsToBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: result.success ? null : 'Sync completed with errors'
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Sync failed'
+            }));
+        }
+    };
+
+    const handleLoadFromBackend = async () => {
+        if (!syncStatus.isAuthenticated) return;
+
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await loadTimerSessionsFromBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: result.success ? null : 'Load completed with errors'
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Load failed'
+            }));
+        }
+    };
+
+    const handleMergeSessions = async () => {
+        if (!syncStatus.isAuthenticated) return;
+
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await mergeTimerSessionsFromLocalAndBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: null,
+                mergeStats: {
+                    localCount: result.localCount,
+                    backendCount: result.backendCount,
+                    mergedCount: result.mergedCount,
+                    duplicatesRemoved: result.duplicatesRemoved
+                }
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Merge failed'
+            }));
+        }
+    };
 
     const formatTime = (minutes: number) => {
         if (minutes === 0) return '0m';
@@ -95,11 +188,7 @@ export default function AnalyticsDashboard() {
     const recentSessions = timerSessions.slice(0, 5);
 
     return (
-        <div className={styles.dashboard}>
-            <h1 className={styles.title}>Dashboard</h1>
-
-            {/* Stats Overview */}
-
+        <div>
 
             <div className={styles.statsGrid}>
 
@@ -187,176 +276,6 @@ export default function AnalyticsDashboard() {
                             <span style={{ color: 'white', fontSize: '1.25rem' }}>📈</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-
-            {/* Content Grid */}
-            <div className={styles.contentGrid}>
-                {/* Recent Tasks */}
-                <div className={styles.contentCard}>
-                    <div className={styles.cardHeader}>
-                        <h2 className={styles.cardTitle}>Recent Tasks</h2>
-                        <button
-                            onClick={() => {
-                                setCurrentModule('tasks');
-                                router.push('/tasks');
-                            }}
-                            className={styles.viewAllButton}
-                        >
-                            View All
-                        </button>
-                    </div>
-                    {recentTasks.length === 0 ? (
-                        <p className={styles.emptyState}>No tasks yet</p>
-                    ) : (
-                        <div className={styles.itemList}>
-                            {recentTasks.map((task) => (
-                                <div key={task.id} className={styles.listItem}>
-                                    <div className={styles.itemContent}>
-                                        <input
-                                            type="checkbox"
-                                            checked={task.completed}
-                                            readOnly
-                                            className={styles.itemCheckbox}
-                                        />
-                                        <div className={styles.itemInfo}>
-                                            <p className={`${styles.itemTitle} ${task.completed ? styles.completed : ''}`}>
-                                                {task.title}
-                                            </p>
-                                            {task.category && (
-                                                <p className={styles.itemSubtitle}>{task.category}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className={styles.itemBadge} style={{
-                                        backgroundColor: task.priority === 'high' ? '#FEE2E2' :
-                                            task.priority === 'medium' ? '#FEF3C7' : '#D1FAE5',
-                                        color: task.priority === 'high' ? '#DC2626' :
-                                            task.priority === 'medium' ? '#D97706' : '#059669'
-                                    }}>
-                                        {task.priority}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Recent Goals */}
-                <div className={styles.contentCard}>
-                    <div className={styles.cardHeader}>
-                        <h2 className={styles.cardTitle}>Active Goals</h2>
-                        <button
-                            onClick={() => {
-                                setCurrentModule('goals');
-                                router.push('/goals');
-                            }}
-                            className={styles.viewAllButton}
-                        >
-                            View All
-                        </button>
-                    </div>
-                    {recentGoals.length === 0 ? (
-                        <p className={styles.emptyState}>No goals yet</p>
-                    ) : (
-                        <div className={styles.itemList}>
-                            {recentGoals.map((goal) => (
-                                <div key={goal.id} className={styles.listItem}>
-                                    <div className={styles.itemContent}>
-                                        <div className={styles.itemInfo}>
-                                            <h3 className={styles.itemTitle}>{goal.title}</h3>
-                                            <div className={styles.progressBar}>
-                                                <div
-                                                    className={styles.progressFill}
-                                                    style={{ width: `${goal.progress}%` }}
-                                                ></div>
-                                            </div>
-                                            {goal.targetDate && (
-                                                <p className={styles.itemSubtitle}>
-                                                    Target: {formatDate(goal.targetDate)}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className={styles.itemBadge} style={{
-                                        backgroundColor: '#D1FAE5',
-                                        color: '#059669'
-                                    }}>
-                                        {goal.progress}%
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Focus Sessions */}
-                <div className={styles.contentCard}>
-                    <div className={styles.cardHeader}>
-                        <h2 className={styles.cardTitle}>Recent Focus Sessions</h2>
-                        <button
-                            onClick={() => setCurrentModule('timer')}
-                            className={styles.viewAllButton}
-                        >
-                            View All
-                        </button>
-                    </div>
-                    {recentSessions.length === 0 ? (
-                        <p className={styles.emptyState}>No focus sessions yet</p>
-                    ) : (
-                        <div className={styles.itemList}>
-                            {recentSessions.map((session) => (
-                                <div key={session.id} className={styles.listItem}>
-                                    <div className={styles.itemContent}>
-                                        <div className={styles.itemInfo}>
-                                            <p className={styles.itemTitle}>{formatTime(session.duration / 60)}</p>
-                                            <p className={styles.itemSubtitle}>
-                                                {formatDate(new Date(session.startTime))}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <span className={styles.itemBadge} style={{
-                                        backgroundColor: session.completed ? '#D1FAE5' : '#FEF3C7',
-                                        color: session.completed ? '#059669' : '#D97706'
-                                    }}>
-                                        {session.completed ? 'Completed' : 'In Progress'}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Weekly Focus Chart */}
-                <div className={styles.contentCard}>
-                    <h2 className={styles.cardTitle}>This Week's Focus</h2>
-                    {focusStats.sessionsByDay.length === 0 ? (
-                        <p className={styles.emptyState}>No focus data yet</p>
-                    ) : (
-                        <div className={styles.weeklyChart}>
-                            {focusStats.sessionsByDay.slice(0, 7).map((day) => (
-                                <div key={day.date} className={styles.chartRow}>
-                                    <span className={styles.chartDay}>
-                                        {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                                    </span>
-                                    <div className={styles.chartBar}>
-                                        <div className={styles.chartProgress}>
-                                            <div
-                                                className={styles.progressFill}
-                                                style={{
-                                                    width: `${Math.min(100, (day.minutes / 60) * 20)}%`
-                                                }}
-                                            ></div>
-                                        </div>
-                                        <span className={styles.chartTime}>
-                                            {formatTime(day.minutes)}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

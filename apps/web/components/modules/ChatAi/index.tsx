@@ -271,8 +271,8 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         <div className={styles.chatAi}>
             <div className={styles.chatCard}>
                 <div className={styles.chatHeader}>
-                    <h2 className={styles.cardTitle}>
-                        {selectedMentor ? `Chat with ${selectedMentor.name}` : 'Chat with AI Mentor'}
+                    <h2 className={styles.cardTitle + "text-sm text-ellipsis overflow-hidden whitespace-nowrap"}>
+                        {selectedMentor ? `Chat with ${selectedMentor.name}` : 'AI Mentor'}
                     </h2>
 
                     <div className={styles.chatActions + "my-4 gap-8 space-x-8 space-between shadow-sm  rounded-lg p-2"}>

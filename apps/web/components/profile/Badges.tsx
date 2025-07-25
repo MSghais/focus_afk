@@ -148,13 +148,13 @@ export default function Badges({ isEnabledRefreshButton = true, isDailyBadgeEnab
             {badges.length === 0 ? (
                 <div className="text-gray-500">No badges yet. Start focusing to earn some!</div>
             ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                     {badges.map((badge) => (
-                        <div key={badge.id} className="flex flex-col items-center border rounded-lg p-3 bg-white/10 shadow">
-                            <div className="text-3xl mb-2">{badge.icon || '🏅'}</div>
+                        <div key={badge.id} className="flex flex-col items-center border rounded-lg p-3 bg-gray-900/50 shadow">
+                            <div className="text-xl mb-2">{badge.icon || '🏅'}</div>
                             <div className="font-semibold text-base mb-1">{badge.name}</div>
-                            <div className="text-xs text-gray-500 mb-1">{badge.description}</div>
-                            <div className="text-xs text-gray-400">{new Date(badge.dateAwarded).toLocaleDateString()}</div>
+                            <div className="text-xs mb-1">{badge.description}</div>
+                            <div className="text-xs ">{new Date(badge.dateAwarded).toLocaleDateString()}</div>
                         </div>
                     ))}
                 </div>

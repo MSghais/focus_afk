@@ -29,8 +29,8 @@ export default function TimerBreak({
     const [restorationLevel, setRestorationLevel] = useState<'tired' | 'refreshed' | 'energized' | 'fully_restored'>('tired');
     const [breakActivities, setBreakActivities] = useState<string[]>([]);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    
-    const { 
+
+    const {
         // timer, 
         // tasks, 
         // goals, 
@@ -66,7 +66,7 @@ export default function TimerBreak({
         if (isRunning && elapsedSeconds > 0) {
             const progress = Math.min((elapsedSeconds / 900) * 100, 100); // 15 minutes = 100% healing
             setHealingProgress(progress);
-            
+
             // Update restoration level based on progress
             if (progress >= 75) {
                 setRestorationLevel('fully_restored');
@@ -86,12 +86,12 @@ export default function TimerBreak({
         setHealingProgress(0);
         setRestorationLevel('tired');
         setBreakActivities([]);
-        
+
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
         }, 1000);
-        
+
         // Create a new break session in the DB
         // Get the current userId from the store, fallback to empty string if not available
         const userId = useAuthStore.getState().userConnected?.id || "";
@@ -114,23 +114,23 @@ export default function TimerBreak({
     const handleStop = async () => {
         logClickedEvent('timer_break_end');
         setIsRunning(false);
-        
+
         // Award XP and restore energy
         const minutes = Math.floor(elapsedSeconds / 60);
         const xpEarned = minutes * 5; // 5 XP per minute for breaks
         const energyRestored = minutes * 2; // 2 energy per minute
-        
+
         addXp(xpEarned, 'break_session');
         restoreEnergy(energyRestored);
         updateSkill('restoration', minutes);
         recordSession('break', minutes);
-        
+
         // Check for break achievements
         if (minutes >= 5) unlockAchievement('break_5min');
         if (minutes >= 15) unlockAchievement('break_15min');
-        
+
         if (intervalRef.current) clearInterval(intervalRef.current);
-        
+
         // Update the break session in the DB
         if (breakSessionId !== null) {
             await dbUtils.updateSession(breakSessionId, {
@@ -140,7 +140,7 @@ export default function TimerBreak({
                 activities: breakActivities,
             });
         }
-        
+
         // Sync to backend
         try {
             await syncTimerSessionsToBackend();
@@ -187,51 +187,9 @@ export default function TimerBreak({
 
     return (
         <div className="w-full flex flex-col items-center justify-center p-6 space-y-6">
-            {/* Rest Header */}
-            <div className="text-center mb-6">
-                <div className="text-6xl mb-4">🛡️</div>
-                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent mb-2">
-                    Rest & Recovery Sanctuary
-                </h2>
-                <p className="text-gray-400 text-sm">Recharge your energy for the next adventure</p>
-            </div>
 
-            {/* Energy Status */}
-            <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                <div className="flex justify-between items-center mb-3">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-green-400">⚡</span>
-                        <span className="text-gray-300 font-semibold">Energy Restored</span>
-                    </div>
-                    <span className="text-green-400 font-bold">{energyRestored}/100</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-3">
-                    <div 
-                        className="bg-gradient-to-r from-green-400 to-emerald-400 h-3 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min((energyRestored / 100) * 100, 100)}%` }}
-                    ></div>
-                </div>
-                <div className="text-xs text-gray-400 mt-1 text-center">
-                    {restorationLevel === 'fully_restored' && '🌟 Fully Restored'}
-                    {restorationLevel === 'energized' && '⚡ Energized'}
-                    {restorationLevel === 'refreshed' && '🔄 Refreshed'}
-                    {restorationLevel === 'tired' && '😴 Still Tired'}
-                </div>
-            </div>
 
-            {/* Healing Progress Bar */}
-            <div className="w-full max-w-md">
-                <div className="flex justify-between text-sm text-gray-400 mb-2">
-                    <span>Healing Progress</span>
-                    <span>{Math.round(healingProgress)}%</span>
-                </div>
-                <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
-                    <div 
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 h-3 rounded-full transition-all duration-1000 ease-out"
-                        style={{ width: `${healingProgress}%` }}
-                    ></div>
-                </div>
-            </div>
+
 
             {/* Timer Display */}
             <div className="relative">
@@ -264,6 +222,49 @@ export default function TimerBreak({
                     </button>
                 )}
             </div>
+
+
+
+
+            {/* Energy Status */}
+            <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center space-x-2">
+                        <span className="text-green-400">⚡</span>
+                        <span className="text-gray-300 font-semibold">Energy Restored</span>
+                    </div>
+                    <span className="text-green-400 font-bold">{energyRestored}/100</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-3">
+                    <div
+                        className="bg-gradient-to-r from-green-400 to-emerald-400 h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min((energyRestored / 100) * 100, 100)}%` }}
+                    ></div>
+                </div>
+                <div className="text-xs text-gray-400 mt-1 text-center">
+                    {restorationLevel === 'fully_restored' && '🌟 Fully Restored'}
+                    {restorationLevel === 'energized' && '⚡ Energized'}
+                    {restorationLevel === 'refreshed' && '🔄 Refreshed'}
+                    {restorationLevel === 'tired' && '😴 Still Tired'}
+                </div>
+            </div>
+
+            {/* Healing Progress Bar */}
+            <div className="w-full max-w-md">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                    <span>Healing Progress</span>
+                    <span>{Math.round(healingProgress)}%</span>
+                </div>
+                <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
+                    <div
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 h-3 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${healingProgress}%` }}
+                    ></div>
+                </div>
+            </div>
+
+
+
 
             {/* Session Complete Message */}
             {sessionComplete && (
@@ -315,7 +316,7 @@ export default function TimerBreak({
             )}
 
             {/* Rest Tips */}
-            <div className="w-full max-w-md bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
+            {/* <div className="w-full max-w-md bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
                 <h4 className="text-purple-400 font-semibold mb-2">💡 Rest Tips</h4>
                 <div className="space-y-2 text-sm text-gray-300">
                     <div>• Take deep breaths to reduce stress</div>
@@ -323,7 +324,7 @@ export default function TimerBreak({
                     <div>• Look away from screens every 20 minutes</div>
                     <div>• Stay hydrated throughout your break</div>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }
