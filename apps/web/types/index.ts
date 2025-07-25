@@ -22,6 +22,9 @@ export interface TimerSession {
     createdAt: string;
     updatedAt?: string;
 
+    // Sync fields for backend integration
+    syncedToBackend?: boolean;
+    backendId?: string;
 
     // break?
 

@@ -5,6 +5,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { logClickedEvent } from "../../../lib/analytics";
 import { useUIStore } from "../../../store/uiStore";
 import { Task, Goal } from "../../../types";
+import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -69,11 +70,18 @@ export default function TimerDeepFocus({
     };
 
     // Stop timer
-    const handleStop = () => {
+    const handleStop = async () => {
         logClickedEvent('timer_deep_focus_end');
         setIsRunning(false);
-        stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
-        // TODO: Send the data to the backend
+        await stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
+        
+        // Sync to backend
+        try {
+            await syncTimerSessionsToBackend();
+        } catch (error) {
+            console.error('Failed to sync timer session to backend:', error);
+        }
+        
         if (intervalRef.current) clearInterval(intervalRef.current);
     };
 

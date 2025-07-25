@@ -50,15 +50,15 @@ async function timerRoutes(fastify: FastifyInstance) {
 
       const data: any = {
         userId,
+        type: sessionData.type || 'focus', // Default to 'focus' if not provided
         startTime: sessionData?.startTime ? new Date(sessionData.startTime) : new Date(),
         endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
-        duration: sessionData.duration,
-        notes: sessionData.notes,
+        duration: sessionData.duration || 0,
+        note: sessionData.notes, // Map notes to note field in database
+        completed: sessionData.completed !== undefined ? sessionData.completed : false,
         // Only add these if they are defined
         ...(sessionData.taskId ? { taskId: sessionData.taskId } : {}),
         ...(sessionData.goalId ? { goalId: sessionData.goalId } : {}),
-        ...(sessionData.completed !== undefined ? { completed: sessionData.completed } : {}),
-        ...(sessionData.type ? { type: sessionData.type } : {}),
       };
 
       const session = await fastify.prisma.timerSession.create({ data });
@@ -153,11 +153,12 @@ async function timerRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Timer session not found' });
       }
 
-      const updateData = body?.data as Partial<z.infer<typeof TimerSessionSchema>>;
+      const updateData = body.data as Partial<z.infer<typeof TimerSessionSchema>>;
       const data: any = {
         ...updateData,
         startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
         endTime: updateData.endTime ? new Date(updateData.endTime) : undefined,
+        note: updateData.notes, // Map notes to note field
       };
       // Only add these if they are defined
       if (updateData.taskId) data.taskId = updateData.taskId;

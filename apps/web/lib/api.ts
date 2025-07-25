@@ -181,13 +181,10 @@ class ApiService {
   }
 
   // Timer session methods
-  async createTimerSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt'>, token: string): Promise<ApiResponse<TimerSession>> {
-    return this.request<TimerSession>('/timer-sessions', {
+  async createTimerSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt'>): Promise<ApiResponse<TimerSession>> {
+    return this.request<TimerSession>('/timer/timer-sessions', {
       method: 'POST',
       body: JSON.stringify(sessionData),
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
     });
   }
 
@@ -205,7 +202,20 @@ class ApiService {
     if (filters?.startDate) params.append('startDate', filters.startDate);
     if (filters?.endDate) params.append('endDate', filters.endDate);
 
-    return this.request<TimerSession[]>(`/timer-sessions?${params.toString()}`);
+    return this.request<TimerSession[]>(`/timer/timer-sessions?${params.toString()}`);
+  }
+
+  async updateTimerSession(id: string, updates: Partial<TimerSession>): Promise<ApiResponse<TimerSession>> {
+    return this.request<TimerSession>(`/timer/timer-sessions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteTimerSession(id: string): Promise<ApiResponse> {
+    return this.request(`/timer/timer-sessions/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   async createTimerBreakSession(sessionData: Omit<TimerSession, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<TimerSession>> {
@@ -243,7 +253,7 @@ class ApiService {
     averageSessionLength: number;
     sessionsByDay: { date: string; sessions: number; minutes: number }[];
   }>> {
-    return this.request(`/stats/focus?days=${days}`);
+    return this.request(`/timer/stats/focus?days=${days}`);
   }
 
   // Mentor methods

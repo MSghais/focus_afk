@@ -15,7 +15,7 @@ export class FocusAFKDatabase extends Dexie {
     this.version(1).stores({
       tasks: '++id, title, completed, priority, category, dueDate, createdAt, subTaskId',
       goals: '++id, title, completed, category, targetDate, createdAt',
-      timerSessions: '++id, type, taskId, goalId, startTime, endTime, completed, createdAt',
+      timerSessions: '++id, type, taskId, goalId, startTime, endTime, completed, createdAt, syncedToBackend, backendId',
       userSettings: '++id, updatedAt'
     });
   }
@@ -145,6 +145,10 @@ export const dbUtils = {
     if (filters?.startDate) collection = collection.filter(s => new Date(s.startTime) >= filters.startDate!);
     if (filters?.endDate) collection = collection.filter(s => new Date(s.startTime) <= filters.endDate!);
     return await collection.reverse().sortBy('startTime');
+  },
+
+  async getSession(id: number): Promise<TimerSession | undefined> {
+    return await db.timerSessions.get(id);
   },
 
   // User settings operations

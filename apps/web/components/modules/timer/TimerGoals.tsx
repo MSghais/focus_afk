@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useFocusAFKStore } from '../../../store/store';
 import { logClickedEvent } from "../../../lib/analytics";
 import { Task, Goal } from "../../../types";
+import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -81,6 +82,13 @@ export default function TimerGoal({
     const handleStop = async () => {
         logClickedEvent('timer_goals_end');
         await stopTimer();
+        
+        // Sync to backend
+        try {
+            await syncTimerSessionsToBackend();
+        } catch (error) {
+            console.error('Failed to sync timer session to backend:', error);
+        }
     };
 
     const handleTimerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
