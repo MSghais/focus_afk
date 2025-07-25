@@ -19,9 +19,11 @@ export default function DeepModePage() {
     const router = useRouter();
     const params = useParams();
     const { showModal } = useUIStore();
-    const taskId = parseInt(params.taskId as string);
-    const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
+    const taskId = params.taskId as string;
+    const { tasks, goals, addGoal, updateTask, getTask } = useFocusAFKStore();
     const [task, setTask] = useState<Task | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [goal, setGoal] = useState({
         id: '',
         taskId: '',
@@ -40,22 +42,44 @@ export default function DeepModePage() {
     const [isOpenGoalModal, setIsOpenGoalModal] = useState(false);
 
     useEffect(() => {
-        if (taskId && tasks.length > 0) {
-            const foundTask = tasks.find(t => t.id === taskId.toString());
-            if (foundTask) {
-                setTask(foundTask);
-                // Initialize goal with task info
-                setGoal({
-                    id: foundTask?.id?.toString() || '',
-                    taskId: foundTask?.id?.toString() || '',
-                    title: `Complete: ${foundTask.title}`,
-                    description: foundTask.description || '',
-                    targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                    category: foundTask.category || ''
-                });
+        const loadTask = async () => {
+            if (!taskId) {
+                setError('Invalid task ID');
+                setLoading(false);
+                return;
             }
-        }
-    }, [taskId, tasks]);
+
+            try {
+                setLoading(true);
+                setError(null);
+                
+                // Try to get task using the new getTask function
+                const foundTask = await getTask(taskId);
+                
+                if (foundTask) {
+                    setTask(foundTask);
+                    // Initialize goal with task info
+                    setGoal({
+                        id: foundTask?.id?.toString() || '',
+                        taskId: foundTask?.id?.toString() || '',
+                        title: `Complete: ${foundTask.title}`,
+                        description: foundTask.description || '',
+                        targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                        category: foundTask.category || ''
+                    });
+                } else {
+                    setError('Task not found');
+                }
+            } catch (err) {
+                console.error('Failed to load task:', err);
+                setError('Failed to load task');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadTask();
+    }, [taskId, getTask]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -67,10 +91,27 @@ export default function DeepModePage() {
         return () => clearInterval(interval);
     }, [isTimerRunning]);
 
-    if (!task) {
+    if (loading) {
         return (
             <div className="w-full h-full flex items-center justify-center bg-[var(--background)] align-middle">
                 <TimeLoading />
+            </div>
+        );
+    }
+
+    if (error || !task) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--background)] align-middle">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Task</h1>
+                    <p className="text-gray-600 mb-4">{error || 'Task not found'}</p>
+                    <button
+                        onClick={() => router.push('/tasks')}
+                        className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                    >
+                        Back to Tasks
+                    </button>
+                </div>
             </div>
         );
     }
@@ -125,7 +166,7 @@ export default function DeepModePage() {
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
 
-                    <TimerMain timerTypeProps="deep" isSetupEnabled={true} taskId={taskId}
+                    <TimerMain timerTypeProps="deep" isSetupEnabled={true} taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId}
                     // goalId={goal?.} 
 
                     />
@@ -147,7 +188,7 @@ export default function DeepModePage() {
                 </div>
 
                 {/* Right Column - Mentor Chat */}
-                <ChatAi taskId={taskId} />
+                <ChatAi taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId} />
 
                 <div className="rounded-lg p-6 shadow-lg">
                     {/* Check if user is logged in */}

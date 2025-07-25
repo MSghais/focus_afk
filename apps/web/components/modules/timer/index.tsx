@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useFocusAFKStore } from '../../../store/store';
-import { Task, Goal } from '../../../lib/database';
+import { Task, Goal } from '../../../types';
 import TimerGoal from "./TimerGoals";
 import TimerBreak from "./TimerBreak";
 import TimerDeepFocus from "./TimerDeepFocus";
@@ -16,7 +16,7 @@ function formatTime(seconds: number) {
 interface TimerProps {
     isSetupEnabled?: boolean;
     timerTypeProps?: 'focus' | 'break' | 'deep';
-    taskId?: number;
+    taskId?: string | number;
     goalId?: string;
     task?: Task;
     goal?: Goal;

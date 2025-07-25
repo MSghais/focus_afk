@@ -58,6 +58,7 @@ interface FocusAFKStore {
   deleteTask: (id: string | number) => Promise<void>;
   toggleTaskComplete: (id: string | number) => Promise<void>;
   loadTasks: () => Promise<void>;
+  getTask: (id: string | number) => Promise<Task | null>;
   syncTasksToBackend: () => Promise<any>;
 
   // Actions - Goals
@@ -70,12 +71,12 @@ interface FocusAFKStore {
   setSelectedGoal: (goal: Goal | null) => void;
 
   // Actions - Timer
-  startTimerFocus: (taskId?: number, goalId?: number) => Promise<void>;
-  startTimer: (duration: number, taskId?: number, goalId?: number, type?: 'focus' | 'break' | "deep") => Promise<void>;
+  startTimerFocus: (taskId?: string | number, goalId?: string | number) => Promise<void>;
+  startTimer: (duration: number, taskId?: string | number, goalId?: string | number, type?: 'focus' | 'break' | "deep") => Promise<void>;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => Promise<void>;
-  stopTimeFocus: (completed?: boolean, taskId?: number, goalId?: number, duration?: number) => Promise<void>;
+  stopTimeFocus: (completed?: boolean, taskId?: string | number, goalId?: string | number, duration?: number) => Promise<void>;
   resetTimer: () => void;
   setTimerDuration: (seconds: number) => void;
   // Break
@@ -293,6 +294,52 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         console.error('Failed to load tasks:', error);
       } finally {
         set((state) => ({ loading: { ...state.loading, tasks: false } }));
+      }
+    },
+
+    getTask: async (id) => {
+      try {
+        // First try to find in local store
+        const localTask = get().tasks.find(t => t.id === id || t.id === id.toString());
+        if (localTask) {
+          return localTask;
+        }
+
+        // If not found locally, try to get from database
+        const dbTask = await dbUtils.getTask(id);
+        if (dbTask) {
+          return dbTask;
+        }
+
+        // If not found in database and user is authenticated, try backend
+        if (isUserAuthenticated()) {
+          try {
+            const token = getJwtToken();
+            if (token) {
+              const response = await api.getTask(id.toString());
+              if (response.success && response.data) {
+                // Add to local store
+                const task = {
+                  ...response.data,
+                  dueDate: response.data.dueDate ? new Date(response.data.dueDate) : undefined,
+                  createdAt: response.data.createdAt ? new Date(response.data.createdAt) : new Date(),
+                  updatedAt: response.data.updatedAt ? new Date(response.data.updatedAt) : new Date(),
+                };
+                set((state) => ({
+                  tasks: [...state.tasks, task]
+                }));
+                return task;
+              }
+            }
+          } catch (error) {
+            console.error('Failed to fetch task from backend:', error);
+          }
+        }
+
+        return null;
+      } catch (error) {
+        console.error('Failed to get task:', error);
+        return null;
       }
     },
 

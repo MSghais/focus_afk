@@ -242,108 +242,104 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
     return (
         <div className={styles.chatAi}>
-            <div className={styles.chatGrid}>
-                <div className={styles.chatCard}>
+            <div className={styles.chatCard}>
+                <div className={styles.chatHeader}>
+                    <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
 
-                    <div className={"flex flex-row justify-between items-center flex-wrap gap-2"}>
-                        <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
-
-                        <div className="flex flex-row gap-2 items-center">
-                            {isSelectMentorViewEnabled && (
-                                <button 
-                                    onClick={() => {
-                                        logClickedEvent('open_mentor_list_from_chat');   
-                                        showModal(<MentorList />);
-                                    }}
-                                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                    title="Select Mentor"
-                                >
-                                    <Icon name="list" />
-                                </button>
-                            )}
-
+                    <div className={styles.chatActions}>
+                        {isSelectMentorViewEnabled && (
                             <button 
                                 onClick={() => {
-                                    loadMessages();
+                                    logClickedEvent('open_mentor_list_from_chat');   
+                                    showModal(<MentorList />);
                                 }}
-                                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                title="Refresh Messages"
+                                className={styles.actionButton}
+                                title="Select Mentor"
                             >
-                                <Icon name="refresh" />
+                                <Icon name="list" />
                             </button>
-                        </div>
-                    </div>
-
-                    {isLoadingMessages && (
-                        <TimeLoading />
-                    )}
-
-                    <div className={styles.chatMessages}>
-                        {messages.length === 0 ? (
-                            <div className={styles.emptyState}>
-                                <p>Start a conversation with your AI mentor!</p>
-                            </div>
-                        ) : (
-                            messages.map((message) => {
-                                // console.log('Rendering message:', message.id, message.role, message.content?.substring(0, 50) + '...');
-                                return (
-                                    <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
-
-                                        {message?.role === "assistant" && (
-                                            <div className={`${styles.messageContent} ${styles.markdownContent}`}>
-                                                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
-                                                {message.content && message.content.length > 1000 && (
-                                                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                        (Message length: {message.content.length} characters)
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {message?.role === "user" && (
-                                            <div className={styles.messageContent}>{message.content || ''}</div>
-                                        )}
-
-                                        <div className={styles.messageTime}>
-                                            {message.createdAt ? formatMessageTime(message.createdAt) : ''}
-                                        </div>
-                                    </div>
-                                );
-                            })
                         )}
-                        {isLoading && (
-                            <div className={`${styles.message} ${styles.assistant}`}>
-                                <div className={styles.typingIndicator}>
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-                    <div className={styles.chatInput}>
-                        <input
-                            type="text"
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            placeholder="Ask me anything about productivity, focus, or your goals..."
-                            className={styles.input}
-                            disabled={isLoading}
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="sentences"
-                        />
-                        <button
-                            onClick={handleSendMessage}
-                            disabled={isLoading || !chatMessage.trim()}
-                            className={styles.sendButton}
-                            title="Send Message"
+
+                        <button 
+                            onClick={() => {
+                                loadMessages();
+                            }}
+                            className={styles.actionButton}
+                            title="Refresh Messages"
                         >
-                            ➤
+                            <Icon name="refresh" />
                         </button>
                     </div>
+                </div>
+
+                {isLoadingMessages && (
+                    <TimeLoading />
+                )}
+
+                <div className={styles.chatMessages}>
+                    {messages.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <p>Start a conversation with your AI mentor!</p>
+                        </div>
+                    ) : (
+                        messages.map((message) => {
+                            return (
+                                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                                    {message?.role === "assistant" && (
+                                        <div className={`${styles.messageContent} ${styles.markdownContent}`}>
+                                            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                            {message.content && message.content.length > 1000 && (
+                                                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                    (Message length: {message.content.length} characters)
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {message?.role === "user" && (
+                                        <div className={styles.messageContent}>{message.content || ''}</div>
+                                    )}
+
+                                    <div className={styles.messageTime}>
+                                        {message.createdAt ? formatMessageTime(message.createdAt) : ''}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                    {isLoading && (
+                        <div className={`${styles.message} ${styles.assistant}`}>
+                            <div className={styles.typingIndicator}>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+                
+                <div className={styles.chatInput}>
+                    <input
+                        type="text"
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder="Ask me anything about productivity, focus, or your goals..."
+                        className={styles.input}
+                        disabled={isLoading}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="sentences"
+                    />
+                    <button
+                        onClick={handleSendMessage}
+                        disabled={isLoading || !chatMessage.trim()}
+                        className={styles.sendButton}
+                        title="Send Message"
+                    >
+                        ➤
+                    </button>
                 </div>
             </div>
         </div>

@@ -14,7 +14,7 @@ function formatTime(seconds: number) {
 
 interface TimerProps {
     isSetupEnabled?: boolean;
-    taskId?: number;
+    taskId?: string | number;
     goalId?: string;
     task?: Task;
     goal?: Goal;

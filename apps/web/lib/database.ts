@@ -67,6 +67,11 @@ export const dbUtils = {
     return await collection.reverse().sortBy('createdAt');
   },
 
+  async getTask(id: string | number): Promise<Task | undefined> {
+    const idNum = typeof id === 'string' ? parseInt(id) : id;
+    return await db.tasks.get(idNum);
+  },
+
   // Goal operations
   async addGoal(goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>): Promise<number> {
     const now = new Date();
