@@ -1,3 +1,7 @@
+'use client'
+import { urlBase64ToUint8Array } from "../../lib/format"
+import { useState, useEffect } from "react"
+
 function PushNotificationManager() {
     const [isSupported, setIsSupported] = useState(false)
     const [subscription, setSubscription] = useState<PushSubscription | null>(
@@ -31,18 +35,18 @@ function PushNotificationManager() {
       })
       setSubscription(sub)
       const serializedSub = JSON.parse(JSON.stringify(sub))
-      await subscribeUser(serializedSub)
+    //   await subscribeUser(serializedSub)
     }
    
     async function unsubscribeFromPush() {
       await subscription?.unsubscribe()
       setSubscription(null)
-      await unsubscribeUser()
+    //   await unsubscribeUser()
     }
    
     async function sendTestNotification() {
       if (subscription) {
-        await sendNotification(message)
+    //     await sendNotification(message)
         setMessage('')
       }
     }
