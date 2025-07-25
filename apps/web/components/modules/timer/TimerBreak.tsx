@@ -5,6 +5,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { dbUtils } from '../../../lib/database';
 import { logClickedEvent } from "../../../lib/analytics";
 import { useAuthStore } from "../../../store/auth";
+import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -78,6 +79,13 @@ export default function TimerBreak({
                 duration: elapsedSeconds,
                 completed: true,
             });
+        }
+        
+        // Sync to backend
+        try {
+            await syncTimerSessionsToBackend();
+        } catch (error) {
+            console.error('Failed to sync timer session to backend:', error);
         }
     };
 

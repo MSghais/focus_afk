@@ -10,6 +10,7 @@ import ChartFocus from './ChartFocus';
 import RecentGoals from './RecentGoals';
 import RecentTasks from './RecentTasks';
 import AvatarIcon from '../../small/AvatarIcon';
+import { isUserAuthenticated } from '../../../lib/auth';
 
 export default function Dashboard() {
     const router = useRouter();
@@ -22,7 +23,10 @@ export default function Dashboard() {
         getFocusStats,
         getBreakStats,
         getDeepFocusStats,
-        setCurrentModule
+        setCurrentModule,
+        syncTimerSessionsToBackend,
+        loadTimerSessionsFromBackend,
+        mergeTimerSessionsFromLocalAndBackend
     } = useFocusAFKStore();
 
     const [level, setLevel] = useState(1);
@@ -54,6 +58,19 @@ export default function Dashboard() {
         sessionsByDay: [] as { date: string; sessions: number; minutes: number }[]
     });
 
+    const [syncStatus, setSyncStatus] = useState({
+        isAuthenticated: false,
+        isSyncing: false,
+        lastSync: null as Date | null,
+        syncError: null as string | null,
+        mergeStats: null as {
+            localCount: number;
+            backendCount: number;
+            mergedCount: number;
+            duplicatesRemoved: number;
+        } | null
+    });
+
     useEffect(() => {
         const loadStats = async () => {
             const [taskStatsData, focusStatsData, breakStatsData, deepFocusStatsData] = await Promise.all([
@@ -69,7 +86,82 @@ export default function Dashboard() {
         };
 
         loadStats();
+        
+        // Check authentication status
+        setSyncStatus(prev => ({
+            ...prev,
+            isAuthenticated: isUserAuthenticated()
+        }));
     }, [tasks, goals, timerSessions, getTaskStats, getFocusStats, getBreakStats, getDeepFocusStats]);
+
+    const handleSyncToBackend = async () => {
+        if (!syncStatus.isAuthenticated) return;
+        
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await syncTimerSessionsToBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: result.success ? null : 'Sync completed with errors'
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Sync failed'
+            }));
+        }
+    };
+
+    const handleLoadFromBackend = async () => {
+        if (!syncStatus.isAuthenticated) return;
+        
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await loadTimerSessionsFromBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: result.success ? null : 'Load completed with errors'
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Load failed'
+            }));
+        }
+    };
+
+    const handleMergeSessions = async () => {
+        if (!syncStatus.isAuthenticated) return;
+        
+        setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
+        try {
+            const result = await mergeTimerSessionsFromLocalAndBackend();
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                lastSync: new Date(),
+                syncError: null,
+                mergeStats: {
+                    localCount: result.localCount,
+                    backendCount: result.backendCount,
+                    mergedCount: result.mergedCount,
+                    duplicatesRemoved: result.duplicatesRemoved
+                }
+            }));
+        } catch (error) {
+            setSyncStatus(prev => ({
+                ...prev,
+                isSyncing: false,
+                syncError: error instanceof Error ? error.message : 'Merge failed'
+            }));
+        }
+    };
 
     const formatTime = (minutes: number) => {
         if (minutes === 0) return '0m';
@@ -112,8 +204,63 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Stats Overview */}
+            {/* Sync Status */}
+            {/* {syncStatus.isAuthenticated && (
+                <div className="mb-2 p-2 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-sm font-medium text-gray-700 mb-1">Data Sync</h3>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                                <span className={`inline-flex items-center gap-1 ${syncStatus.isSyncing ? 'text-blue-600' : 'text-green-600'}`}>
+                                    <span className={`w-2 h-2 rounded-full ${syncStatus.isSyncing ? 'bg-blue-600 animate-pulse' : 'bg-green-600'}`}></span>
+                                    {syncStatus.isSyncing ? 'Syncing...' : 'Online'}
+                                </span>
+                                {syncStatus.lastSync && (
+                                    <span>Last sync: {syncStatus.lastSync.toLocaleTimeString()}</span>
+                                )}
+                                {syncStatus.syncError && (
+                                    <span className="text-red-600">Error: {syncStatus.syncError}</span>
+                                )}
+                            </div>
+                            {syncStatus.mergeStats && (
+                                <div className="mt-2 text-xs text-gray-600">
+                                    <span>📱 {syncStatus.mergeStats.localCount} local</span>
+                                    <span className="mx-2">☁️ {syncStatus.mergeStats.backendCount} backend</span>
+                                    <span className="mx-2">🔄 {syncStatus.mergeStats.mergedCount} merged</span>
+                                    {syncStatus.mergeStats.duplicatesRemoved > 0 && (
+                                        <span className="text-orange-600">🗑️ {syncStatus.mergeStats.duplicatesRemoved} duplicates removed</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleMergeSessions}
+                                disabled={syncStatus.isSyncing}
+                                className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {syncStatus.isSyncing ? 'Merging...' : 'Merge'}
+                            </button>
+                            <button
+                                onClick={handleSyncToBackend}
+                                disabled={syncStatus.isSyncing}
+                                className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {syncStatus.isSyncing ? 'Syncing...' : 'Sync Up'}
+                            </button>
+                            <button
+                                onClick={handleLoadFromBackend}
+                                disabled={syncStatus.isSyncing}
+                                className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {syncStatus.isSyncing ? 'Loading...' : 'Sync Down'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )} */}
 
+            {/* Stats Overview */}
 
             <div className={styles.statsGrid}>
 

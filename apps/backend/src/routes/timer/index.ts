@@ -18,6 +18,34 @@ const TimerSessionSchema = z.object({
 
 async function timerRoutes(fastify: FastifyInstance) {
 
+  // Debug endpoint to check user authentication
+  fastify.get('/debug/user', {
+    onRequest: [fastify.authenticate],
+  }, async (request, reply) => {
+    try {
+      const userId = request.user.id;
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      return reply.send({ 
+        success: true, 
+        data: {
+          jwtUserId: userId,
+          userExists: !!user,
+          user: user ? {
+            id: user.id,
+            userAddress: user.userAddress,
+            email: user.email
+          } : null
+        }
+      });
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ error: 'Internal server error' });
+    }
+  });
+
   // Timer session routes
   // Fix: Fastify v5+ requires JSON schema, not Zod schema, in the route definition.
   // Use zodToJsonSchema to convert the Zod schema to JSON schema for Fastify.
@@ -39,9 +67,17 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      // const sessionData = request.body as z.infer<typeof TimerSessionSchema>;
+      
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found in database' });
+      }
 
-        const body = TimerSessionSchema.safeParse(request.body);
+      const body = TimerSessionSchema.safeParse(request.body);
       if (!body.success) {
         return reply.code(400).send({ error: 'Invalid session data' });
       }
@@ -50,15 +86,15 @@ async function timerRoutes(fastify: FastifyInstance) {
 
       const data: any = {
         userId,
+        type: sessionData.type || 'focus', // Default to 'focus' if not provided
         startTime: sessionData?.startTime ? new Date(sessionData.startTime) : new Date(),
         endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
-        duration: sessionData.duration,
-        notes: sessionData.notes,
+        duration: sessionData.duration || 0,
+        note: sessionData.notes, // Map notes to note field in database
+        completed: sessionData.completed !== undefined ? sessionData.completed : false,
         // Only add these if they are defined
         ...(sessionData.taskId ? { taskId: sessionData.taskId } : {}),
         ...(sessionData.goalId ? { goalId: sessionData.goalId } : {}),
-        ...(sessionData.completed !== undefined ? { completed: sessionData.completed } : {}),
-        ...(sessionData.type ? { type: sessionData.type } : {}),
       };
 
       const session = await fastify.prisma.timerSession.create({ data });
@@ -98,6 +134,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+      
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found in database' });
+      }
+      
       const { taskId, goalId, completed, startDate, endDate } = request.query as {
         taskId?: string;
         goalId?: string;
@@ -140,6 +186,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+      
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found in database' });
+      }
+      
       const { id } = request.params as { id: string };
       const body = TimerSessionSchema.safeParse(request.body);  
       if (!body.success) {
@@ -153,11 +209,12 @@ async function timerRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ error: 'Timer session not found' });
       }
 
-      const updateData = body?.data as Partial<z.infer<typeof TimerSessionSchema>>;
+      const updateData = body.data as Partial<z.infer<typeof TimerSessionSchema>>;
       const data: any = {
         ...updateData,
         startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
         endTime: updateData.endTime ? new Date(updateData.endTime) : undefined,
+        note: updateData.notes, // Map notes to note field
       };
       // Only add these if they are defined
       if (updateData.taskId) data.taskId = updateData.taskId;
@@ -180,6 +237,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+      
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found in database' });
+      }
+      
       const { id } = request.params as { id: string };
 
       const session = await fastify.prisma.timerSession.findFirst({
@@ -248,6 +315,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+      
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId }
+      });
+      
+      if (!user) {
+        return reply.code(404).send({ error: 'User not found in database' });
+      }
+      
       const days = parseInt((request.query as any).days || '7');
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);

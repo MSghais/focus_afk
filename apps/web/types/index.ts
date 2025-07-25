@@ -18,10 +18,14 @@ export interface TimerSession {
     endTime?: string;
     duration: number;
     completed: boolean;
-    notes?: string;
+    notes?: string[];
+    note?:string;
     createdAt: string;
     updatedAt?: string;
 
+    // Sync fields for backend integration
+    syncedToBackend?: boolean;
+    backendId?: string;
 
     // break?
 

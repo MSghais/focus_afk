@@ -89,7 +89,7 @@ function AnimatedClock() {
 
 export default function TimeLoading() {
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+    <div className="w-full h-full flex flex-col items-center justify-center gap-4 m-4">
       <AnimatedClock />
     </div>
   );

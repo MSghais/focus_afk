@@ -7,6 +7,7 @@ import { api } from '../lib/api';
 import { isUserAuthenticated, getJwtToken } from '../lib/auth';
 import { syncTasksToBackend, loadTasksFromBackend } from '../lib/taskSync';
 import { syncGoalsToBackend, mergeGoalsFromLocalAndBackend } from '../lib/goalSync';
+import { syncTimerSessionsToBackend, loadTimerSessionsFromBackend, updateTimerSessionInBackend, deleteTimerSessionFromBackend, getFocusStatsFromBackend, mergeTimerSessionsFromLocalAndBackend } from '../lib/timerSync';
 
 // Timer state interface
 interface TimerState {
@@ -82,6 +83,9 @@ interface FocusAFKStore {
   // Break
 
   loadTimerSessions: () => Promise<void>;
+  syncTimerSessionsToBackend: () => Promise<any>;
+  loadTimerSessionsFromBackend: () => Promise<any>;
+  mergeTimerSessionsFromLocalAndBackend: () => Promise<any>;
 
   // Actions - Settings
   updateSettings: (settings: Partial<Omit<UserSettings, 'id' | 'createdAt'>>) => Promise<void>;
@@ -510,7 +514,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
             duration: 0,
             completed: false,
             type: type || 'focus'
-          }, token);
+          });
         } catch (err) {
           // Optionally handle error
         }
@@ -559,6 +563,15 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           taskId: taskId ? taskId.toString() : undefined,
           goalId: goalId ? goalId.toString() : undefined,
         });
+        
+        // Sync to backend if authenticated
+        if (isUserAuthenticated()) {
+          try {
+            await syncTimerSessionsToBackend();
+          } catch (error) {
+            console.error('Failed to sync timer session to backend:', error);
+          }
+        }
       }
     },
 
@@ -594,6 +607,56 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         console.error('Failed to load sessions:', error);
       } finally {
         set((state) => ({ loading: { ...state.loading, sessions: false } }));
+      }
+    },
+
+    syncTimerSessionsToBackend: async () => {
+      try {
+        const result = await syncTimerSessionsToBackend();
+        if (result.success) {
+          console.log(`✅ Synced ${result.syncedSessions} timer sessions to backend`);
+        } else {
+          console.warn(`⚠️ Timer sync completed with ${result.errors.length} errors:`, result.errors);
+        }
+        return result;
+      } catch (error) {
+        console.error('❌ Timer sync failed:', error);
+        throw error;
+      }
+    },
+
+    loadTimerSessionsFromBackend: async () => {
+      try {
+        const result = await loadTimerSessionsFromBackend();
+        if (result.success) {
+          // Reload sessions from local DB after sync
+          const timerSessions = await dbUtils.getSessions();
+          set({ timerSessions });
+          console.log(`✅ Loaded ${result.syncedSessions} timer sessions from backend`);
+        } else {
+          console.warn(`⚠️ Timer load completed with ${result.errors.length} errors:`, result.errors);
+        }
+        return result;
+      } catch (error) {
+        console.error('❌ Timer load failed:', error);
+        throw error;
+      }
+    },
+
+    mergeTimerSessionsFromLocalAndBackend: async () => {
+      try {
+        const result = await mergeTimerSessionsFromLocalAndBackend();
+        
+        // Update the store with merged sessions
+        set({ timerSessions: result.sessions });
+        
+        console.log(`🔄 Timer merge completed: ${result.mergedCount} unique sessions`);
+        console.log(`📊 Merge stats: ${result.localCount} local, ${result.backendCount} backend, ${result.duplicatesRemoved} duplicates removed`);
+        
+        return result;
+      } catch (error) {
+        console.error('❌ Timer merge failed:', error);
+        throw error;
       }
     },
 
@@ -770,4 +833,18 @@ export const initializeStore = async () => {
     store.loadTimerSessions(),
     store.loadSettings(),
   ]);
+
+  // Load and merge timer sessions from local and backend if authenticated
+  if (isUserAuthenticated()) {
+    try {
+      await store.mergeTimerSessionsFromLocalAndBackend();
+    } catch (error) {
+      console.warn('Failed to merge timer sessions during initialization:', error);
+      // Fallback to local sessions only
+      await store.loadTimerSessions();
+    }
+  } else {
+    // Load local sessions only if not authenticated
+    await store.loadTimerSessions();
+  }
 }; 
