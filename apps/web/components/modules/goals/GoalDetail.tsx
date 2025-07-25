@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
 import { useFocusAFKStore } from '../../../store/store';
-import { ButtonPrimary } from '../../small/buttons';
+import { ButtonPrimary, ButtonSimple } from '../../small/buttons';
 import { Goal, Task } from '../../../types';
 import { useParams } from 'next/navigation';
 import { api } from '../../../lib/api';
@@ -16,7 +16,7 @@ export interface GoalDetailProps {
 
 export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }: GoalDetailProps) {
   const [showCreate, setShowCreate] = useState<boolean>(false);
-  const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal } = useFocusAFKStore();
+  const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal , addTask} = useFocusAFKStore();
 
   const [goal, setGoal] = useState<Goal | null>(goalProps || null);
   let { id } = useParams();
@@ -87,6 +87,24 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     </div>;
   }
 
+  const handleAddTask = async (task: Task) => {
+    const response = await addTask({
+      title: task.title,
+      description: task.description,
+      completed: false,
+      priority: 'low',
+      // category: "",
+      // goalId: Number(goalId as string),
+      // status: 'pending',
+      // priority: 'low',
+      // category: 'other',
+      // tags: [],
+    });
+    // if(response.success && response.data) {
+    //   loadTasks();
+    // }
+  }
+
   if (!foundGoal && !goal) {
     return <div>Goal not found
 
@@ -126,6 +144,25 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
         {isLoadingRecommendations ? <TimeLoading /> : "Get Recommendations"}
       </ButtonPrimary>  
     </div>
+    
+
+    {recommendations.length > 0 && (
+      <div className="flex flex-col gap-2">
+        <h2 className="text-lg font-bold">🎯 Recommendations</h2>
+        {recommendations.map((recommendation, index) => (
+          <div key={index}>
+            <p className="text-lg font-bold">{recommendation.title}</p> 
+            <p className="text-sm text-gray-500">{recommendation.description}</p> 
+
+            <ButtonSimple className="w-full" onClick={() => {
+              handleAddTask(recommendation);
+            }}>
+              Add Task
+            </ButtonSimple>
+          </div>
+        ))}
+      </div>
+    )}
     </div>
   );
 } 

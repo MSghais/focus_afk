@@ -24,7 +24,7 @@ const TimerSessionSchema = z.object({
 
 
 async function goalsRoutes(fastify: FastifyInstance) {
- 
+
   const aiService = new AiService();
   // Goal routes
   fastify.post('/create', {
@@ -39,8 +39,8 @@ async function goalsRoutes(fastify: FastifyInstance) {
       if (!body.success) {
         return reply.code(400).send({ error: 'Invalid goal data' });
       }
-      
-      const goalData = body.data as z.infer<typeof GoalSchema>; 
+
+      const goalData = body.data as z.infer<typeof GoalSchema>;
 
       const goal = await fastify.prisma.goal.create({
         data: {
@@ -118,11 +118,11 @@ async function goalsRoutes(fastify: FastifyInstance) {
         orderBy: { createdAt: 'desc' },
       });
 
-      if(!goal) {
+      if (!goal) {
         return reply.code(404).send({ error: 'Goal not found' });
       }
 
-      if(goal.userId !== userId) {
+      if (goal.userId !== userId) {
         return reply.code(403).send({ error: 'You are not authorized to access this goal' });
       }
 
@@ -174,33 +174,33 @@ async function goalsRoutes(fastify: FastifyInstance) {
   fastify.delete('/:id', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
- 
+
     try {
       const userId = request.user.id;
       const { id } = request.params as { id: string };
-  
+
       const goal = await fastify.prisma.goal.findFirst({
         where: { id, userId },
       });
-  
-      if(!goal) {
+
+      if (!goal) {
         return reply.code(404).send({ error: 'Goal not found' });
       }
-  
-      if(goal.userId !== userId) {
+
+      if (goal.userId !== userId) {
         return reply.code(403).send({ error: 'You are not authorized to delete this goal' });
       }
-  
+
       await fastify.prisma.goal.delete({
         where: { id },
       });
-  
+
       return reply.send({ success: true, data: goal });
     } catch (error) {
       request.log.error(error);
       return reply.code(500).send({ error: 'Internal server error' });
     }
-  }); 
+  });
 
 
   fastify.post('/:id/recommendations/tasks', {
@@ -212,19 +212,27 @@ async function goalsRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const { id } = request.params as { id: string };
       const { taskIds } = request.body as { taskIds: string[] };
-  
+
       const goal = await fastify.prisma.goal.findFirst({
         where: { id, userId, },
       });
-  
-      if(!goal) {
+
+      if (!goal) {
         return reply.code(404).send({ error: 'Goal not found' });
       }
-  
-      if(goal.userId !== userId) {
+
+      if (goal.userId !== userId) {
         return reply.code(403).send({ error: 'You are not authorized to access this goal' });
       }
-      
+
+      const schemaTasksRecommendation = z.object({
+        tasks: z.array(
+          z.object({
+            title: z.string(),
+            description: z.string(),
+          })
+        )
+      });
 
       const prompt = `
       You are a goal recommendation system.
@@ -236,7 +244,17 @@ async function goalsRoutes(fastify: FastifyInstance) {
       The goal is: ${goal.title}
       Description: ${goal.description}
       The tasks are: ${taskIds.join(', ')}
+             Return the tasks in a list of objects with the following schema:
+        [
+          {
+            title: string,
+            description: string,
+          }
+        ]
+        
+        ${schemaTasksRecommendation.toString()}
       `;
+
 
       const response = await aiService.generateObject({
         // output: 'array',
@@ -249,14 +267,18 @@ async function goalsRoutes(fastify: FastifyInstance) {
         Diversity of tasks and the difficulty, perspsectives and approaches. 
         The goal is: ${goal.title}
         Description: ${goal.description}
+        Return the tasks in a list of objects with the following schema:
+        [
+          {
+            title: string,
+            description: string,
+          }
+        ]
+        
+        ${schemaTasksRecommendation.toString()}
+          
         `,
-        schema: z.array(z.object({
-          title: z.string(),
-          description: z.string(),
-          // priority:z.enum(['low', 'medium', 'high']).optional(),
-          // category: z.enum(['work', 'personal', 'health', 'finance', 'learning', 'other']).optional(),
-          // tags: z.array(z.string()).optional(),
-        })),
+        schema: schemaTasksRecommendation,
         // schema: z.object({
         //   tasks: z.array(z.object({
         //     title: z.string(),
@@ -269,15 +291,15 @@ async function goalsRoutes(fastify: FastifyInstance) {
         prompt: prompt,
       });
       console.log("response", response);
-      return reply.send({ success: true, data: response?.object });
-      
-      
+      return reply.send({ success: true, data: response?.object?.tasks });
+
+
     } catch (error) {
       request.log.error(error);
       return reply.code(500).send({ error: 'Internal server error' });
     }
-    
-    
+
+
   });
 
 
