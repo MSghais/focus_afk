@@ -59,7 +59,7 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefres
   // console.log("questsState", questsState);
   return (
 
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 max-h-[250px] overflow-y-auto scrollbar-hide">
       {/* <h1 className="text-2xl font-bold">Quests</h1> */}
 
       {isEnabledRefreshButton && <button onClick={() => loadQuests()}><Icon name="refresh" /></button>}

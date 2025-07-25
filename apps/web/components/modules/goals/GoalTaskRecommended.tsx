@@ -201,7 +201,8 @@ export default function GoalTaskRecommended({ goalIdProps, goalProps, onClose, o
           )}
 
           {isTaskAdded && backendTask && (
-            <Link href={`/tasks/${backendTask?.id}`}
+            <Link
+              href={`/tasks/`}
               className="w-full border rounded-lg p-2"
             >
               View Task

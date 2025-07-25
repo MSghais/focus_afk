@@ -9,6 +9,7 @@ import Providers from "../../providers/Providers";
 import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
+import RightSidebar from "./RightSidebar";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -38,7 +39,10 @@ export default function ClientLayout({
 
   return (
     <Providers>
-      <div className={`${geist.className} layout-container bg-[var(--background)]`}>
+      <div 
+      // className={`${geist.className} layout-container bg-[var(--background)]`}
+      className={`${geist.className} bg-[var(--background)]`}
+      >
         {/* Mobile Navbar - Fixed at top */}
         <Navbar />
         
@@ -53,6 +57,8 @@ export default function ClientLayout({
             </div>
           </div>
         </main>
+
+        <RightSidebar />
 
         {/* Mobile Bottom Bar - Fixed at bottom */}
         <BottomBar />

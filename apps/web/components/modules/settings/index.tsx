@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import { useUIStore } from '../../../store/uiStore';
+import InstallPrompt from '../../ui/InstallPrompt';
 
 export default function Settings() {
 
@@ -45,7 +46,12 @@ export default function Settings() {
 
     return (
         <div className="">
-            <h1 className="text-3xl font-bold mb-6">Settings</h1>
+            <h2 className="text-3xl font-bold mb-6">Settings</h2>
+
+            {/* <div>
+
+                <InstallPrompt />   
+            </div> */}
 
             <div className="max-w-2xl space-y-8 gap-2">
                 {/* Timer Settings */}

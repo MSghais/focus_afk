@@ -136,9 +136,10 @@ textarea {
   padding-bottom: var(--bottom-bar-height);
   
   // Desktop layout
-  @media (min-width: 768px) {
+  @media (min-width: 798px) {
     margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
+    margin-right: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width) - var(--sidebar-width));
     padding-top: 0;
     padding-bottom: 0;
   }
@@ -165,19 +166,19 @@ textarea {
   // padding: 0 1rem;
   
   @media (min-width: 640px) {
-    padding: 0 1.5rem;
+    // padding: 0 1.5rem;
   }
   
   @media (min-width: 768px) {
-    padding: 0 2rem;
+    // padding: 0 2rem;
   }
   
   @media (min-width: 1024px) {
-    padding: 0 3rem;
+    // padding: 0 3rem;
   }
   
   @media (min-width: 1280px) {
-    padding: 0 4rem;
+    // padding: 0 4rem;
   }
   
   @media (min-width: 1536px) {
