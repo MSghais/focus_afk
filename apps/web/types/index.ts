@@ -68,7 +68,8 @@ export interface Task {
 }
 
 export interface Goal {
-    id?: number;
+    id?: string; // Changed from number to string to match backend CUID
+    userId?: string; // Added userId field for backend sync
     title: string;
     description?: string;
     targetDate?: Date;
@@ -78,6 +79,7 @@ export interface Goal {
     createdAt: Date;
     updatedAt: Date;
     relatedTasks?: number[]; // Task IDs
+    relatedTaskIds?: string[]; // Backend field name
 }
 
 

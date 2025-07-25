@@ -6,6 +6,7 @@ import { Task, Goal, TimerSession, UserSettings } from '../types';
 import { api } from '../lib/api';
 import { isUserAuthenticated, getJwtToken } from '../lib/auth';
 import { syncTasksToBackend, loadTasksFromBackend } from '../lib/taskSync';
+import { syncGoalsToBackend, mergeGoalsFromLocalAndBackend } from '../lib/goalSync';
 
 // Timer state interface
 interface TimerState {
@@ -65,6 +66,7 @@ interface FocusAFKStore {
   deleteGoal: (id: number) => Promise<void>;
   updateGoalProgress: (id: number, progress: number) => Promise<void>;
   loadGoals: () => Promise<void>;
+  syncGoalsToBackend: () => Promise<any>;
   setSelectedGoal: (goal: Goal | null) => void;
 
   // Actions - Timer
@@ -314,7 +316,12 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         try {
           const token = getJwtToken();
           if (token) {
-            await api.createGoal(newGoal);
+            // Ensure relatedTaskIds are strings for backend
+            const backendGoal = {
+              ...newGoal,
+              relatedTaskIds: (newGoal.relatedTasks || []).map(id => id.toString()),
+            };
+            await api.createGoal(backendGoal);
           }
         } catch (err) {
           console.error('❌ Failed to sync goal to backend:', err);
@@ -385,34 +392,25 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     loadGoals: async () => {
       set((state) => ({ loading: { ...state.loading, goals: true } }));
       try {
-        const goals = await dbUtils.getGoals();
-        if (isUserAuthenticated()) {
-          try {
-            const token = getJwtToken();
-            if (token) {
-              const goals = await api.getGoals();
-
-              
-              // Merge local and backend goals, deduplicate by id (prefer backend version)
-              const backendGoals = Array.isArray(goals?.data) ? goals.data : [];
-              // Remove local goals that are also in backend (by id), then merge
-              const mergedGoals = [
-                ...backendGoals,
-                ...(goals?.data?.filter((localGoal: Goal) => !backendGoals.some(bg => String(bg.id) === String(localGoal.id))) || [])
-              ];
-              set({ goals: mergedGoals }); 
-            }
-          } catch (err) {
-            set({ goals: goals || [] }); 
-            console.error('❌ Failed to sync goals to backend:', err);
-          }
-        } else {
-          set({ goals });
-        }
+        const mergedGoals = await mergeGoalsFromLocalAndBackend();
+        set({ goals: mergedGoals });
       } catch (error) {
         console.error('Failed to load goals:', error);
+        // Fallback to local goals only
+        const localGoals = await dbUtils.getGoals();
+        set({ goals: localGoals || [] });
       } finally {
         set((state) => ({ loading: { ...state.loading, goals: false } }));
+      }
+    },
+
+    syncGoalsToBackend: async () => {
+      try {
+        const result = await syncGoalsToBackend();
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to sync goals to backend:', error);
+        throw error;
       }
     },
 

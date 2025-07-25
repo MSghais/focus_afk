@@ -10,7 +10,9 @@ const GoalSchema = z.object({
   description: z.string().optional(),
   targetDate: z.string().datetime().optional(),
   category: z.string().optional(),
-  relatedTaskIds: z.array(z.string()).optional(),
+  relatedTaskIds: z.array(z.union([z.string(), z.number()])).optional(),
+  completed: z.boolean().optional(),
+  progress: z.number().optional(),
 });
 
 const TimerSessionSchema = z.object({
@@ -35,23 +37,43 @@ async function goalsRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
+
       const body = GoalSchema.safeParse(request.body);
       if (!body.success) {
+        console.error('🔐 POST /goals/create - Invalid goal data:', body.error);
         return reply.code(400).send({ error: 'Invalid goal data' });
       }
 
       const goalData = body.data as z.infer<typeof GoalSchema>;
 
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        console.error('🔐 POST /goals/create - User not found in database:', userId);
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+      console.log('🔐 POST /goals/create - User found:', user.id, user.userAddress);
+
+      // Convert relatedTaskIds to strings if they're numbers
+      const relatedTaskIds = goalData.relatedTaskIds?.map(id => id.toString()) || [];
+
       const goal = await fastify.prisma.goal.create({
         data: {
           ...goalData,
+          relatedTaskIds,
           userId,
           targetDate: goalData.targetDate ? new Date(goalData.targetDate) : null,
         },
       });
 
+      console.log('🔐 POST /goals/create - Goal created successfully:', goal.id);
       return reply.code(201).send({ success: true, data: goal });
     } catch (error) {
+      console.error('🔐 POST /goals/create - Error:', error);
       request.log.error(error);
       return reply.code(500).send({ error: 'Internal server error' });
     }
@@ -149,13 +171,45 @@ async function goalsRoutes(fastify: FastifyInstance) {
       });
 
       if (!goal) {
-        return reply.code(404).send({ error: 'Goal not found' });
+        // Convert relatedTaskIds to strings if they're numbers
+        const relatedTaskIds = updateData.relatedTaskIds?.map(id => id.toString()) || [];
+        
+        const goalUpserted = await fastify.prisma.goal.upsert({
+          where: { id },
+          update: {
+            ...updateData,
+            relatedTaskIds,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+          create: {
+            title: updateData.title || '',
+            description: updateData.description || '',
+            category: updateData.category || '',
+            relatedTaskIds,
+            userId,
+            targetDate: updateData.targetDate ? new Date(updateData.targetDate) : undefined,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+        });
+        return reply.send({ success: true, data: goalUpserted });
       }
 
+      // Convert relatedTaskIds to strings if they're numbers
+      const relatedTaskIds = updateData.relatedTaskIds?.map(id => id.toString()) || [];
+      
       const updatedGoal = await fastify.prisma.goal.update({
         where: { id },
         data: {
           ...updateData,
+          relatedTaskIds,
           targetDate: updateData.targetDate ? new Date(updateData.targetDate) : undefined,
           updatedAt: new Date(),
         },
