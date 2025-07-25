@@ -12,10 +12,9 @@ export default function ProfileUser({isLoggoutViewActive = true}: {isLoggoutView
     const { userConnected, token, jwtToken, evmAddress, starknetAddress, loginType } = useAuthStore();
     return (
         <div>
-            <h1>Profile User</h1>
             {!user && (
                 <div className="flex flex-col gap-4">
-                    <Onboarding onNext={() => { }} />
+                    <Onboarding onNext={() => { }} isWelcomeStep={false} />
                 </div>
             )}
             {user && (

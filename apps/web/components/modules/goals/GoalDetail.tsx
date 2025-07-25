@@ -9,6 +9,7 @@ import { api } from '../../../lib/api';
 import TimeLoading from '../../small/loading/time-loading';
 import { useRecommendersStore } from '../../../store/recommenders';
 import { useUIStore } from '../../../store/uiStore';
+import { Icon } from '../../small/icons';
 export interface GoalDetailProps {
   goalIdProps?: string;
   goalProps?: Goal;
@@ -150,10 +151,14 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
 
     <div className="flex flex-col gap-2"> 
-      <ButtonPrimary onClick={() => {
+      <ButtonPrimary 
+      onClick={() => {
         getRecommendations();
       }} disabled={isLoadingRecommendations}>
-        {isLoadingRecommendations ? <TimeLoading /> : "Get Recommendations"}
+        {isLoadingRecommendations ? <div className="flex items-center justify-center">
+          <div className="w-4 h-4 border-t-2 border-b-2 border-gray-500 rounded-full animate-spin" />
+          <span>Loading...</span>
+        </div> : "Get Recommendations"}
       </ButtonPrimary>  
     </div>
     
