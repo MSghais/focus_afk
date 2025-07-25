@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import { api } from '../../../lib/api';
 import TimeLoading from '../../small/loading/time-loading';
 import { useRecommendersStore } from '../../../store/recommenders';
+import { useUIStore } from '../../../store/uiStore';
 export interface GoalDetailProps {
   goalIdProps?: string;
   goalProps?: Goal;
@@ -19,6 +20,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   const [showCreate, setShowCreate] = useState<boolean>(false);
   const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal , addTask} = useFocusAFKStore();
 
+  const {showToast} = useUIStore(    )
   const { setTasksRecommendations, tasksRecommendations } = useRecommendersStore();
   const [goal, setGoal] = useState<Goal | null>(goalProps || null);
   let { id } = useParams();
@@ -96,7 +98,8 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       description: task.description,
       completed: false,
       priority: 'low',
-      goalId: Number(goalId as string),
+      // TODO Fix link to goal
+      // goalIds : goal && goal?.id ? [Number(id)] : [],
       // category: "",
       // goalId: Number(goalId as string),
       // status: 'pending',
@@ -104,6 +107,11 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       // category: 'other',
       // tags: [],
     });
+
+    if(response) {
+      showToast({ message: "Task added successfully", type: "success", duration: 3000 });
+    }
+
     // if(response.success && response.data) {
     //   loadTasks();
     // }
