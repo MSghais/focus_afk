@@ -1,4 +1,4 @@
-import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, FundingAccount, AuthResponse, User } from '../types';
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User } from '../types';
 import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
@@ -276,7 +276,66 @@ class ApiService {
     });
   }
 
-  // Message methods
+  // Chat methods
+  async getChats(filters?: {
+    mentorId?: string;
+    isActive?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<Chat[]>> {
+    const params = new URLSearchParams();
+    if (filters?.mentorId) params.append('mentorId', filters.mentorId);
+    if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    return this.request<Chat[]>(`/chat/chats?${params.toString()}`);
+  }
+
+  async getChat(chatId: string): Promise<ApiResponse<Chat>> {
+    return this.request<Chat>(`/chat/chats/${chatId}`);
+  }
+
+  async createChat(chatData: {
+    mentorId?: string;
+    title?: string;
+    metadata?: any;
+  }): Promise<ApiResponse<Chat>> {
+    return this.request<Chat>('/chat/chats', {
+      method: 'POST',
+      body: JSON.stringify(chatData),
+    });
+  }
+
+  async updateChat(chatId: string, updates: {
+    title?: string;
+    isActive?: boolean;
+    metadata?: any;
+  }): Promise<ApiResponse<Chat>> {
+    return this.request<Chat>(`/chat/chats/${chatId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteChat(chatId: string): Promise<ApiResponse<Chat>> {
+    return this.request<Chat>(`/chat/chats/${chatId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getChatMessages(chatId: string, filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<Message[]>> {
+    const params = new URLSearchParams();
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+
+    return this.request<Message[]>(`/chat/chats/${chatId}/messages?${params.toString()}`);
+  }
+
+  // Legacy message methods (for backward compatibility)
   async getMessages(filters?: {
     mentorId?: string;
     limit?: number;
@@ -294,8 +353,20 @@ class ApiService {
     prompt: string;
     model?: string;
     mentorId?: string;
-  }): Promise<ApiResponse<{ response: any }>> {
-    return this.request<{ response: any }>('/mentor/chat', {
+  }): Promise<ApiResponse<{ 
+    response: string;
+    chatId: string;
+    messageId: string;
+    memory: any;
+    usage: any;
+  }>> {
+    return this.request<{ 
+      response: string;
+      chatId: string;
+      messageId: string;
+      memory: any;
+      usage: any;
+    }>('/mentor/chat', {
       method: 'POST',
       body: JSON.stringify(messageData),
     });

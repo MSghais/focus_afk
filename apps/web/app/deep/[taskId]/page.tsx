@@ -12,16 +12,21 @@ import { logClickedEvent } from '../../../lib/analytics';
 import ChatAi from '../../../components/modules/ChatAi';
 import GoalsOverview from '../../../components/modules/goals/GoalsOverview';
 import { useUIStore } from '../../../store/uiStore';
-import { ButtonPrimary } from '../../../components/small/buttons';
+import { useMentorsStore } from '../../../store/mentors';
+import { ButtonPrimary, ButtonSimple } from '../../../components/small/buttons';
 import { Task } from '../../../types';
+import MentorList from '../../../components/modules/mentor/MentorList';
 
 export default function DeepModePage() {
     const router = useRouter();
     const params = useParams();
     const { showModal } = useUIStore();
-    const taskId = parseInt(params.taskId as string);
-    const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
+    const { selectedMentor } = useMentorsStore();
+    const taskId = params.taskId as string;
+    const { tasks, goals, addGoal, updateTask, getTask } = useFocusAFKStore();
     const [task, setTask] = useState<Task | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [goal, setGoal] = useState({
         id: '',
         taskId: '',
@@ -37,25 +42,49 @@ export default function DeepModePage() {
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
 
+    const [isOpenChatAi, setIsOpenChatAi] = useState(false);
+
     const [isOpenGoalModal, setIsOpenGoalModal] = useState(false);
 
     useEffect(() => {
-        if (taskId && tasks.length > 0) {
-            const foundTask = tasks.find(t => t.id === taskId);
-            if (foundTask) {
-                setTask(foundTask);
-                // Initialize goal with task info
-                setGoal({
-                    id: foundTask?.id?.toString() || '',
-                    taskId: foundTask?.id?.toString() || '',
-                    title: `Complete: ${foundTask.title}`,
-                    description: foundTask.description || '',
-                    targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-                    category: foundTask.category || ''
-                });
+        const loadTask = async () => {
+            if (!taskId) {
+                setError('Invalid task ID');
+                setLoading(false);
+                return;
             }
-        }
-    }, [taskId, tasks]);
+
+            try {
+                setLoading(true);
+                setError(null);
+                
+                // Try to get task using the new getTask function
+                const foundTask = await getTask(taskId);
+                
+                if (foundTask) {
+                    setTask(foundTask);
+                    // Initialize goal with task info
+                    setGoal({
+                        id: foundTask?.id?.toString() || '',
+                        taskId: foundTask?.id?.toString() || '',
+                        title: `Complete: ${foundTask.title}`,
+                        description: foundTask.description || '',
+                        targetDate: foundTask.dueDate ? new Date(foundTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                        category: foundTask.category || ''
+                    });
+                } else {
+                    setError('Task not found');
+                }
+            } catch (err) {
+                console.error('Failed to load task:', err);
+                setError('Failed to load task');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadTask();
+    }, [taskId, getTask]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -67,10 +96,27 @@ export default function DeepModePage() {
         return () => clearInterval(interval);
     }, [isTimerRunning]);
 
-    if (!task) {
+    if (loading) {
         return (
             <div className="w-full h-full flex items-center justify-center bg-[var(--background)] align-middle">
                 <TimeLoading />
+            </div>
+        );
+    }
+
+    if (error || !task) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--background)] align-middle">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Task</h1>
+                    <p className="text-gray-600 mb-4">{error || 'Task not found'}</p>
+                    <button
+                        onClick={() => router.push('/tasks')}
+                        className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                    >
+                        Back to Tasks
+                    </button>
+                </div>
             </div>
         );
     }
@@ -86,12 +132,12 @@ export default function DeepModePage() {
                             <div className="text-2xl font-bold text-purple-600">Level {level}</div>
                             <div className="text-sm text-gray-600">{xp} XP</div>
                         </div>
-                        <button
+                        {/* <button
                             onClick={() => router.push('/')}
                             className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
                         >
                             Exit DEEP
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
@@ -125,7 +171,7 @@ export default function DeepModePage() {
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
 
-                    <TimerMain timerTypeProps="deep" isSetupEnabled={true} taskId={taskId}
+                    <TimerMain timerTypeProps="deep" isSetupEnabled={true} taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId}
                     // goalId={goal?.} 
 
                     />
@@ -147,56 +193,63 @@ export default function DeepModePage() {
                 </div>
 
                 {/* Right Column - Mentor Chat */}
-                <ChatAi taskId={taskId} />
-
-                <div className="rounded-lg p-6 shadow-lg">
-                    {/* Check if user is logged in */}
-                    {/* <LoginCheck />
-                    
-                    <AuthDebug /> */}
-
-                    {/* <h3 className="text-lg font-bold mb-4 text-[var(--gray-500)]">Mentor AI Assistant</h3>
-                    <div className="h-64 overflow-y-auto mb-4 border rounded-lg p-3">
-                        {chatHistory.length === 0 ? (
-                            <div className="text-center text-gray-500 py-8">
-                                <p>Ask your mentor for guidance on this task!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {chatHistory.map((msg, index) => (
-                                    <div
-                                        key={index}
-                                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                    >
-                                        <div
-                                            className={`max-w-xs p-3 rounded-lg ${msg.role === 'user'
-                                                    ? 'bg-purple-600 text-white'
-                                                    : 'bg-gray-200 text-gray-800'
-                                                }`}
-                                        >
-                                            {msg.message}
-                                        </div>
+                <div className="space-y-4">
+                    {/* Mentor Selection Header */}
+                    <div className=" rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Mentor</h3>
+                            <button
+                                onClick={() => {
+                                    showModal(<MentorList isSelectMentorViewEnabled={true} 
+                                    isCreateMentorViewEnabled={false}
+                                    />);
+                                }}
+                                className="px-3 py-1 text-sm bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                            >
+                                Select Mentor
+                            </button>
+                        </div>
+                        
+                        {/* Selected Mentor Display */}
+                        <div className="flex items-center gap-3">
+                            {selectedMentor ? (
+                                <>
+                                    <div className="w-10 h-10 bg-[var(--brand-primary)] rounded-full flex items-center justify-center text-white font-semibold">
+                                        {selectedMentor.name.charAt(0).toUpperCase()}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div className="flex-1">
+                                        <h4 className="font-medium text-gray-900 dark:text-white text-sm overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px]">{selectedMentor.name}</h4>
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">{selectedMentor.role}</p>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                                    <div className=" w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                        🤖
+                                    </div>
+                                    <div>
+                                        <p className="text-sm">No mentor selected</p>
+                                        <p className="text-xs">Click "Select Mentor" to choose an AI mentor</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            placeholder="Ask your mentor..."
-                            className="flex-1 p-3 border rounded-lg"
-                        />
-                        <button
-                            onClick={handleSendMessage}
-                            className="px-4 py-3 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-purple-700 transition"
-                        >
-                            Send
-                        </button>
-                    </div> */}
+
+                    {/* Chat Component */}
+
+                    <div className="flex justify-end">
+                        <ButtonSimple onClick={() => setIsOpenChatAi(!isOpenChatAi)}>
+                            {isOpenChatAi ? 'Close Chat' : 'Open Chat'}
+                        </ButtonSimple>
+                    </div>
+
+                    {isOpenChatAi && (
+                    <ChatAi 
+                        taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId} 
+                        isSelectMentorViewEnabled={true}
+                    />
+                    )}
                 </div>
             </div>
         </div>

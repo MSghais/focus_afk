@@ -23,11 +23,15 @@ interface ChatAiProps {
     taskId?: number | string;
     mentorId?: number | string;
     isSelectMentorViewEnabled?: boolean;
+    chatId?: string;
+    onSendMessage?: (message: string) => void;
+    messagesProps?: Message[];
+    isLoadingProps?: boolean;
 }
 
-export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false }: ChatAiProps) {
+export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false, chatId, onSendMessage, messagesProps, isLoadingProps }: ChatAiProps) {
     const router = useRouter();
-    const { selectedMentor } = useMentorsStore();
+    const { selectedMentor, mentors, setSelectedMentor, setMentors } = useMentorsStore();
     const params = useParams();
     const { showToast, showModal } = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
@@ -44,10 +48,11 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         category: ''
     });
     const [chatMessage, setChatMessage] = useState('');
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [messages, setMessages] = useState<Message[]>(messagesProps || []);
+    const [isLoading, setIsLoading] = useState(isLoadingProps || false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
     const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
+    const [currentChatId, setCurrentChatId] = useState<string | null>(chatId || null);
 
     // Auto-scroll to bottom when messages change
     const scrollToBottom = () => {
@@ -82,32 +87,101 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         setIsLoadingMessagesInitial(true);
     }, []);
 
+    // Load mentors on mount
+    useEffect(() => {
+        if (userConnected && (!mentors || mentors.length === 0)) {
+            loadMentors();
+        }
+    }, [userConnected]);
+
     useEffect(() => {
         if (selectedMentor?.id) {
+            // Reset current chat ID when mentor changes
+            setCurrentChatId(null);
             loadMessages();
         }
     }, [selectedMentor?.id, mentorId]);
 
+    // Auto-select first mentor if none selected
+    useEffect(() => {
+        if (!selectedMentor && mentors && mentors.length > 0) {
+            setSelectedMentor(mentors[0]);
+        }
+    }, [mentors, selectedMentor]);
+
+    const loadMentors = async () => {
+        try {
+            if (!userConnected) return;
+
+            const response = await apiService.getMentors();
+            if (response && Array.isArray(response)) {
+                setMentors(response);
+            }
+        } catch (error) {
+            console.error('Error loading mentors:', error);
+        }
+    };
+
     const loadMessages = async () => {
         try {
-
             if (!userConnected) {
                 showModal(<ProfileUser isLoggoutViewActive={false} />);
                 return;
             }
 
-            const response = await apiService.getMessages({ limit: 50, mentorId: selectedMentor?.id?.toString() || undefined });
-
-            // console.log('Messages response:', response);
-            
-            // Handle both direct array response and wrapped response
             let messagesArray: Message[] = [];
-            if (Array.isArray(response)) {
-                messagesArray = response;
-            } else if (response && response.data && Array.isArray(response.data)) {
-                messagesArray = response.data;
-            } else if (response && response.success && response.data && Array.isArray(response.data)) {
-                messagesArray = response.data;
+
+            // If we have a current chat ID, load messages from that chat
+            if (currentChatId) {
+                console.log('Loading messages for chat:', currentChatId);
+                const response = await apiService.getChatMessages(currentChatId, { limit: 50 });
+                console.log('Chat messages response:', response);
+                
+                // Handle both wrapped and direct array responses
+                if (response && response.data && Array.isArray(response.data)) {
+                    messagesArray = response.data;
+                } else if (Array.isArray(response)) {
+                    messagesArray = response;
+                } else if (response && Array.isArray(response)) {
+                    messagesArray = response;
+                }
+            } else {
+                // Try to find an existing chat for the selected mentor
+                if (selectedMentor?.id) {
+                    console.log('Looking for existing chat for mentor:', selectedMentor.id);
+                    const chatsResponse = await apiService.getChats({ 
+                        mentorId: selectedMentor.id.toString(), 
+                        limit: 1 
+                    });
+                    // console.log('Chats response:', chatsResponse);
+                    
+                    // Handle both wrapped and direct array responses for chats
+                    let chats = [];
+                    if (chatsResponse && chatsResponse.data && Array.isArray(chatsResponse.data)) {
+                        chats = chatsResponse.data;
+                    } else if (Array.isArray(chatsResponse)) {
+                        chats = chatsResponse;
+                    }
+                    
+                    if (chats.length > 0) {
+                        const chat = chats[0];
+                        // console.log('Found existing chat:', chat.id);
+                        setCurrentChatId(chat.id);
+                        
+                        // Load messages from this chat
+                        const messagesResponse = await apiService.getChatMessages(chat.id, { limit: 50 });
+                        // console.log('Messages response for existing chat:', messagesResponse);
+                        
+                        // Handle both wrapped and direct array responses for messages
+                        if (messagesResponse && messagesResponse.data && Array.isArray(messagesResponse.data)) {
+                            messagesArray = messagesResponse.data;
+                        } else if (Array.isArray(messagesResponse)) {
+                            messagesArray = messagesResponse;
+                        }
+                    } else {
+                        console.log('No existing chat found for mentor');
+                    }
+                }
             }
 
             if (messagesArray.length > 0) {
@@ -118,7 +192,9 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     return dateA - dateB;
                 });
                 setMessages(sortedMessages);
-                console.log('Loaded messages:', sortedMessages.length);
+                // console.log('Loaded messages:', sortedMessages.length);
+                // console.log('First message:', sortedMessages[0]);
+                // console.log('Last message:', sortedMessages[sortedMessages.length - 1]);
             } else {
                 console.log('No messages found or empty response');
                 setMessages([]);
@@ -140,21 +216,26 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         const userMessage = chatMessage;
         setChatMessage('');
         setIsLoading(true);
-        // if(!userConnected) {
-        //     showModal(<ProfileUser />);
-        //     return;
-        // }
 
         logClickedEvent('send_message_deep_mode');
 
         try {
+            console.log('Sending message:', userMessage, 'to mentor:', selectedMentor?.id);
             // Send message to backend
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
-                mentorId: selectedMentor?.id?.toString() || undefined, // You can add mentor selection later
+                mentorId: selectedMentor?.id?.toString() || undefined,
             });
 
+            console.log('Send message response:', response);
+
             if (response?.success || response) {
+                // Update current chat ID if this is a new chat
+                if (response.data?.chatId && !currentChatId) {
+                    console.log('Setting new chat ID:', response.data.chatId);
+                    setCurrentChatId(response.data.chatId);
+                }
+                
                 // Reload messages to get the updated conversation
                 await loadMessages();
             } else {
@@ -188,102 +269,131 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
     return (
         <div className={styles.chatAi}>
-            {/* <h1 className={styles.title}>AI Mentor</h1> */}
+            <div className={styles.chatCard}>
+                <div className={styles.chatHeader}>
+                    <h2 className={styles.cardTitle}>
+                        {selectedMentor ? `Chat with ${selectedMentor.name}` : 'Chat with AI Mentor'}
+                    </h2>
 
-            <div className={styles.chatGrid}>
-                <div className={styles.chatCard}>
-
-                    <div className={"flex flex-row justify-between items-center"}>
-                        <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
-
-
+                    <div className={styles.chatActions + "my-4 gap-8 space-x-8 space-between shadow-sm  rounded-lg p-2"}>
                         {isSelectMentorViewEnabled && (
-                            <div className="flex flex-row justify-between items-center">
-                                <button onClick={() => {
+                            <button 
+                                onClick={() => {
                                     logClickedEvent('open_mentor_list_from_chat');   
                                     showModal(<MentorList />);
-                                }}>
-                                    <Icon name="list" />
-                                </button>
-                            </div>
-                        )}
-
-                        <div>
-                            <button onClick={() => {
-                                loadMessages();
-                            }}>
-                                <Icon name="refresh" />
+                                }}
+                                className={styles.actionButton}
+                                title="Select Mentor"
+                            >
+                                <Icon name="list" />
                             </button>
-                        </div>
-
-                    </div>
-
-                    {isLoadingMessages && (
-                        <TimeLoading />
-                    )}
-
-                    <div className={styles.chatMessages}>
-                        {messages.length === 0 ? (
-                            <div className={styles.emptyState}>
-                                <p>Start a conversation with your AI mentor!</p>
-                            </div>
-                        ) : (
-                            messages.map((message) => {
-                                // console.log('Rendering message:', message.role, message.content?.substring(0, 50) + '...');
-                                return (
-                                    <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
-
-                                        {message?.role === "assistant" && (
-                                            <div className={`${styles.messageContent} ${styles.markdownContent}`}>
-                                                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
-                                                {message.content && message.content.length > 1000 && (
-                                                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
-                                                        (Message length: {message.content.length} characters)
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {message?.role === "user" && (
-                                            <div className={styles.messageContent}>{message.content || ''}</div>
-                                        )}
-
-                                        <div className={styles.messageTime}>
-                                            {message.createdAt ? formatMessageTime(message.createdAt) : ''}
-                                        </div>
-                                    </div>
-                                );
-                            })
                         )}
-                        {isLoading && (
-                            <div className={`${styles.message} ${styles.assistant}`}>
-                                <div className={styles.typingIndicator}>
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-                    <div className={styles.chatInput}>
-                        <input
-                            type="text"
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                            placeholder="Ask me anything about productivity, focus, or your goals..."
-                            className={styles.input}
-                            disabled={isLoading}
-                        />
-                        <button
-                            onClick={handleSendMessage}
-                            disabled={isLoading || !chatMessage.trim()}
-                            className={styles.sendButton}
+
+                        <button 
+                            onClick={() => {
+                                loadMessages();
+                            }}
+                            className={styles.actionButton}
+                            title="Refresh Messages"
                         >
-                            ➤
+                            <Icon name="refresh" />
                         </button>
                     </div>
+                </div>
+
+                {isLoadingMessages && (
+                    <TimeLoading />
+                )}
+
+                <div className={styles.chatMessages}>
+                    {!selectedMentor ? (
+                        <div className={styles.emptyState}>
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-4">🤖</div>
+                                <h3 className="text-lg font-semibold mb-2">No Mentor Selected</h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                    Select an AI mentor to start a conversation and get personalized guidance for your task.
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        logClickedEvent('open_mentor_list_from_chat');   
+                                        showModal(<MentorList />);
+                                    }}
+                                    className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                                >
+                                    Select Mentor
+                                </button>
+                            </div>
+                        </div>
+                    ) : messages.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-4">💬</div>
+                                <h3 className="text-lg font-semibold mb-2">Start a Conversation</h3>
+                                <p className="text-gray-600 dark:text-gray-400">
+                                    Ask {selectedMentor.name} anything about your task, productivity, or goals!
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        messages.map((message) => {
+                            return (
+                                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
+                                    {message?.role === "assistant" && (
+                                        <div className={`${styles.messageContent} ${styles.markdownContent}`}>
+                                            <div dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content || '') }}></div>
+                                            {message.content && message.content.length > 1000 && (
+                                                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', opacity: 0.7 }}>
+                                                    (Message length: {message.content.length} characters)
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {message?.role === "user" && (
+                                        <div className={styles.messageContent}>{message.content || ''}</div>
+                                    )}
+
+                                    <div className={styles.messageTime}>
+                                        {message.createdAt ? formatMessageTime(message.createdAt) : ''}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                    {isLoading && (
+                        <div className={`${styles.message} ${styles.assistant}`}>
+                            <div className={styles.typingIndicator}>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+                
+                <div className={styles.chatInput}>
+                    <input
+                        type="text"
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder={selectedMentor ? `Ask ${selectedMentor.name} anything about productivity, focus, or your goals...` : "Select a mentor to start chatting..."}
+                        className={styles.input}
+                        disabled={isLoading || !selectedMentor}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="sentences"
+                    />
+                    <button
+                        onClick={handleSendMessage}
+                        disabled={isLoading || !chatMessage.trim() || !selectedMentor}
+                        className={styles.sendButton}
+                        title={selectedMentor ? "Send Message" : "Select a mentor first"}
+                    >
+                        ➤
+                    </button>
                 </div>
             </div>
         </div>

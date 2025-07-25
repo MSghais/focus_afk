@@ -74,7 +74,7 @@ export default function Tasks() {
         setEditingTask(null);
     };
 
-    const handleDeleteTask = async (id: number) => {
+    const handleDeleteTask = async (id: string | number) => {
         if (confirm('Are you sure you want to delete this task?')) {
             logClickedEvent('task_delete');
             await deleteTask(id);
@@ -88,12 +88,17 @@ export default function Tasks() {
         }
 
         setSyncing(true);
+        setError(null);
         try {
-            await syncTasksToBackend();
-            alert('Tasks synced to backend successfully!');
-        } catch (error) {
+            const result = await syncTasksToBackend();
+            if (result.success) {
+                alert(`Tasks synced to backend successfully! ${result.syncedCount} tasks synced.`);
+            } else {
+                setError(`Sync completed with errors: ${result.errors.join(', ')}`);
+            }
+        } catch (error: any) {
             console.error('Failed to sync tasks:', error);
-            alert('Failed to sync tasks to backend. Please try again.');
+            setError(`Failed to sync tasks to backend: ${error.message}`);
         } finally {
             setSyncing(false);
         }
@@ -402,7 +407,12 @@ export default function Tasks() {
                                                 <input
                                                     type="checkbox"
                                                     checked={task.completed}
-                                                    onChange={() => toggleTaskComplete(task.id!)}
+                                                    onChange={() => {
+                                                        if (task.id) {
+                                                            const id = typeof task.id === 'string' ? parseInt(task.id) : task.id;
+                                                            toggleTaskComplete(id);
+                                                        }
+                                                    }}
                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                                                 />
                                                 <h3 className={`font-medium ${task.completed ? 'line-through' : ''}`}>
@@ -450,7 +460,11 @@ export default function Tasks() {
                                                 ✏️ Edit
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteTask(task.id!)}
+                                                onClick={() => {
+                                                    if (task.id) {
+                                                        handleDeleteTask(task.id);
+                                                    }
+                                                }}
                                                 className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
                                             >
                                                 🗑️ Delete

@@ -47,12 +47,48 @@ export function useApi() {
         }
       },
       // Override the methods that need authentication
-      getMessages: async (filters?: { mentorId?: string; limit?: number; offset?: number }) => {
+      // Chat methods
+      getChats: async (filters?: { mentorId?: string; isActive?: boolean; limit?: number; offset?: number }) => {
+        const params = new URLSearchParams();
+        if (filters?.mentorId) params.append('mentorId', filters.mentorId);
+        if (filters?.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+        if (filters?.limit) params.append('limit', filters.limit.toString());
+        if (filters?.offset) params.append('offset', filters.offset.toString());
+        return authenticatedApiService.request(`/chat/chats?${params.toString()}`);
+      },
+      getChat: async (chatId: string) => {
+        return authenticatedApiService.request(`/chat/chats/${chatId}`);
+      },
+      createChat: async (chatData: { mentorId?: string; title?: string; metadata?: any }) => {
+        return authenticatedApiService.request('/chat/chats', {
+          method: 'POST',
+          body: JSON.stringify(chatData),
+        });
+      },
+      updateChat: async (chatId: string, updates: { title?: string; isActive?: boolean; metadata?: any }) => {
+        return authenticatedApiService.request(`/chat/chats/${chatId}`, {
+          method: 'PUT',
+          body: JSON.stringify(updates),
+        });
+      },
+      deleteChat: async (chatId: string) => {
+        return authenticatedApiService.request(`/chat/chats/${chatId}`, {
+          method: 'DELETE',
+        });
+      },
+      getChatMessages: async (chatId: string, filters?: { limit?: number; offset?: number }) => {
+        const params = new URLSearchParams();
+        if (filters?.limit) params.append('limit', filters.limit.toString());
+        if (filters?.offset) params.append('offset', filters.offset.toString());
+        return authenticatedApiService.request(`/chat/chats/${chatId}/messages?${params.toString()}`);
+      },
+      // Legacy message methods (for backward compatibility)
+      getMessages: async (filters?: { mentorId?: string; limit?: number; offset?: number; chatId?: string }) => {
         const params = new URLSearchParams();
         if (filters?.mentorId) params.append('mentorId', filters.mentorId);
         if (filters?.limit) params.append('limit', filters.limit.toString());
         if (filters?.offset) params.append('offset', filters.offset.toString());
-
+        if (filters?.chatId) params.append('chatId', filters.chatId);
         return authenticatedApiService.request(`/mentor/messages?${params.toString()}`);
       },
       sendChatMessage: async (messageData: { prompt: string; model?: string; mentorId?: string }) => {

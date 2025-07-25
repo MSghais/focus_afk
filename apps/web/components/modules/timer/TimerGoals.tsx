@@ -13,7 +13,7 @@ function formatTime(seconds: number) {
 
 interface TimerProps {
     isSetupEnabled?: boolean;
-    taskId?: number;
+    taskId?: string | number;
     goalId?: string;
     task?: Task;
     goal?: Goal;
@@ -38,8 +38,8 @@ export default function TimerGoal({
         loadSettings
     } = useFocusAFKStore();
 
-    const [selectedTaskId, setSelectedTaskId] = useState<number | undefined>();
-    const [selectedGoalId, setSelectedGoalId] = useState<number | undefined>();
+    const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
+    const [selectedGoalId, setSelectedGoalId] = useState<string | undefined>();
     const [customDuration, setCustomDuration] = useState(settings?.defaultFocusDuration || 25);
     const [goal, setGoal] = useState("");
 
@@ -120,7 +120,7 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2">Select Task (Optional)</label>
                         <select
                             value={selectedTaskId || ''}
-                            onChange={(e) => setSelectedTaskId(e.target.value ? parseInt(e.target.value) : undefined)}
+                            onChange={(e) => setSelectedTaskId(e.target.value ? e.target.value : undefined)}
                             className="w-full p-2 border rounded-md"
                         >
                             <option value="">No specific task</option>
@@ -136,7 +136,7 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2">Select Goal (Optional)</label>
                         <select
                             value={selectedGoalId || ''}
-                            onChange={(e) => setSelectedGoalId(e.target.value ? parseInt(e.target.value) : undefined)}
+                            onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
                             className="w-full p-2 border rounded-md"
                         >
                             <option value="">No specific goal</option>
@@ -271,10 +271,10 @@ export default function TimerGoal({
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
                     <p className="text-sm text-blue-800">
                         {selectedTaskId && (
-                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                            <span>Working on: <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong></span>
                         )}
                         {selectedGoalId && (
-                            <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                            <span>Goal: <strong>{goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}</strong></span>
                         )}
                     </p>
                 </div>

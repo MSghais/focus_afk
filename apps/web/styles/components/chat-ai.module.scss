@@ -82,6 +82,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.4;
       }
     }
 
@@ -97,6 +99,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.4;
       }
     }
 
@@ -112,6 +116,8 @@
         word-wrap: break-word;
         white-space: pre-wrap;
         overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.4;
       }
     }
 
@@ -129,6 +135,8 @@
     word-wrap: break-word;
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.4;
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     
@@ -138,6 +146,7 @@
       line-height: 1.5;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     p:last-child {
@@ -160,6 +169,7 @@
       font-size: 0.875em;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     pre {
@@ -170,6 +180,7 @@
       margin: 0.5rem 0;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
 
       code {
         background: none;
@@ -187,6 +198,7 @@
       margin: 0.25rem 0;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     a {
@@ -194,6 +206,7 @@
       text-decoration: underline;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
 
       &:hover {
         color: #764ba2;
@@ -208,6 +221,7 @@
       color: var(--text-primary);
       word-wrap: break-word;
       overflow-wrap: break-word;
+      hyphens: auto;
     }
   }
 
@@ -380,16 +394,24 @@
       margin-bottom: 0.75rem;
       
       .messageContent {
-        max-width: 92%;
+        max-width: 95%;
         padding: 0.5rem 0.75rem;
         font-size: 0.875rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        line-height: 1.4;
       }
     }
 
     .markdownContent {
-      max-width: 92%;
+      max-width: 95%;
       padding: 0.5rem 0.75rem;
       font-size: 0.875rem;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+      line-height: 1.4;
     }
 
     .chatInput {
@@ -404,6 +426,44 @@
         width: 36px;
         height: 36px;
         font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .chatAi {
+    padding: 0.25rem;
+
+    .chatCard {
+      height: calc(100vh - 80px);
+      padding: 0.5rem;
+    }
+
+    .message {
+      .messageContent {
+        max-width: 98%;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    .markdownContent {
+      max-width: 98%;
+      padding: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .chatInput {
+      .input {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+      }
+      
+      .sendButton {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
       }
     }
   }

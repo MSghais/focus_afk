@@ -27,11 +27,15 @@ function LoginStep({ onNext }: { onNext: () => void }) {
     </div>
   );
 }
-function WelcomeStep({ onNext }: { onNext: () => void }) {
+  function WelcomeStep({ onNext, isWelcomeStep = true }: { onNext: () => void, isWelcomeStep?: boolean }) {
   return (
     <div className={styles.onboardingContainer}>
-      <h1 className={styles.heading}>Welcome to FocusFi</h1>
-      <p className={styles.subtext}>Bet. Focus. Prove. Earn.</p>
+      {isWelcomeStep && (
+        <>
+          <h1 className={styles.heading}>Welcome to FocusFi</h1>
+          <p className={styles.subtext}>Bet. Focus. Prove. Earn.</p>
+        </>
+      )}
       {/* <p className={styles.subtext} style={{ marginBottom: '2.5rem' }}>
         Lorem ipsum dolor sit amet. consectetuer ada isicing eit. Auduis.
       </p> */}
@@ -77,11 +81,11 @@ const steps = [WelcomeStep,
 
 type StepProps = { onNext: () => void };
 
-export default function Onboarding({ onNext }: { onNext?: () => void }) {
+export default function Onboarding({ onNext, isWelcomeStep = true }: { onNext?: () => void, isWelcomeStep?: boolean }) {
   const [step, setStep] = useState(0);
   if (step < steps.length - 1) {
-    const StepComponent = steps[step] as React.FC<{ onNext: () => void }>;
-    return <StepComponent onNext={() => setStep(step + 1)} />;
+    const StepComponent = steps[step] as React.FC<{ onNext: () => void, isWelcomeStep?: boolean }>;
+    return <StepComponent onNext={() => setStep(step + 1)} isWelcomeStep={isWelcomeStep} />;
   }
   // Last step does not need onNext
   return <div className="flex flex-col items-center justify-center h-screen">

@@ -13,7 +13,13 @@ import { ButtonPrimary } from '../../small/buttons';
 import { useMentorsStore } from '../../../store/mentors';
 import { Checkbox } from '../../small/checkbox';
 import { logClickedEvent } from '../../../lib/analytics'; 
-export default function MentorList() {
+
+interface IMentorListProps {
+  isSelectMentorViewEnabled?: boolean;
+  isCreateMentorViewEnabled?: boolean;
+}
+
+export default function MentorList({ isSelectMentorViewEnabled = false, isCreateMentorViewEnabled = true }: IMentorListProps) {
   const { mentors, setMentors, setSelectedMentor, selectedMentor } = useMentorsStore();
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { userConnected } = useAuthStore();
@@ -130,13 +136,17 @@ export default function MentorList() {
   return (
     <div className={styles.mentor}>
       <div className={styles.mentorHeader}>
+        
         <h1 className={styles.title}>AI Mentors</h1>
+
+        {isCreateMentorViewEnabled && (
         <ButtonPrimary
           onClick={() => setShowCreateForm(true)}
-          className={styles.createButton}
-        >
-          + Create New Mentor
-        </ButtonPrimary>
+          className={styles.createButton + "w-full sm:max-w-50" }
+          >
+            + Create New Mentor
+          </ButtonPrimary>
+        )}
       </div>
 
       {isLoading ? (

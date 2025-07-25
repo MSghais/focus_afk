@@ -50,7 +50,8 @@ export interface TimerSession {
 
 // Types for our database entities
 export interface Task {
-    id?: number;
+    id?: string; // Changed from number to string to match backend CUID
+    userId?: string; // Added userId field for backend sync
     title: string;
     subTaskId?: number;
     description?: string;
@@ -67,7 +68,8 @@ export interface Task {
 }
 
 export interface Goal {
-    id?: number;
+    id?: string; // Changed from number to string to match backend CUID
+    userId?: string; // Added userId field for backend sync
     title: string;
     description?: string;
     targetDate?: Date;
@@ -77,6 +79,7 @@ export interface Goal {
     createdAt: Date;
     updatedAt: Date;
     relatedTasks?: number[]; // Task IDs
+    relatedTaskIds?: string[]; // Backend field name
 }
 
 
@@ -115,10 +118,31 @@ export interface AuthResponse {
 
 
 
+export interface Chat {
+    id?: string;
+    userId: string;
+    mentorId?: string;
+    title?: string;
+    isActive: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    metadata?: any;
+    mentor?: {
+        id?: string;
+        name: string;
+        role: string;
+    };
+    messages?: Message[];
+    _count?: {
+        messages: number;
+    };
+}
+
 export interface Message {
     id?: string;
     userId: string;
     mentorId?: string;
+    chatId?: string; // New field for chat-based system
     role: 'user' | 'assistant' | 'system';
     content: string;
     model?: string;

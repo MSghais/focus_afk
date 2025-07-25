@@ -171,7 +171,8 @@ const QuestItem: React.FC<IQuestItemProps> = ({
                     className={styles.actionButton}
                     onClick={() => {
                       // e.stopPropagation();
-                      router?.push(`/quests/${quest?.id}`);
+                      router?.push(`/tasks`);
+                      // router?.push(`/deep/${quest?.id}`);
                     }}
                     aria-label="View task"
                   >

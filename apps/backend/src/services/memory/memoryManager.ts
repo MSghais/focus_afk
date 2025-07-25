@@ -189,20 +189,26 @@ export class MemoryManager {
     userId: string,
     mentorId?: string,
     sessionId?: string
-  ): Promise<MemoryContext> {
-    const sessionKey = sessionId || `${userId}_${mentorId || 'default'}`;
+  ): Promise<MemoryContext | null | undefined> {
+
+    try {
+      const sessionKey = sessionId || `${userId}_${mentorId || 'default'}`;
     
-    // Check cache first
-    const cached = this.memoryCache.get(sessionKey);
-    if (cached && this.isMemoryValid(cached)) {
-      return cached;
+      // Check cache first
+      const cached = this.memoryCache.get(sessionKey);
+      if (cached && this.isMemoryValid(cached)) {
+        return cached;
+      }
+  
+      // Load from database or create new
+      const memory = await this.loadMemoryFromDatabase(userId, mentorId, sessionKey);
+      this.memoryCache.set(sessionKey, memory);
+      
+    } catch (error) {
+      console.error('Error getting or creating memory:', error);
+      return null;
     }
 
-    // Load from database or create new
-    const memory = await this.loadMemoryFromDatabase(userId, mentorId, sessionKey);
-    this.memoryCache.set(sessionKey, memory);
-    
-    return memory;
   }
 
   // Update memory with new context
@@ -495,15 +501,23 @@ export class MemoryManager {
     mentorId: string | undefined, 
     sessionKey: string
   ): Promise<MemoryContext> {
-    // Load recent messages
-    const messages = await this.prisma.message.findMany({
+    // Load recent messages from chats (new structure)
+    const chats = await this.prisma.chat.findMany({
       where: { 
         userId,
         mentorId: mentorId || null
       },
-      orderBy: { createdAt: 'desc' },
-      take: this.config.maxMessages
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: this.config.maxMessages
+        }
+      },
+      take: 5 // Get last 5 chats
     });
+
+    // Flatten messages from all chats
+    const messages = chats.flatMap(chat => chat.messages).slice(0, this.config.maxMessages);
 
     // Load user context from all sources
     const userContext = await this.loadUserContext(userId, mentorId);
@@ -569,9 +583,34 @@ export class MemoryManager {
       // Update the last message with memory metadata
       if (memory.messages.length > 0) {
         const lastMessage = memory.messages[memory.messages.length - 1];
-        await this.prisma.message.update({
+        
+        // Skip temporary messages that don't exist in the database
+        if (lastMessage.id.startsWith('temp_')) {
+          console.log('Skipping persistence for temporary message:', lastMessage.id);
+          return;
+        }
+        
+        // Use upsert to either update existing message or create a new one
+        console.log(`Persisting memory for message ${lastMessage.id} (session: ${memory.sessionId})`);
+        await this.prisma.message.upsert({
           where: { id: lastMessage.id },
-          data: {
+          update: {
+            metadata: {
+              memoryContext: {
+                sessionId: memory.sessionId,
+                contextVersion: memory.metadata.contextVersion,
+                lastUpdated: memory.metadata.lastUpdated,
+                dataSources: memory.metadata.dataSources
+              }
+            }
+          },
+          create: {
+            id: lastMessage.id,
+            role: lastMessage.role,
+            content: lastMessage.content,
+            userId: memory.userId,
+            ...(memory.mentorId && { mentorId: memory.mentorId }),
+            createdAt: lastMessage.createdAt,
             metadata: {
               memoryContext: {
                 sessionId: memory.sessionId,
@@ -582,9 +621,11 @@ export class MemoryManager {
             }
           }
         });
+        console.log(`Successfully persisted memory for message ${lastMessage.id}`);
       }
     } catch (error) {
       console.error('Error persisting memory to database:', error);
+      // Don't throw the error, just log it to prevent crashes
     }
   }
 } 

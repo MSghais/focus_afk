@@ -60,11 +60,36 @@ export const generateDailyQuest = async (socket: Socket) => {
 
       console.log('Goals:', goals);
 
-      const messages = await prisma.message.findMany({
+      // Get messages from chats (new structure)
+      // TODO: Uncomment after schema migration
+      // const chats = await prisma.chat.findMany({
+      //   where: { userId },
+      //   include: {
+      //     messages: {
+      //       orderBy: { createdAt: 'desc' },
+      //       take: 5, // Get last 5 messages from each chat
+      //     },
+      //   },
+      //   take: 5, // Get last 5 chats
+      // });
+
+      // Flatten messages from all chats
+      // const messages = chats.flatMap(chat => chat.messages).slice(0, 20);
+      
+      // Get messages from chats (new structure)
+      const chats = await prisma.chat.findMany({
         where: { userId },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
+        include: {
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 5, // Get last 5 messages from each chat
+          },
+        },
+        take: 5, // Get last 5 chats
       });
+
+      // Flatten messages from all chats
+      const messages = chats.flatMap(chat => chat.messages).slice(0, 20);
 
       console.log('Messages:', messages);
 

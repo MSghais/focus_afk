@@ -50,6 +50,7 @@ model User {
 
   // New relations
   mentors Mentor[]
+  chats Chat[]
   messages Message[]
   fundingAccounts FundingAccount[]
   badges Badge[]
@@ -94,8 +95,11 @@ model Mentor {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  isPublic Boolean? @default(false)
 
-  isPublic Boolean?
+  instructions String[]
+
+
   imageUrl String?
   metadata Json?
   personality Json?
@@ -106,26 +110,52 @@ model Mentor {
   evmAddressAgent String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chats Chat[]
   messages Message[]
 
   @@map("mentors")
 }
 
+
+// Chat model for conversation containers
+model Chat {
+  id          String   @id @default(cuid())
+  userId      String
+  mentorId    String?
+  title       String?  // Optional title for the conversation
+  isActive    Boolean  @default(true)
+  isPublic Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  metadata    Json?    // Additional metadata for the chat
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)
+  messages Message[]
+
+  @@map("chats")
+}
+
+
 // Message model for chat conversations
 model Message {
   id        String   @id @default(cuid())
-  userId    String
-  mentorId  String?
+  userId    String   // Link to the user who owns this message
+  chatId    String?  // Optional link to the chat conversation
+  mentorId  String?  // Optional link to the mentor
   role      String   // user, assistant, system
   content   String   // The message content
-  prompt String?
+  prompt    String?
   model     String?  // AI model used for response
   tokens    Int?     // Token count for cost tracking
   metadata  Json?    // Additional metadata (model params, etc.)
   createdAt DateTime @default(now())
-  taskId String?
+  taskId    String?
 
+  // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat Chat? @relation(fields: [chatId], references: [id], onDelete: SetNull)
   mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)
 
   @@map("messages")
