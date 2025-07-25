@@ -41,7 +41,7 @@ export default function DeepModePage() {
 
     useEffect(() => {
         if (taskId && tasks.length > 0) {
-            const foundTask = tasks.find(t => t.id === taskId);
+            const foundTask = tasks.find(t => t.id === taskId.toString());
             if (foundTask) {
                 setTask(foundTask);
                 // Initialize goal with task info

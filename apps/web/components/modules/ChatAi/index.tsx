@@ -126,7 +126,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                         mentorId: selectedMentor.id.toString(), 
                         limit: 1 
                     });
-                    console.log('Chats response:', chatsResponse);
+                    // console.log('Chats response:', chatsResponse);
                     
                     // Handle both wrapped and direct array responses for chats
                     let chats = [];
@@ -138,12 +138,12 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     
                     if (chats.length > 0) {
                         const chat = chats[0];
-                        console.log('Found existing chat:', chat.id);
+                        // console.log('Found existing chat:', chat.id);
                         setCurrentChatId(chat.id);
                         
                         // Load messages from this chat
                         const messagesResponse = await apiService.getChatMessages(chat.id, { limit: 50 });
-                        console.log('Messages response for existing chat:', messagesResponse);
+                        // console.log('Messages response for existing chat:', messagesResponse);
                         
                         // Handle both wrapped and direct array responses for messages
                         if (messagesResponse && messagesResponse.data && Array.isArray(messagesResponse.data)) {
@@ -165,9 +165,9 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     return dateA - dateB;
                 });
                 setMessages(sortedMessages);
-                console.log('Loaded messages:', sortedMessages.length);
-                console.log('First message:', sortedMessages[0]);
-                console.log('Last message:', sortedMessages[sortedMessages.length - 1]);
+                // console.log('Loaded messages:', sortedMessages.length);
+                // console.log('First message:', sortedMessages[0]);
+                // console.log('Last message:', sortedMessages[sortedMessages.length - 1]);
             } else {
                 console.log('No messages found or empty response');
                 setMessages([]);
@@ -242,34 +242,36 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
     return (
         <div className={styles.chatAi}>
-            {/* <h1 className={styles.title}>AI Mentor</h1> */}
-
             <div className={styles.chatGrid}>
                 <div className={styles.chatCard}>
 
-                    <div className={"flex flex-row justify-between items-center"}>
+                    <div className={"flex flex-row justify-between items-center flex-wrap gap-2"}>
                         <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
 
-
-                        {isSelectMentorViewEnabled && (
-                            <div className="flex flex-row justify-between items-center">
-                                <button onClick={() => {
-                                    logClickedEvent('open_mentor_list_from_chat');   
-                                    showModal(<MentorList />);
-                                }}>
+                        <div className="flex flex-row gap-2 items-center">
+                            {isSelectMentorViewEnabled && (
+                                <button 
+                                    onClick={() => {
+                                        logClickedEvent('open_mentor_list_from_chat');   
+                                        showModal(<MentorList />);
+                                    }}
+                                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    title="Select Mentor"
+                                >
                                     <Icon name="list" />
                                 </button>
-                            </div>
-                        )}
+                            )}
 
-                        <div>
-                            <button onClick={() => {
-                                loadMessages();
-                            }}>
+                            <button 
+                                onClick={() => {
+                                    loadMessages();
+                                }}
+                                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                title="Refresh Messages"
+                            >
                                 <Icon name="refresh" />
                             </button>
                         </div>
-
                     </div>
 
                     {isLoadingMessages && (
@@ -283,7 +285,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                             </div>
                         ) : (
                             messages.map((message) => {
-                                console.log('Rendering message:', message.id, message.role, message.content?.substring(0, 50) + '...');
+                                // console.log('Rendering message:', message.id, message.role, message.content?.substring(0, 50) + '...');
                                 return (
                                     <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
 
@@ -329,11 +331,15 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                             placeholder="Ask me anything about productivity, focus, or your goals..."
                             className={styles.input}
                             disabled={isLoading}
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="sentences"
                         />
                         <button
                             onClick={handleSendMessage}
                             disabled={isLoading || !chatMessage.trim()}
                             className={styles.sendButton}
+                            title="Send Message"
                         >
                             ➤
                         </button>

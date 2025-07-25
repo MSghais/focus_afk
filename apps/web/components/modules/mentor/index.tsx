@@ -41,7 +41,6 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const [isViewChatAi, setIsViewChatAi] = useState(false);
 
   useEffect(() => {
-    // loadMessages();
     loadMentors();
 
     // Load recent session feedback
@@ -50,7 +49,6 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
       generateSessionFeedback(latestSession);
     }
   }, []);
-
 
   const loadMentors = async () => {
     try {
@@ -85,8 +83,6 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
     setRecentFeedback(feedback);
   };
 
-
-
   const getProductivityInsights = () => {
     const completedTasks = tasks.filter(t => t.completed).length;
     const totalFocusTime = timerSessions.reduce((sum, session) => sum + session.duration, 0);
@@ -105,133 +101,27 @@ export default function Mentor({ isSetupEnabled = false }: MentorProps) {
   const insights = getProductivityInsights();
 
   return (
-    <div className={styles.mentor}>
-      {/* <h1 className={styles.title}>AI Mentor</h1> */}
+    <div className={styles.simpleMentorContainer}>
+      {/* Mentor List */}
+      <MentorList />
 
-      <div className={styles.mentorGrid}>
-        {/* Productivity Insights */}
-
-        <MentorList />
-
-        <div className="flex flex-col gap-4 justify-center">
-          <ButtonSecondary onClick={() => setIsViewChatAi(!isViewChatAi)}>
-            {isViewChatAi ? "Hide Chat AI" : "Show Chat AI"}
+      {/* Chat Section - Simple toggle */}
+      {selectedMentor && (
+        <div className={styles.simpleChatSection}>
+          <ButtonSecondary 
+            onClick={() => setIsViewChatAi(!isViewChatAi)}
+            className={styles.simpleToggleButton}
+          >
+            {isViewChatAi ? "Hide Chat" : "Show Chat"}
           </ButtonSecondary>
-          {isViewChatAi && <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />}
-
+          
+          {isViewChatAi && (
+            <div className={styles.simpleChatWrapper}>
+              <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />
+            </div>
+          )}
         </div>
-
-        {/* Chat Interface */}
-        {/* <div className={styles.chatCard}>
-          <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
-          <div className={styles.chatMessages}>
-            {isLoadingMessages ? (
-              <div className="text-center text-gray-500 py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-2"></div>
-                <p>Loading chat history...</p>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <p>Start a conversation with your AI mentor!</p>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
-                  <div className={styles.messageContent}>{message.content}</div>
-                  <div className={styles.messageTime}>
-                    {formatMessageTime(message.createdAt)}
-                  </div>
-                </div>
-              ))
-            )}
-            {isTyping && (
-              <div className={`${styles.message} ${styles.ai}`}>
-                <div className={styles.typingIndicator}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className={styles.chatInput}>
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder="Ask me anything about productivity, focus, or your goals..."
-              className={styles.input}
-              disabled={isTyping}
-            />
-            <button 
-              onClick={sendMessage} 
-              className={styles.sendButton}
-              disabled={isTyping || !inputMessage.trim()}
-            >
-              ➤
-            </button>
-          </div>
-        </div> */}
-
-
-        {/* <ButtonPrimary
-          className={styles.insightsButton + "max-w-100 align-center"}
-          onClick={() => setIsOpenInsights(!isOpenInsights)}
-        >
-          {isOpenInsights ? 'Close Insights' : 'Open Insights'}
-        </ButtonPrimary> */}
-
-        {isOpenInsights &&
-          <>
-            <ProgressMentor />
-
-            {/* <div className={styles.actionsCard}>
-              <h2 className={styles.cardTitle}>Quick Actions</h2>
-              <div className={styles.actionButtons}>
-                <button className={styles.actionButton}>
-                  📊 Get Weekly Report
-                </button>
-                <button className={styles.actionButton}>
-                  🎯 Set New Goal
-                </button>
-                <button className={styles.actionButton}>
-                  ⏱️ Start Focus Session
-                </button>
-                <button className={styles.actionButton}>
-                  📚 Learning Recommendations
-                </button>
-              </div>
-            </div> */}
-
-            {recentFeedback && (
-              <div className={styles.feedbackCard}>
-                <h2 className={styles.cardTitle}>Latest Session Feedback</h2>
-                <div className={styles.rating}>
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className={`${styles.star} ${i < recentFeedback.rating ? styles.filled : ''}`}>
-                      ⭐
-                    </span>
-                  ))}
-                </div>
-                <p className={styles.feedbackMessage}>{recentFeedback.message}</p>
-                <div className={styles.tips}>
-                  <h3>Quick Tips:</h3>
-                  <ul>
-                    {recentFeedback.tips.map((tip, index) => (
-                      <li key={index}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </>
-        }
-
-
-
-      </div>
-
+      )}
     </div>
   );
 } 
