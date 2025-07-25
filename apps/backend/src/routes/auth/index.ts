@@ -84,12 +84,13 @@ export async function authRoutes(fastify: FastifyInstance) {
     try {
       const { address, signature, message } = request.body as { address: string, signature: string, message: string };
 
-      console.log("address", address);
-      console.log("signature", signature);
-      console.log("message", message);
       // 1. Verify signature
       const recovered = ethers.verifyMessage(message, signature);
-      console.log("recovered", recovered);
+        // console.log("recovered", recovered);
+
+        // console.log("address", address);
+        // console.log("signature", signature);
+        // console.log("message", message);
       if (recovered.toLowerCase() !== address.toLowerCase()) {
         return reply.code(401).send({ error: 'Invalid signature' });
       }
@@ -104,7 +105,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           loginType: "ethereum",
         },
       });
-      console.log("user", user);
+      // console.log("user", user);
 
       try {
         const mentor = await fastify.prisma.mentor.findFirst({
@@ -123,7 +124,7 @@ export async function authRoutes(fastify: FastifyInstance) {
             },
           });
         }
-        console.log("mentor", mentor);
+        // console.log("mentor", mentor);
       } catch (error) {
         console.log("error", error);
       }
@@ -139,7 +140,7 @@ export async function authRoutes(fastify: FastifyInstance) {
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         },
       });
-      console.log("token", token);
+      // console.log("token", token);
       return reply.send({ success: true, user, token });
     } catch (error) {
       request.log.error(error);

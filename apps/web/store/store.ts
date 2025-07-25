@@ -220,8 +220,8 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
             });
             if (response.success && response.data) {
               // Update local task with backend ID
-              await dbUtils.updateTask(id, { id: response.data.id });
-              newTask.id = response.data.id;
+              await dbUtils.updateTask(id, { id: response.data.id! } as any);
+              newTask.id = response.data.id!;
             }
             console.log('✅ Task synced to backend');
           }
@@ -376,7 +376,16 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }
 
       set((state) => ({
-        goals: [newGoal, ...state.goals],
+        goals: [
+          {
+            ...newGoal,
+            // Ensure id is a string for Goal type compatibility
+            id: typeof newGoal.id === 'number' ? newGoal.id.toString() : newGoal.id,
+            // Convert relatedTasks (number[]) to relatedTaskIds (string[]) if present
+            relatedTaskIds: (newGoal.relatedTasks || []).map((id: number | string) => id.toString()),
+          },
+          ...state.goals,
+        ],
       }));
     },
 
@@ -395,7 +404,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
 
       set((state) => ({
         goals: state.goals.map((goal) =>
-          goal.id === id ? { ...goal, ...updates, updatedAt: new Date() } : goal
+          goal.id?.toString() === id.toString() ? { ...goal, ...updates, updatedAt: new Date() } : goal
         ),
       }));
     },
@@ -403,7 +412,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     deleteGoal: async (id) => {
       await dbUtils.deleteGoal(id);
       set((state) => ({
-        goals: state.goals.filter((goal) => goal.id !== id),
+        goals: state.goals.filter((goal) => goal.id?.toString() !== id.toString()),
       }));
 
       if (isUserAuthenticated()) {
@@ -419,7 +428,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
     updateGoalProgress: async (id, progress) => {
-      const goal = get().goals.find((g) => g.id === id);
+      const goal = get().goals.find((g) => g.id?.toString() === id.toString());
       if (goal) {
         const completed = progress >= 100;
         await get().updateGoal(id, { progress, completed });

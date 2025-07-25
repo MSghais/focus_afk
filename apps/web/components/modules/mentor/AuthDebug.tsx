@@ -190,7 +190,7 @@ export default function AuthDebug() {
         <button
           onClick={() => {
             const authStore = useAuthStore.getState();
-            console.log('Auth Store State:', authStore);
+            // console.log('Auth Store State:', authStore);
             alert('Auth store state logged to console');
           }}
           className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
@@ -217,7 +217,7 @@ export default function AuthDebug() {
                 loginType: loginType,
               };
               
-              console.log('localStorage State:', localStorageData);
+              // console.log('localStorage State:', localStorageData);
               alert(`localStorage: ${JSON.stringify(localStorageData, null, 2)}`);
             }
           }}
@@ -272,7 +272,7 @@ export default function AuthDebug() {
             try {
               console.log('🔐 Testing API call...');
               const response = await apiService.getProfile();
-              console.log('🔐 API call result:', response);
+              // console.log('🔐 API call result:', response);
               alert(`API call: ${response.success ? 'SUCCESS' : 'FAILED'}`);
             } catch (error) {
               console.error('🔐 API call error:', error);
@@ -311,7 +311,7 @@ export default function AuthDebug() {
               }
             };
             
-            console.log('🔐 Store vs localStorage Comparison:', comparison);
+            // console.log('🔐 Store vs localStorage Comparison:', comparison);
             alert(`Comparison:\n${JSON.stringify(comparison, null, 2)}`);
           }}
           className="px-3 py-1 bg-indigo-500 text-white rounded text-sm hover:bg-indigo-600"

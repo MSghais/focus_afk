@@ -31,8 +31,8 @@ async function buildServer() {
     logger: true,
   });
 
-  console.log('FRONTEND_URL', process.env.FRONTEND_URL);
-  console.log('NODE_ENV', process.env.NODE_ENV);
+  // console.log('FRONTEND_URL', process.env.FRONTEND_URL);
+  // console.log('NODE_ENV', process.env.NODE_ENV);
 
   // await fastify.register(fastifyCors, {
   //   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -60,42 +60,42 @@ async function buildServer() {
         'http://localhost:3001'
       ].filter(Boolean);
       
-      console.log('CORS check - Origin:', origin);
-      console.log('CORS check - Allowed origins:', allowedOrigins);
-      console.log('CORS check - NODE_ENV:', process.env.NODE_ENV);
-      console.log('CORS check - FRONTEND_URL:', process.env.FRONTEND_URL);
+      // console.log('CORS check - Origin:', origin);
+      // console.log('CORS check - Allowed origins:', allowedOrigins);
+      // console.log('CORS check - NODE_ENV:', process.env.NODE_ENV);
+      // console.log('CORS check - FRONTEND_URL:', process.env.FRONTEND_URL);
       
       // Check exact match
       if (allowedOrigins.includes(origin)) {
-        console.log('CORS check - Exact match found');
+        // console.log('CORS check - Exact match found');
         return cb(null, true);
       }
       
       // Check if it's a subdomain of afk-community.xyz
       if (origin.endsWith('.afk-community.xyz') || origin === 'https://afk-community.xyz') {
-        console.log('CORS check - Subdomain match found');
+        // console.log('CORS check - Subdomain match found');
         return cb(null, true);
       }
       
       // For development, allow all origins
       if (process.env.NODE_ENV === 'development') {
-        console.log('CORS check - Development mode, allowing all origins');
+        // console.log('CORS check - Development mode, allowing all origins');
         return cb(null, true);
       }
       
       // For production, be more permissive with afk-community.xyz domains
       if (process.env.NODE_ENV === 'production' && origin.includes('afk-community.xyz')) {
-        console.log('CORS check - Production afk-community.xyz domain allowed');
+        // console.log('CORS check - Production afk-community.xyz domain allowed');
         return cb(null, true);
       }
       
       // Temporary: Allow all origins in production for debugging
       if (process.env.NODE_ENV === 'production') {
-        console.log('CORS check - Production mode, temporarily allowing all origins for debugging');
+        // console.log('CORS check - Production mode, temporarily allowing all origins for debugging');
         return cb(null, true);
       }
       
-      console.log('CORS check - Origin not allowed:', origin);
+      // console.log('CORS check - Origin not allowed:', origin);
       return cb(new Error('Not allowed by CORS'), false);
     },
     // methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
