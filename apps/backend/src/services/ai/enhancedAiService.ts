@@ -64,7 +64,7 @@ export class EnhancedAiService {
   async generateTextWithMemory(inputs: EnhancedLlmInputs): Promise<EnhancedLlmResponse | null> {
     try {
       let finalPrompt = inputs.prompt;
-      let memory: MemoryContext | null = null;
+      let memory: MemoryContext | null | undefined = null;
       let enhancedPrompt = inputs.prompt;
 
       if (inputs.enableMemory !== false) {
@@ -143,7 +143,7 @@ export class EnhancedAiService {
     userId: string,
     mentorId?: string,
     sessionId?: string
-  ): Promise<MemoryContext | null> {
+  ): Promise<MemoryContext | null | undefined> {
     return await this.memoryManager.getOrCreateMemory(userId, mentorId, sessionId);
   }
 

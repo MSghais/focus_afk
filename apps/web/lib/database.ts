@@ -104,6 +104,11 @@ export const dbUtils = {
     return await collection.reverse().sortBy('createdAt');
   },
 
+  async getGoal(id: string | number): Promise<Goal | undefined> {
+    const goalId = typeof id === 'string' ? parseInt(id) : id;
+    return await db.goals.get(goalId);
+  },
+
   // Session operations
   async addSession(session: Omit<TimerSession, 'id' | 'createdAt' | 'updatedAt'>): Promise<number> {
     return await db.timerSessions.add({

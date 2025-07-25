@@ -162,7 +162,7 @@ export default function MentorList() {
             return (
               <div className={styles.mentorCard} key={mentor.id}>
                 <div className={styles.cardHeader}>
-                  <h2 className={styles.cardTitle}>{mentor.name}</h2>
+                  <h2 className={styles.cardTitle + "ellipsis no-wrap overflow-hidden"}>{mentor.name}</h2>
                   <div className={styles.cardActions}>
                     <button
                       onClick={() => { 

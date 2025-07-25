@@ -189,20 +189,26 @@ export class MemoryManager {
     userId: string,
     mentorId?: string,
     sessionId?: string
-  ): Promise<MemoryContext> {
-    const sessionKey = sessionId || `${userId}_${mentorId || 'default'}`;
+  ): Promise<MemoryContext | null | undefined> {
+
+    try {
+      const sessionKey = sessionId || `${userId}_${mentorId || 'default'}`;
     
-    // Check cache first
-    const cached = this.memoryCache.get(sessionKey);
-    if (cached && this.isMemoryValid(cached)) {
-      return cached;
+      // Check cache first
+      const cached = this.memoryCache.get(sessionKey);
+      if (cached && this.isMemoryValid(cached)) {
+        return cached;
+      }
+  
+      // Load from database or create new
+      const memory = await this.loadMemoryFromDatabase(userId, mentorId, sessionKey);
+      this.memoryCache.set(sessionKey, memory);
+      
+    } catch (error) {
+      console.error('Error getting or creating memory:', error);
+      return null;
     }
 
-    // Load from database or create new
-    const memory = await this.loadMemoryFromDatabase(userId, mentorId, sessionKey);
-    this.memoryCache.set(sessionKey, memory);
-    
-    return memory;
   }
 
   // Update memory with new context

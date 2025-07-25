@@ -1,6 +1,6 @@
 import { MemoryContext } from '../../services/memory/memoryManager';
 
-export function buildContextString(memory: MemoryContext, sources?: string[]): string {
+export function buildContextString(memory: MemoryContext | null | undefined, sources?: string[]): string {
   if (!memory) return '';
   let context = 'Context: You are an AI mentor helping with productivity and focus.';
   const src = sources || memory.metadata.dataSources;
