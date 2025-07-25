@@ -64,6 +64,7 @@ interface FocusAFKStore {
   deleteGoal: (id: number) => Promise<void>;
   updateGoalProgress: (id: number, progress: number) => Promise<void>;
   loadGoals: () => Promise<void>;
+  setSelectedGoal: (goal: Goal | null) => void;
 
   // Actions - Timer
   startTimerFocus: (taskId?: number, goalId?: number) => Promise<void>;
@@ -157,14 +158,14 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
     selectedTask: null,
-    selectedGoal: null,   
+    selectedGoal: null,
 
     setSelectedTask: (task: Task | null) => {
       set({ selectedTask: task });
     },
     setSelectedGoal: (goal: Goal | null) => {
       set({ selectedGoal: goal });
-    },  
+    },
 
     // Timer actions
     startTimerFocus: async (taskId, goalId) => {
@@ -210,6 +211,8 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           if (token) {
             const newTask = await api.createTask({
               ...task,
+              goalIds: task.goalIds || task.goalId ? [task.goalId!] : [],
+              goalId: task.goalId,
               // Add any required fields for backend
             });
             console.log('✅ Task synced to backend');
@@ -303,13 +306,13 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
 
         for (const task of tasks) {
           console.log(`🔄 Processing task: ${task.id} - ${task.title}`);
-          
+
           try {
             // Check if task exists in backend
             console.log(`🔄 Checking if task ${task.id} exists in backend...`);
             await api.getTask(task.id!.toString());
             console.log(`🔄 Task ${task.id} exists, updating...`);
-            
+
             // If it exists, update it
             await api.updateTask(task.id!.toString(), {
               title: task.title,
@@ -347,6 +350,18 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     addGoal: async (goal) => {
       const id = await dbUtils.addGoal(goal);
       const newGoal = { ...goal, id, createdAt: new Date(), updatedAt: new Date() };
+
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.createGoal(newGoal);
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync goal to backend:', err);
+        }
+      }
+
       set((state) => ({
         goals: [newGoal, ...state.goals],
       }));
@@ -354,6 +369,17 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
 
     updateGoal: async (id, updates) => {
       await dbUtils.updateGoal(id, updates);
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.updateGoal(id.toString(), updates);
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync goal update to backend:', err);
+        }
+      }
+
       set((state) => ({
         goals: state.goals.map((goal) =>
           goal.id === id ? { ...goal, ...updates, updatedAt: new Date() } : goal
@@ -366,6 +392,17 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       set((state) => ({
         goals: state.goals.filter((goal) => goal.id !== id),
       }));
+
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.deleteGoal(id.toString());
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync goal deletion to backend:', err);
+        }
+      }
     },
 
     updateGoalProgress: async (id, progress) => {
@@ -374,13 +411,45 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
         const completed = progress >= 100;
         await get().updateGoal(id, { progress, completed });
       }
+      if (isUserAuthenticated()) {
+        try {
+          const token = getJwtToken();
+          if (token) {
+            await api.updateGoalProgress(id.toString(), progress);
+          }
+        } catch (err) {
+          console.error('❌ Failed to sync goal progress to backend:', err);
+        }
+      }
     },
 
     loadGoals: async () => {
       set((state) => ({ loading: { ...state.loading, goals: true } }));
       try {
         const goals = await dbUtils.getGoals();
-        set({ goals });
+        if (isUserAuthenticated()) {
+          try {
+            const token = getJwtToken();
+            if (token) {
+              const goals = await api.getGoals();
+
+              
+              // Merge local and backend goals, deduplicate by id (prefer backend version)
+              const backendGoals = Array.isArray(goals?.data) ? goals.data : [];
+              // Remove local goals that are also in backend (by id), then merge
+              const mergedGoals = [
+                ...backendGoals,
+                ...(goals?.data?.filter((localGoal: Goal) => !backendGoals.some(bg => String(bg.id) === String(localGoal.id))) || [])
+              ];
+              set({ goals: mergedGoals }); 
+            }
+          } catch (err) {
+            set({ goals: goals || [] }); 
+            console.error('❌ Failed to sync goals to backend:', err);
+          }
+        } else {
+          set({ goals });
+        }
       } catch (error) {
         console.error('Failed to load goals:', error);
       } finally {
@@ -521,10 +590,10 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       set((state) => ({
         settings: state.settings
           ? {
-              ...state.settings,
-              ...settings,
-              updatedAt: new Date().toISOString(),
-            }
+            ...state.settings,
+            ...settings,
+            updatedAt: new Date().toISOString(),
+          }
           : null,
       }));
     },

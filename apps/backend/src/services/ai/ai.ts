@@ -17,6 +17,7 @@ interface LlmInputsGenerationObject {
     model: string;
     systemPrompt: string;
     prompt: string;
+    output?: "array"  | "object";
     schema: z.ZodSchema;
 }
 
@@ -73,28 +74,33 @@ export class AiService {
         return llm;
     }
 
-    // async generateObject(inputs: LlmInputsGenerationObject): Promise<{
-    //     object: any,
-    //     usage: any,
-    // } | null | undefined> {
-    //     try {
-    //         const { object, usage } = await generateObject({
-    //             model: openrouter(inputs.model),
-    //             system: inputs.systemPrompt,
-    //             schema: inputs?.schema as ZodSchema,
-    //             mode: "json",
-    //             prompt: inputs.prompt,
-    //         });
-    //         return {
-    //             object: object,
-    //             usage: usage,
-    //         };
-    //     } catch (error) {
-    //         console.error(error);
-    //         return null;
-    //     }
+    async generateObject(inputs: LlmInputsGenerationObject): Promise<{
+        object: any,
+        usage: any,
+    } | null | undefined> {
+        try {
+            const { object, usage } = await generateObject({
+                model: openrouter(inputs.model),
+                system: inputs.systemPrompt,
+                schema: inputs?.schema as ZodSchema,
+                mode: "json",
+                output: "object",
+                // output:"object",
+                // output: "no-schema",
+                prompt: inputs.prompt,
+            });
+            console.log("object", object);
+            console.log("usage", usage);
+            return {
+                object: object,
+                usage: usage,
+            };
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
 
-    // }
+    }
 
     async generateTextLlm(inputs: LlmInputsGeneration): Promise<{ text: string, sources: any, usage: any } | null | undefined> {
         try {

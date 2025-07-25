@@ -62,6 +62,8 @@ export interface Task {
     updatedAt: Date;
     estimatedMinutes?: number;
     actualMinutes?: number;
+    goalId?: number; 
+    goalIds?: number[];
 }
 
 export interface Goal {
@@ -178,4 +180,62 @@ export interface MentorFeedback {
     message: string;
     tips: string[];
     nextSteps: string[];
+}
+
+
+export interface Badge {
+    id?: string;
+    userId?: string;
+    type?: string;   // e.g. 'daily_connection', 'streak', etc.
+    name?: string;
+    description?: string;
+    icon?: string;  // emoji or icon name
+    dateAwarded?: string;
+    meta?: any;
+    createdAt?: string;
+    updatedAt?: string;
+    nftContractAddress?: string;
+    nftTokenId?: string;
+    imageUrl?: string;
+    isCompleted?: string;
+    requirements?: string[];
+    user?: User;
+
+}
+
+export interface Quest {
+    id?: string;
+    title?: string;
+    requirements?: string[];
+    taskAbout?: string;
+    type?: string;
+    name?: string;
+    description?: string;
+    icon?: string;
+    dateAwarded?: string;
+    meta?: any;
+    nftContractAddress?: string;
+    nftTokenId?: string;
+    imageUrl?: string;
+    difficulty?: number;
+    rewardXp?: number;
+    rewardBadge?: string;
+    badgeReward?: string;
+    levelRequired?: number;
+    progress?: number;
+
+    // metadata
+    metadata?: any;
+
+    // dates
+    createdAt?: string;
+    updatedAt?: string;
+    isCompleted?: boolean;
+    isActive?: boolean;
+    isPublic?: boolean;
+    topics?: string[];
+    isProfilePublic?: boolean;
+    isGoalPublic?: boolean;
+    isTaskPublic?: boolean;
+    user?: User;
 }

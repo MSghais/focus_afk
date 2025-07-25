@@ -176,7 +176,7 @@
   gap: 1rem;
   margin-bottom: 2rem;
   grid-template-columns: 1fr;
-  overflow-x: auto;
+  // overflow-x: auto;
   
   @media (min-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
