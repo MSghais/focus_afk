@@ -170,7 +170,7 @@ export default function TimerGoal({
     const focusPointsEarned = Math.floor((timer.totalSeconds - timer.secondsLeft) / 60) * 2; // 2 focus points per minute
 
     return (
-        <div className="w-full flex flex-col items-center justify-center p-6 space-y-6">
+        <div className="w-full flex flex-col  space-y-6 justify-center items-center">
             {/* Training Header */}
             <div className="text-center mb-6">
                 <div className="text-6xl mb-4">🎯</div>
@@ -208,7 +208,7 @@ export default function TimerGoal({
             </div>
 
             {/* Training Progress Bar */}
-            <div className="w-full max-w-md">
+            <div className="w-full max-w-md  justify-center items-center">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                     <span>Mission Progress</span>
                     <span>{Math.round(trainingProgress)}%</span>
@@ -222,7 +222,7 @@ export default function TimerGoal({
             </div>
 
             {/* Timer Display */}
-            <div className="relative">
+            <div className="relative max-w-md  justify-center items-center">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-full blur-xl"></div>
                 <div className="relative bg-gray-900/80 backdrop-blur-sm rounded-full p-8 border border-blue-500/30">
                     <div className="text-center">
@@ -235,7 +235,7 @@ export default function TimerGoal({
             </div>
 
             {/* Training Rewards */}
-            <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+            <div className="w-full bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                         <div className="text-2xl mb-1">⚡</div>
@@ -252,7 +252,7 @@ export default function TimerGoal({
 
             {/* Task/Goal Selection */}
             {!timer.isRunning && !timer.isBreak && isSetupEnabled && (
-                <div className="w-full max-w-md space-y-4">
+                <div className="w-full max-w-md  space-y-4">
                     <div className="text-center mb-4">
                         <h3 className="text-lg font-bold text-gray-300">🎯 Mission Objectives</h3>
                         <p className="text-gray-400 text-sm">Choose your training targets</p>
@@ -294,7 +294,7 @@ export default function TimerGoal({
 
             {/* Duration Input */}
             {!timer.isRunning && (
-                <div className="w-full max-w-md">
+                <div className="w-full  ">
                     <label className="block text-sm font-medium mb-2 text-gray-300">Training Duration (minutes)</label>
                     <input 
                         type="number" 
@@ -309,7 +309,7 @@ export default function TimerGoal({
             )}
 
             {/* Timer Controls */}
-            <div className="flex gap-4 w-full max-w-md">
+            <div className="flex gap-4 w-full  ">
                 {!timer.isRunning && timer.secondsLeft > 0 && (
                     <button
                         className="flex-1 py-4 px-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
@@ -356,7 +356,7 @@ export default function TimerGoal({
 
             {/* Session Complete Message */}
             {timer.secondsLeft === 0 && (
-                <div className="w-full max-w-md bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
+                <div className="w-full bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
                     <div className="text-4xl mb-2">🎉</div>
                     <div className="text-green-400 font-bold text-lg mb-2">
                         {timer.isBreak ? 'Break Complete!' : 'Training Session Complete!'}
@@ -369,7 +369,7 @@ export default function TimerGoal({
 
             {/* Selected Task/Goal Info */}
             {(selectedTaskId || selectedGoalId) && (
-                <div className="w-full max-w-md bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
+                <div className="w-full bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
                     <h4 className="text-blue-400 font-semibold mb-2">📋 Current Mission</h4>
                     <div className="space-y-2 text-sm">
                         {selectedTaskId && (
@@ -393,7 +393,7 @@ export default function TimerGoal({
             )}
 
             {/* Training Tips */}
-            <div className="w-full max-w-md bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
+            <div className="w-full bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
                 <h4 className="text-purple-400 font-semibold mb-2">💡 Training Tips</h4>
                 <div className="space-y-2 text-sm text-gray-300">
                     <div>• Set clear objectives before starting</div>

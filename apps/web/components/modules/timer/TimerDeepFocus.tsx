@@ -34,7 +34,7 @@ export default function TimerDeepFocus({
     const [achievements, setAchievements] = useState<string[]>([]);
     const [currentPhase, setCurrentPhase] = useState<'preparation' | 'journey' | 'completion'>('preparation');
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    
+
     const {
         timer,
         tasks,
@@ -81,7 +81,7 @@ export default function TimerDeepFocus({
         if (isRunning && elapsedSeconds > 0) {
             const progress = Math.min((elapsedSeconds / 3600) * 100, 100); // 1 hour = 100%
             setQuestProgress(progress);
-            
+
             // Achievement milestones
             if (elapsedSeconds === 300 && !achievements.includes('5min')) { // 5 minutes
                 setAchievements(prev => [...prev, '5min']);
@@ -104,6 +104,7 @@ export default function TimerDeepFocus({
 
     const { showModal } = useUIStore();
 
+
     // Start timer: count up from 0
     const handleStart = () => {
         logClickedEvent('timer_deep_focus_start');
@@ -112,10 +113,10 @@ export default function TimerDeepFocus({
         setCurrentPhase('journey');
         setQuestProgress(0);
         setAchievements([]);
-        
+
         // Consume energy for deep work
         consumeEnergy(10);
-        
+
         startTimerFocus(taskId, Number(goalId));
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
@@ -128,27 +129,27 @@ export default function TimerDeepFocus({
         logClickedEvent('timer_deep_focus_end');
         setIsRunning(false);
         setCurrentPhase('completion');
-        
+
         // Award XP and update stats
         const minutes = Math.floor(elapsedSeconds / 60);
         const xpEarned = minutes * 15; // 15 XP per minute for deep work
         const focusPointsEarned = minutes * 3; // 3 focus points per minute
-        
+
         addXp(xpEarned, 'deep_work_session');
         addFocusPoints(focusPointsEarned);
         updateSkill('deep_work', minutes * 2);
         recordSession('deep', minutes);
         updateFocusStreak(true);
-        
+
         await stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
-        
+
         // Sync to backend
         try {
             await syncTimerSessionsToBackend();
         } catch (error) {
             console.error('Failed to sync timer session to backend:', error);
         }
-        
+
         if (intervalRef.current) clearInterval(intervalRef.current);
     };
 
@@ -168,6 +169,18 @@ export default function TimerDeepFocus({
 
     // Show session complete message if stopped and elapsedSeconds > 0
     const sessionComplete = !isRunning && elapsedSeconds > 0;
+
+    useEffect(() => {
+        if (sessionComplete) {
+            showModal(<div className="w-full max-w-md bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
+                <div className="text-4xl mb-2">🎉</div>
+                <div className="text-green-400 font-bold text-lg mb-2">Quest Completed!</div>
+                <div className="text-gray-300 text-sm">
+                    You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> for your journey
+                </div>
+            </div>)
+        }
+    }, [sessionComplete]);
 
     const pendingTasks = tasks.filter(task => !task.completed);
     const pendingGoals = goals.filter(goal => !goal.completed);
@@ -194,7 +207,7 @@ export default function TimerDeepFocus({
                     <span>{Math.round(questProgress)}%</span>
                 </div>
                 <div className="w-full bg-gray-800 rounded-full h-3 mb-4">
-                    <div 
+                    <div
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 h-3 rounded-full transition-all duration-1000 ease-out"
                         style={{ width: `${questProgress}%` }}
                     ></div>
@@ -234,7 +247,7 @@ export default function TimerDeepFocus({
             </div>
 
             {/* Session Complete Message */}
-            {sessionComplete && (
+            {/* {sessionComplete && (
                 <div className="w-full max-w-md bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
                     <div className="text-4xl mb-2">🎉</div>
                     <div className="text-green-400 font-bold text-lg mb-2">Quest Completed!</div>
@@ -242,7 +255,7 @@ export default function TimerDeepFocus({
                         You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> for your journey
                     </div>
                 </div>
-            )}
+            )} */}
 
             {/* XP and Level Progress */}
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
@@ -254,7 +267,7 @@ export default function TimerDeepFocus({
                     <span className="text-yellow-400 font-bold">{xpEarned}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
+                    <div
                         className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${levelProgress}%` }}
                     ></div>
@@ -274,7 +287,7 @@ export default function TimerDeepFocus({
                     <span className="text-green-400 font-bold">{energy}/{maxEnergy}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
+                    <div
                         className="bg-gradient-to-r from-green-400 to-emerald-400 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${(energy / maxEnergy) * 100}%` }}
                     ></div>
@@ -344,7 +357,7 @@ export default function TimerDeepFocus({
                             <h3 className="text-lg font-bold text-gray-300">Prepare Your Quest</h3>
                             <p className="text-gray-400 text-sm">Choose your mission and objectives</p>
                         </div>
-                        
+
                         <div>
                             <label className="block text-sm font-medium mb-2 text-gray-300">Select Task (Optional)</label>
                             {selectedTaskId && (
@@ -357,7 +370,7 @@ export default function TimerDeepFocus({
 
                             <select
                                 value={selectedTaskId || ''}
-                                onChange={(e) =>{
+                                onChange={(e) => {
                                     setSelectedTaskId(e.target.value ? e.target.value : undefined);
                                     logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
                                 }}

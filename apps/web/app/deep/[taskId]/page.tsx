@@ -16,6 +16,7 @@ import { useMentorsStore } from '../../../store/mentors';
 import { ButtonPrimary, ButtonSimple } from '../../../components/small/buttons';
 import { Task } from '../../../types';
 import MentorList from '../../../components/modules/mentor/MentorList';
+import Icon from '../../icon';
 
 export default function DeepModePage() {
     const router = useRouter();
@@ -57,10 +58,10 @@ export default function DeepModePage() {
             try {
                 setLoading(true);
                 setError(null);
-                
+
                 // Try to get task using the new getTask function
                 const foundTask = await getTask(taskId);
-                
+
                 if (foundTask) {
                     setTask(foundTask);
                     // Initialize goal with task info
@@ -132,6 +133,71 @@ export default function DeepModePage() {
                             <div className="text-2xl font-bold text-purple-600">Level {level}</div>
                             <div className="text-sm text-gray-600">{xp} XP</div>
                         </div>
+
+                        <button onClick={() => {
+                            showModal(
+                                <>
+                                    <div className=" rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Mentor</h3>
+                                            <button
+                                                onClick={() => {
+                                                    showModal(<MentorList isSelectMentorViewEnabled={true}
+                                                        isCreateMentorViewEnabled={false}
+                                                    />);
+                                                }}
+                                                className="px-3 py-1 text-sm bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                                            >
+                                                Select Mentor
+                                            </button>
+                                        </div>
+
+                                        {/* Selected Mentor Display */}
+                                        <div className="flex items-center gap-3">
+                                            {selectedMentor ? (
+                                                <>
+                                                    <div className="w-10 h-10 bg-[var(--brand-primary)] rounded-full flex items-center justify-center text-white font-semibold">
+                                                        {selectedMentor.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="font-medium text-gray-900 dark:text-white text-sm overflow-hidden text-ellipsis whitespace-nowrap max-w-[100px]">{selectedMentor.name}</h4>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400">{selectedMentor.role}</p>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                                                    <div className=" w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                                        🤖
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm">No mentor selected</p>
+                                                        <p className="text-xs">Click "Select Mentor" to choose an AI mentor</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Chat Component */}
+
+                                    <div className="flex justify-end">
+                                        <ButtonSimple onClick={() => setIsOpenChatAi(!isOpenChatAi)}>
+                                            {isOpenChatAi ? 'Close Chat' : 'Open Chat'}
+                                        </ButtonSimple>
+                                    </div>
+
+                                    {isOpenChatAi && (
+                                        <ChatAi
+                                            taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId}
+                                            isSelectMentorViewEnabled={true}
+                                        />
+                                    )}
+                                </>
+                            )
+                        }}>
+                            {/* <Icon name="settings" /> */}
+                            🤖
+                        </button>
                         {/* <button
                             onClick={() => router.push('/')}
                             className="px-4 py-2 rounded-lg hover:bg-gray-700 transition"
@@ -167,7 +233,7 @@ export default function DeepModePage() {
             </div>
             {/* Main Content Grid */}
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-1 gap-6">
                 {/* Left Column - Timer & Goals */}
                 <div className="space-y-6">
 
@@ -200,8 +266,8 @@ export default function DeepModePage() {
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Mentor</h3>
                             <button
                                 onClick={() => {
-                                    showModal(<MentorList isSelectMentorViewEnabled={true} 
-                                    isCreateMentorViewEnabled={false}
+                                    showModal(<MentorList isSelectMentorViewEnabled={true}
+                                        isCreateMentorViewEnabled={false}
                                     />);
                                 }}
                                 className="px-3 py-1 text-sm bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
@@ -209,7 +275,7 @@ export default function DeepModePage() {
                                 Select Mentor
                             </button>
                         </div>
-                        
+
                         {/* Selected Mentor Display */}
                         <div className="flex items-center gap-3">
                             {selectedMentor ? (
@@ -245,10 +311,10 @@ export default function DeepModePage() {
                     </div>
 
                     {isOpenChatAi && (
-                    <ChatAi 
-                        taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId} 
-                        isSelectMentorViewEnabled={true}
-                    />
+                        <ChatAi
+                            taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId}
+                            isSelectMentorViewEnabled={true}
+                        />
                     )}
                 </div>
             </div>

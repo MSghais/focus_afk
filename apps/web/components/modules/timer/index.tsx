@@ -48,7 +48,8 @@ export default function TimerMain({
     // RPG Mode configurations
     const rpgModes = {
         deep: {
-            name: "Deep Quest",
+            // name: "Deep Quest",
+            name: "Quest",
             description: "Embark on an intense journey of focused productivity",
             icon: "⚔️",
             color: "from-purple-600 to-indigo-700",
@@ -59,7 +60,8 @@ export default function TimerMain({
             requirements: "Level 5+ Focus"
         },
         focus: {
-            name: "Focus Training",
+            // name: "Focus Training",
+            name: "Training",
             description: "Sharpen your skills with structured productivity",
             icon: "🎯",
             color: "from-blue-600 to-cyan-600",
@@ -70,7 +72,8 @@ export default function TimerMain({
             requirements: "Level 3+ Focus"
         },
         break: {
-            name: "Rest & Recovery",
+            name: "Rest",
+            // name: "Rest & Recovery",
             description: "Recharge your energy for the next adventure",
             icon: "🛡️",
             color: "from-green-600 to-emerald-600",
@@ -83,7 +86,7 @@ export default function TimerMain({
     };
 
     return (
-        <div className="w-full flex flex-col items-center justify-center px-4 py-6 space-y-6">
+        <div className="w-full flex flex-col items-center justify-center px-4 py-6 space-y-6 flex-grow">
             {/* RPG Header */}
             <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent mb-2">
@@ -93,13 +96,16 @@ export default function TimerMain({
             </div>
 
             {/* RPG Mode Selector */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-4xl">
+            <div className="overflow-x-auto overflow-y-hidden grid grid-cols-3 md:grid-cols-3 gap-4 w-full max-w-4xl grid-template-columns: repeat(3, 1fr, 125px 125px 125px);">
                 {Object.entries(rpgModes).map(([mode, config]) => (
-                    <button
+                    <div
                         key={mode}
                         onClick={() => setTimerType(mode as 'focus' | 'break' | 'deep')}
                         className={`
-                            relative group p-6 rounded-xl border-2 transition-all duration-300 transform hover:scale-105
+                            whitespace-nowrap 
+                            text-wrap-balance;
+                            overflow-hidden 
+                            group py-6 px-2 rounded-xl border-2 transition-all duration-300 transform hover:scale-105
                             ${timerType === mode 
                                 ? `${config.borderColor} ${config.bgColor} shadow-lg shadow-purple-500/25` 
                                 : 'border-gray-600 bg-gray-800/50 hover:border-gray-500'
@@ -119,12 +125,12 @@ export default function TimerMain({
                         </h3>
                         
                         {/* Description */}
-                        <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+                        <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2 ellipsis overflow-hidden no-wrap text-ellipsis">
                             {config.description}
                         </p>
                         
                         {/* RPG Stats */}
-                        <div className="space-y-2 text-xs">
+                        <div className="space-y-2 text-xs hidden md:block">
                             <div className="flex justify-between">
                                 <span className="text-gray-500">Difficulty:</span>
                                 <span className={`font-semibold ${
@@ -146,29 +152,29 @@ export default function TimerMain({
                         </div>
                         
                         {/* Selection Indicator */}
-                        {timerType === mode && (
+                        {/* {timerType === mode && (
                             <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                                 <span className="text-white text-xs">✓</span>
                             </div>
-                        )}
+                        )} */}
                         
                         {/* Hover Effect */}
-                        <div className={`
+                        {/* <div className={`
                             absolute inset-0 rounded-xl opacity-0 group-hover:opacity-10 transition-opacity duration-300
                             bg-gradient-to-br ${config.color}
-                        `}></div>
-                    </button>
+                        `}></div> */}
+                    </div>
                 ))}
             </div>
 
             {/* Quest Progress Bar */}
-            <div className="w-full max-w-2xl bg-gray-800 rounded-full h-2 mb-6">
+            {/* <div className="w-full max-w-2xl bg-gray-800 rounded-full h-2 mb-6">
                 <div className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-500" 
                      style={{ width: '65%' }}></div>
-            </div>
+            </div> */}
 
             {/* Timer Content */}
-            <div className="w-full max-w-2xl">
+            <div className="w-full">
                 {timerType === 'focus' && (
                     <div className="flex flex-col items-center justify-center">
                         <TimerGoal isSetupEnabled={true}
