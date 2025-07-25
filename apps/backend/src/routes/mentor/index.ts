@@ -154,9 +154,24 @@ async function mentorRoutes(fastify: FastifyInstance) {
         sessionId,
         enableMemory = true,
         contextSources = ['tasks', 'goals', 'sessions', 'profile', 'mentor'],
-        systemPrompt,
+        // systemPrompt,
         extraData
       } = request.body as any;
+
+
+      let systemPrompt = `
+      You are a mentor.
+      You are given a prompt and a list of tasks, goals, sessions, profile, mentor, badges, quests, settings.
+      You need to respond to the prompt based on the context and conversation history.
+      Be friendly and engaging.
+      Be helpful and informative.
+      Be professional and respectful.
+      Be concise and to the point.
+      Be friendly and engaging.
+      Be helpful and informative.
+      Be short and concise, conversational.
+      If need to ask questions, ask them in a friendly and engaging way.
+      `;
 
       if (!prompt) {
         return reply.code(400).send({ message: 'Prompt is required' });

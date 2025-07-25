@@ -7,6 +7,7 @@ import { Goal, Task } from '../../../types';
 import { useParams } from 'next/navigation';
 import { api } from '../../../lib/api';
 import TimeLoading from '../../small/loading/time-loading';
+import { useRecommendersStore } from '../../../store/recommenders';
 export interface GoalDetailProps {
   goalIdProps?: string;
   goalProps?: Goal;
@@ -18,6 +19,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   const [showCreate, setShowCreate] = useState<boolean>(false);
   const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal , addTask} = useFocusAFKStore();
 
+  const { setTasksRecommendations, tasksRecommendations } = useRecommendersStore();
   const [goal, setGoal] = useState<Goal | null>(goalProps || null);
   let { id } = useParams();
   let goalId = goalIdProps || id;
@@ -33,6 +35,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       console.log("response", response);
       if(response.success && response.data) {
         setRecommendations(response.data as any[]);
+        setTasksRecommendations(response.data as any[]);
       } else {
         console.error("error", response.error);
       }
@@ -93,6 +96,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       description: task.description,
       completed: false,
       priority: 'low',
+      goalId: Number(goalId as string),
       // category: "",
       // goalId: Number(goalId as string),
       // status: 'pending',
@@ -146,10 +150,10 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     </div>
     
 
-    {recommendations.length > 0 && (
+    {tasksRecommendations.length > 0 && (
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-bold">🎯 Recommendations</h2>
-        {recommendations.map((recommendation, index) => (
+        {tasksRecommendations.map((recommendation, index) => (
           <div key={index}>
             <p className="text-lg font-bold">{recommendation.title}</p> 
             <p className="text-sm text-gray-500">{recommendation.description}</p> 

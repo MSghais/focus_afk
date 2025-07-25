@@ -191,11 +191,17 @@ model Task {
   actualMinutes   Int?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  
+
+  isPublic Boolean @default(false)
 
   // Subtask relationships
   parentTaskId    String?   // ID of the parent task
   parentTask      Task?     @relation("TaskSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
   subtasks        Task[]    @relation("TaskSubtasks")
+
+  // Goal relationships - array of goal IDs
+  goalIds String[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   timerSessions TimerSession[]
@@ -215,8 +221,12 @@ model Goal {
   category     String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  relatedTaskIds String[] // Array of task IDs as strings
+  relatedTaskIds String[] // Array of task IDs as strings (legacy field)
+  taskIds String[] // Array of task IDs for direct relationship
+  isPublic Boolean @default(false)
+  isProfilePublic Boolean @default(false)
 
+  topics String[]
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   timerSessions TimerSession[]
 

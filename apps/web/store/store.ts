@@ -211,6 +211,8 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           if (token) {
             const newTask = await api.createTask({
               ...task,
+              goalIds: task.goalIds || task.goalId ? [task.goalId!] : [],
+              goalId: task.goalId,
               // Add any required fields for backend
             });
             console.log('✅ Task synced to backend');

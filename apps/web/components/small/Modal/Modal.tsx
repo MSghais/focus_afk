@@ -86,10 +86,10 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
 
-            <div className={styles['modal__content-container']}>
+            <div className={styles['modal__content-container'] + " py-4 my-"}>
               {showCloseButton && (
                 <button
-                  className={styles['modal__close-button']}
+                  className={styles['modal__close-button' + "p-2 justify-end"]}
                   onClick={onClose}
                   aria-label="Close modal"
                 >

@@ -12,6 +12,10 @@ const TaskSchema = z.object({
   category: z.string().optional(),
   dueDate: z.string().datetime().optional(),
   estimatedMinutes: z.number().positive().optional(),
+  isPublic: z.boolean().optional(),
+  isProfilePublic: z.boolean().optional(),
+  goalIds: z.array(z.string()).optional(),
+  goalId: z.string().optional(),
 });
 
 const GoalSchema = z.object({
@@ -71,6 +75,8 @@ async function focusRoutes(fastify: FastifyInstance) {
       const task = await fastify.prisma.task.create({
         data: {
           ...taskData,
+          // goalIds: taskData.goalIds || taskData.goalId ? [taskData.goalId] : [],
+          // goalId: taskData.goalId,
           userId,
           dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
         },
@@ -98,12 +104,54 @@ async function focusRoutes(fastify: FastifyInstance) {
       const { completed, priority, category } = request.query as any;
 
       const where: any = { userId };
+      if(!userId) {
+        return reply.code(401).send({ error: 'Unauthorized' });
+      }
       if (completed !== undefined) where.completed = completed === 'true';
       if (priority) where.priority = priority;
       if (category) where.category = category;
 
       const tasks = await fastify.prisma.task.findMany({
         where,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return reply.send({ success: true, data: tasks });
+    } catch (error) {
+      request.log.error(error);
+      return reply.code(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  fastify.get('/public/goals/', {
+    // onRequest: [fastify.authenticate],
+    // schema: {
+    //   querystring: z.object({
+    //     completed: z.string().optional(),
+    //     priority: z.string().optional(),
+    //     category: z.string().optional(),
+    //   }),
+    // },
+  }, async (request, reply) => {
+    try {
+      const { completed, priority, category } = request.query as any;
+
+      const where: any = { isPublic: true };
+    
+      if (completed !== undefined) where.completed = completed === 'true';
+      if (priority) where.priority = priority;
+      if (category) where.category = category;
+      where.isPublic = true;
+      
+
+      const tasks = await fastify.prisma.task.findMany({
+        where,
+        select: {
+          title: true,
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { createdAt: 'desc' },
       });
 
