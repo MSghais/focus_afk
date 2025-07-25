@@ -13,7 +13,7 @@ import ChatAi from '../../../components/modules/ChatAi';
 import GoalsOverview from '../../../components/modules/goals/GoalsOverview';
 import { useUIStore } from '../../../store/uiStore';
 import { useMentorsStore } from '../../../store/mentors';
-import { ButtonPrimary } from '../../../components/small/buttons';
+import { ButtonPrimary, ButtonSimple } from '../../../components/small/buttons';
 import { Task } from '../../../types';
 import MentorList from '../../../components/modules/mentor/MentorList';
 
@@ -41,6 +41,8 @@ export default function DeepModePage() {
     const [level, setLevel] = useState(1);
     const [isTimerRunning, setIsTimerRunning] = useState(false);
     const [timerSeconds, setTimerSeconds] = useState(0);
+
+    const [isOpenChatAi, setIsOpenChatAi] = useState(false);
 
     const [isOpenGoalModal, setIsOpenGoalModal] = useState(false);
 
@@ -235,10 +237,19 @@ export default function DeepModePage() {
                     </div>
 
                     {/* Chat Component */}
+
+                    <div className="flex justify-end">
+                        <ButtonSimple onClick={() => setIsOpenChatAi(!isOpenChatAi)}>
+                            {isOpenChatAi ? 'Close Chat' : 'Open Chat'}
+                        </ButtonSimple>
+                    </div>
+
+                    {isOpenChatAi && (
                     <ChatAi 
                         taskId={typeof taskId === 'string' ? parseInt(taskId) || undefined : taskId} 
                         isSelectMentorViewEnabled={true}
                     />
+                    )}
                 </div>
             </div>
         </div>

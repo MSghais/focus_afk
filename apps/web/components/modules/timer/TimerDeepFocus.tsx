@@ -44,8 +44,9 @@ export default function TimerDeepFocus({
         loadSettings
     } = useFocusAFKStore();
 
-    const [selectedTaskId, setSelectedTaskId] = useState<number | undefined>();
-    const [selectedGoalId, setSelectedGoalId] = useState<number | undefined>();
+    const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
+
+    const [selectedGoalId, setSelectedGoalId] = useState<string | undefined>();
     // Reset timer when component unmounts
     useEffect(() => {
         return () => {
@@ -167,7 +168,10 @@ export default function TimerDeepFocus({
 
                             <select
                                 value={selectedTaskId || ''}
-                                onChange={(e) => setSelectedTaskId(e.target.value ? parseInt(e.target.value) : undefined)}
+                                onChange={(e) =>{
+                                    setSelectedTaskId(e.target.value ? e.target.value : undefined);
+                                    logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
+                                }}
                                 className="w-full p-2 border rounded-md"
                             >
                                 <option value="">No specific task</option>
@@ -183,7 +187,7 @@ export default function TimerDeepFocus({
                             <label className="block text-sm font-medium mb-2">Select Goal (Optional)</label>
                             <select
                                 value={selectedGoalId || ''}
-                                onChange={(e) => setSelectedGoalId(e.target.value ? parseInt(e.target.value) : undefined)}
+                                onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
                                 className="w-full p-2 border rounded-md"
                             >
                                 <option value="">No specific goal</option>
