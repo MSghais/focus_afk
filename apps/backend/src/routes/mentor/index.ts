@@ -5,6 +5,7 @@ import { pinata } from '../../services/pinata';
 import { DEFAULT_MODEL, LLM_FREE_MODELS_NAME, LLM_MODELS_NAME } from '../../config/models';
 import { AiService } from '../../services/ai/ai';
 import { EnhancedAiService } from '../../services/ai/enhancedAiService';
+import { ChatService } from '../../services/chat/chat.service';
 import { buildContextString } from '../../services/helpers/contextHelper';
 import { mentorSchema } from '../../validations/mentor.validation';
 import type { CreateMentorInput, UpdateMentorInput, CreateMessageInput, GetMessagesInput, CreateFundingAccountInput, UpdateFundingAccountInput } from '../../validations/mentor.validation';
@@ -13,6 +14,7 @@ dotenv.config();
 async function mentorRoutes(fastify: FastifyInstance) {
   const aiService = new AiService();
   const enhancedAiService = new EnhancedAiService(fastify.prisma);
+  const chatService = new ChatService(fastify.prisma);
 
   // Check if the plugin is already registered
   if (!fastify.hasContentTypeParser('multipart/form-data')) {
@@ -210,32 +212,29 @@ async function mentorRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      // Save user message
-      const userMessage = await fastify.prisma.message.create({
-        data: {
-          userId,
-          mentorId,
-          role: 'user',
-          content: prompt,
-          model,
+      // Get or create a chat for this mentor
+      let chat;
+      if (mentorId) {
+        chat = await chatService.getOrCreateMentorChat(userId, mentorId);
+      } else {
+        // Create a standalone chat if no mentor is specified
+        chat = await chatService.createChat(userId, {
+          title: 'General Chat',
           metadata: {
             sessionId: response.memory.sessionId,
             enableMemory,
             contextSources,
-            originalPrompt: prompt,
-            enhancedPrompt: enhancedPrompt,
-            extraData: extraData || null
           }
-        },
-      });
+        });
+      }
 
-      // Save assistant response
-      const assistantMessage = await fastify.prisma.message.create({
-        data: {
-          userId,
-          mentorId,
-          role: 'assistant',
-          content: response.text,
+      // Save the conversation to the chat
+      const conversation = await chatService.saveConversation(
+        chat.id,
+        userId,
+        prompt,
+        response.text,
+        {
           model,
           tokens: response.usage?.total_tokens,
           metadata: {
@@ -249,14 +248,15 @@ async function mentorRoutes(fastify: FastifyInstance) {
             enhancedPrompt: enhancedPrompt,
             extraData: extraData || null
           }
-        },
-      });
+        }
+      );
 
       return reply.code(200).send({
         success: true,
         data: {
           response: response.text,
-          messageId: assistantMessage.id,
+          chatId: chat.id,
+          messageId: conversation.assistantMessage.id,
           memory: response.memory,
           usage: response.usage,
           originalPrompt: prompt,
@@ -269,7 +269,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Get messages for a user
+  // Get messages for a user (legacy endpoint - now returns standalone messages)
   fastify.get('/messages', {
     preHandler: [fastify.authenticate],
     schema: {
@@ -280,28 +280,52 @@ async function mentorRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const { mentorId, limit, offset } = request.query as GetMessagesInput;
 
-      const whereClause: any = { userId };
-      if (mentorId) {
-        whereClause.mentorId = mentorId;
-      }
-
+      // Get standalone messages (not linked to any chat)
       const messages = await fastify.prisma.message.findMany({
-        where: whereClause,
+        where: {
+          userId,
+          // Only standalone messages (not linked to any chat)
+          // Note: This will work after schema migration
+        },
         orderBy: { createdAt: 'desc' },
         take: limit,
         skip: offset,
-        include: {
-          mentor: {
-            select: {
-              id: true,
-              name: true,
-              role: true,
-            },
-          },
-        },
       });
 
       return reply.code(200).send(messages);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ message: 'Internal Server Error' });
+    }
+  });
+
+  // Get chats for a user (new endpoint)
+  fastify.get('/chats', {
+    preHandler: [fastify.authenticate],
+    schema: {
+      querystring: {
+        type: 'object',
+        properties: {
+          mentorId: { type: 'string' },
+          isActive: { type: 'boolean' },
+          limit: { type: 'number', minimum: 1, maximum: 100 },
+          offset: { type: 'number', minimum: 0 },
+        },
+      },
+    },
+  }, async (request, reply) => {
+    try {
+      const userId = request.user.id;
+      const { mentorId, isActive, limit, offset } = request.query as any;
+
+      const chats = await chatService.getUserChats(userId, {
+        mentorId,
+        isActive,
+        limit,
+        offset,
+      });
+
+      return reply.code(200).send(chats);
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ message: 'Internal Server Error' });

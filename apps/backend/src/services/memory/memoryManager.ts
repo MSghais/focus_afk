@@ -495,15 +495,23 @@ export class MemoryManager {
     mentorId: string | undefined, 
     sessionKey: string
   ): Promise<MemoryContext> {
-    // Load recent messages
-    const messages = await this.prisma.message.findMany({
+    // Load recent messages from chats (new structure)
+    const chats = await this.prisma.chat.findMany({
       where: { 
         userId,
         mentorId: mentorId || null
       },
-      orderBy: { createdAt: 'desc' },
-      take: this.config.maxMessages
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: this.config.maxMessages
+        }
+      },
+      take: 5 // Get last 5 chats
     });
+
+    // Flatten messages from all chats
+    const messages = chats.flatMap(chat => chat.messages).slice(0, this.config.maxMessages);
 
     // Load user context from all sources
     const userContext = await this.loadUserContext(userId, mentorId);

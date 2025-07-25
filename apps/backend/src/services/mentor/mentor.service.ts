@@ -52,63 +52,58 @@ export class MentorService {
     return { message: 'Mentor deleted successfully' };
   }
 
-  // Message operations
-  async createMessage(userId: string, messageData: any) {
+  // Message operations (legacy - for standalone messages)
+  async createStandaloneMessage(userId: string, messageData: any) {
     return this.prisma.message.create({
       data: {
         ...messageData,
-        userId,
+        user: {
+          connect: { id: userId }
+        },
+        // chatId is null for standalone messages
       },
     });
   }
 
-  async getUserMessages(userId: string, options: { mentorId?: string; limit?: number; offset?: number } = {}) {
-    const { mentorId, limit = 50, offset = 0 } = options;
-
-    const whereClause: any = { userId };
-    if (mentorId) {
-      whereClause.mentorId = mentorId;
-    }
+  async getStandaloneMessages(userId: string, options: { limit?: number; offset?: number } = {}) {
+    const { limit = 50, offset = 0 } = options;
 
     return this.prisma.message.findMany({
-      where: whereClause,
+      where: {
+        chatId: null, // Only standalone messages
+      },
       orderBy: { createdAt: 'desc' },
       take: limit,
       skip: offset,
-      include: {
-        mentor: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-          },
-        },
-      },
     });
   }
 
-  async saveChatMessages(userId: string, userMessage: string, assistantResponse: string, options: { mentorId?: string; model?: string } = {}) {
-    const { mentorId, model } = options;
+  async saveStandaloneMessages(userId: string, userMessage: string, assistantResponse: string, options: { model?: string; metadata?: any } = {}) {
+    const { model, metadata } = options;
 
     // Save user message
     await this.prisma.message.create({
       data: {
-        userId,
-        mentorId,
         role: 'user',
         content: userMessage,
         model,
+        metadata,
+        user: {
+          connect: { id: userId }
+        },
       },
     });
 
     // Save assistant response
     return this.prisma.message.create({
       data: {
-        userId,
-        mentorId,
         role: 'assistant',
         content: assistantResponse,
         model,
+        metadata,
+        user: {
+          connect: { id: userId }
+        },
       },
     });
   }

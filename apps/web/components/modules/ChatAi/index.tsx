@@ -23,9 +23,13 @@ interface ChatAiProps {
     taskId?: number | string;
     mentorId?: number | string;
     isSelectMentorViewEnabled?: boolean;
+    chatId?: string;
+    onSendMessage?: (message: string) => void;
+    messagesProps?: Message[];
+    isLoadingProps?: boolean;
 }
 
-export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false }: ChatAiProps) {
+export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false, chatId, onSendMessage, messagesProps, isLoadingProps }: ChatAiProps) {
     const router = useRouter();
     const { selectedMentor } = useMentorsStore();
     const params = useParams();
@@ -44,8 +48,8 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         category: ''
     });
     const [chatMessage, setChatMessage] = useState('');
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [messages, setMessages] = useState<Message[]>(messagesProps || []);
+    const [isLoading, setIsLoading] = useState(isLoadingProps || false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
     const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
 
@@ -96,7 +100,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 return;
             }
 
-            const response = await apiService.getMessages({ limit: 50, mentorId: selectedMentor?.id?.toString() || undefined });
+            const response = await apiService.getMessages({ limit: 50, mentorId: selectedMentor?.id?.toString() || undefined, chatId: chatId || undefined });
 
             // console.log('Messages response:', response);
             

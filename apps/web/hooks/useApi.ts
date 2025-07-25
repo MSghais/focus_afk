@@ -47,12 +47,12 @@ export function useApi() {
         }
       },
       // Override the methods that need authentication
-      getMessages: async (filters?: { mentorId?: string; limit?: number; offset?: number }) => {
+      getMessages: async (filters?: { mentorId?: string; limit?: number; offset?: number; chatId?: string }) => {
         const params = new URLSearchParams();
         if (filters?.mentorId) params.append('mentorId', filters.mentorId);
         if (filters?.limit) params.append('limit', filters.limit.toString());
         if (filters?.offset) params.append('offset', filters.offset.toString());
-
+        if (filters?.chatId) params.append('chatId', filters.chatId);
         return authenticatedApiService.request(`/mentor/messages?${params.toString()}`);
       },
       sendChatMessage: async (messageData: { prompt: string; model?: string; mentorId?: string }) => {
