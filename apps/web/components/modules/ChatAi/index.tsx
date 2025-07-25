@@ -31,7 +31,7 @@ interface ChatAiProps {
 
 export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false, chatId, onSendMessage, messagesProps, isLoadingProps }: ChatAiProps) {
     const router = useRouter();
-    const { selectedMentor } = useMentorsStore();
+    const { selectedMentor, mentors, setSelectedMentor, setMentors } = useMentorsStore();
     const params = useParams();
     const { showToast, showModal } = useUIStore();
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
@@ -87,6 +87,13 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         setIsLoadingMessagesInitial(true);
     }, []);
 
+    // Load mentors on mount
+    useEffect(() => {
+        if (userConnected && (!mentors || mentors.length === 0)) {
+            loadMentors();
+        }
+    }, [userConnected]);
+
     useEffect(() => {
         if (selectedMentor?.id) {
             // Reset current chat ID when mentor changes
@@ -94,6 +101,26 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
             loadMessages();
         }
     }, [selectedMentor?.id, mentorId]);
+
+    // Auto-select first mentor if none selected
+    useEffect(() => {
+        if (!selectedMentor && mentors && mentors.length > 0) {
+            setSelectedMentor(mentors[0]);
+        }
+    }, [mentors, selectedMentor]);
+
+    const loadMentors = async () => {
+        try {
+            if (!userConnected) return;
+
+            const response = await apiService.getMentors();
+            if (response && Array.isArray(response)) {
+                setMentors(response);
+            }
+        } catch (error) {
+            console.error('Error loading mentors:', error);
+        }
+    };
 
     const loadMessages = async () => {
         try {
@@ -244,9 +271,11 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         <div className={styles.chatAi}>
             <div className={styles.chatCard}>
                 <div className={styles.chatHeader}>
-                    <h2 className={styles.cardTitle}>Chat with AI Mentor</h2>
+                    <h2 className={styles.cardTitle}>
+                        {selectedMentor ? `Chat with ${selectedMentor.name}` : 'Chat with AI Mentor'}
+                    </h2>
 
-                    <div className={styles.chatActions}>
+                    <div className={styles.chatActions + "my-4 gap-8 space-x-8 space-between shadow-sm  rounded-lg p-2"}>
                         {isSelectMentorViewEnabled && (
                             <button 
                                 onClick={() => {
@@ -277,9 +306,34 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 )}
 
                 <div className={styles.chatMessages}>
-                    {messages.length === 0 ? (
+                    {!selectedMentor ? (
                         <div className={styles.emptyState}>
-                            <p>Start a conversation with your AI mentor!</p>
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-4">🤖</div>
+                                <h3 className="text-lg font-semibold mb-2">No Mentor Selected</h3>
+                                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                                    Select an AI mentor to start a conversation and get personalized guidance for your task.
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        logClickedEvent('open_mentor_list_from_chat');   
+                                        showModal(<MentorList />);
+                                    }}
+                                    className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                                >
+                                    Select Mentor
+                                </button>
+                            </div>
+                        </div>
+                    ) : messages.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-4">💬</div>
+                                <h3 className="text-lg font-semibold mb-2">Start a Conversation</h3>
+                                <p className="text-gray-600 dark:text-gray-400">
+                                    Ask {selectedMentor.name} anything about your task, productivity, or goals!
+                                </p>
+                            </div>
                         </div>
                     ) : (
                         messages.map((message) => {
@@ -325,18 +379,18 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                         value={chatMessage}
                         onChange={(e) => setChatMessage(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="Ask me anything about productivity, focus, or your goals..."
+                        placeholder={selectedMentor ? `Ask ${selectedMentor.name} anything about productivity, focus, or your goals...` : "Select a mentor to start chatting..."}
                         className={styles.input}
-                        disabled={isLoading}
+                        disabled={isLoading || !selectedMentor}
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="sentences"
                     />
                     <button
                         onClick={handleSendMessage}
-                        disabled={isLoading || !chatMessage.trim()}
+                        disabled={isLoading || !chatMessage.trim() || !selectedMentor}
                         className={styles.sendButton}
-                        title="Send Message"
+                        title={selectedMentor ? "Send Message" : "Select a mentor first"}
                     >
                         ➤
                     </button>

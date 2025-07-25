@@ -137,10 +137,10 @@ export default function TimerDeepFocus({
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
                     <p className="text-sm text-blue-800">
                         {selectedTaskId && (
-                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                            <span>Working on: <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong></span>
                         )}
                         {selectedGoalId && (
-                            <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                            <span>Goal: <strong>{goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}</strong></span>
                         )}
                     </p>
                 </div>
@@ -157,7 +157,7 @@ export default function TimerDeepFocus({
                                 <div className="mt-4 p-3 bg-blue-50 rounded-lg max-w-md">
                                     <p className="text-sm text-blue-800">
                                         {selectedTaskId && (
-                                            <span>Working on: <strong>{tasks.find(t => t.id === selectedTaskId)?.title}</strong></span>
+                                            <span>Working on: <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong></span>
                                         )}
                                      
                                     </p>
@@ -198,7 +198,7 @@ export default function TimerDeepFocus({
 
                         {selectedGoalId && (
                             <div>
-                                <span>Goal: <strong>{goals.find(g => g.id === selectedGoalId)?.title}</strong></span>
+                                <span>Goal: <strong>{goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}</strong></span>
                             </div>
                         )}
                     </div>);
