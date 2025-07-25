@@ -139,7 +139,7 @@ class ApiService {
 
   // Goal methods
   async createGoal(goalData: Omit<Goal, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<Goal>> {
-    return this.request<Goal>('/goals', {
+    return this.request<Goal>('/goals/create', {
       method: 'POST',
       body: JSON.stringify(goalData),
     });
@@ -156,10 +156,27 @@ class ApiService {
     return this.request<Goal[]>(`/goals?${params.toString()}`);
   }
 
+  async getGoal(id: string): Promise<ApiResponse<Goal>> {
+    return this.request<Goal>(`/goals/${id}`);
+  }
+
   async updateGoal(id: string, updates: Partial<Goal>): Promise<ApiResponse<Goal>> {
     return this.request<Goal>(`/goals/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteGoal(id: string): Promise<ApiResponse<Goal>> {
+    return this.request<Goal>(`/goals/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateGoalProgress(id: string, progress: number): Promise<ApiResponse<Goal>> {
+    return this.request<Goal>(`/goals/${id}/progress`, {
+      method: 'PUT',
+      body: JSON.stringify({ progress }),
     });
   }
 
@@ -341,6 +358,15 @@ class ApiService {
   }
   async getQuest(id: string) {
     return this.request(`/quests/${id}`);
+  }
+
+  async getGoalRecommendations(goalId: string) {
+    return this.request(`/goals/${goalId}/recommendations/tasks`, {
+      method: 'POST',
+      body: JSON.stringify({
+        taskIds: [],
+      }),
+    });
   }
 }
 
