@@ -52,6 +52,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
     const [isLoading, setIsLoading] = useState(isLoadingProps || false);
     const [isLoadingMessages, setIsLoadingMessages] = useState(true);
     const [isLoadingMessagesInitial, setIsLoadingMessagesInitial] = useState(true);
+    const [currentChatId, setCurrentChatId] = useState<string | null>(chatId || null);
 
     // Auto-scroll to bottom when messages change
     const scrollToBottom = () => {
@@ -88,30 +89,51 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
     useEffect(() => {
         if (selectedMentor?.id) {
+            // Reset current chat ID when mentor changes
+            setCurrentChatId(null);
             loadMessages();
         }
     }, [selectedMentor?.id, mentorId]);
 
     const loadMessages = async () => {
         try {
-
             if (!userConnected) {
                 showModal(<ProfileUser isLoggoutViewActive={false} />);
                 return;
             }
 
-            const response = await apiService.getMessages({ limit: 50, mentorId: selectedMentor?.id?.toString() || undefined, chatId: chatId || undefined });
-
-            // console.log('Messages response:', response);
-            
-            // Handle both direct array response and wrapped response
             let messagesArray: Message[] = [];
-            if (Array.isArray(response)) {
-                messagesArray = response;
-            } else if (response && response.data && Array.isArray(response.data)) {
-                messagesArray = response.data;
-            } else if (response && response.success && response.data && Array.isArray(response.data)) {
-                messagesArray = response.data;
+
+            // If we have a current chat ID, load messages from that chat
+            if (currentChatId) {
+                const response = await apiService.getChatMessages(currentChatId, { limit: 50 });
+                
+                if (response && response.data && Array.isArray(response.data)) {
+                    messagesArray = response.data;
+                } else if (Array.isArray(response)) {
+                    messagesArray = response;
+                }
+            } else {
+                // Try to find an existing chat for the selected mentor
+                if (selectedMentor?.id) {
+                    const chatsResponse = await apiService.getChats({ 
+                        mentorId: selectedMentor.id.toString(), 
+                        limit: 1 
+                    });
+                    
+                    if (chatsResponse && chatsResponse.data && chatsResponse.data.length > 0) {
+                        const chat = chatsResponse.data[0];
+                        setCurrentChatId(chat.id);
+                        
+                        // Load messages from this chat
+                        const messagesResponse = await apiService.getChatMessages(chat.id, { limit: 50 });
+                        if (messagesResponse && messagesResponse.data && Array.isArray(messagesResponse.data)) {
+                            messagesArray = messagesResponse.data;
+                        } else if (Array.isArray(messagesResponse)) {
+                            messagesArray = messagesResponse;
+                        }
+                    }
+                }
             }
 
             if (messagesArray.length > 0) {
@@ -144,10 +166,6 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         const userMessage = chatMessage;
         setChatMessage('');
         setIsLoading(true);
-        // if(!userConnected) {
-        //     showModal(<ProfileUser />);
-        //     return;
-        // }
 
         logClickedEvent('send_message_deep_mode');
 
@@ -155,10 +173,15 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
             // Send message to backend
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
-                mentorId: selectedMentor?.id?.toString() || undefined, // You can add mentor selection later
+                mentorId: selectedMentor?.id?.toString() || undefined,
             });
 
             if (response?.success || response) {
+                // Update current chat ID if this is a new chat
+                if (response.data?.chatId && !currentChatId) {
+                    setCurrentChatId(response.data.chatId);
+                }
+                
                 // Reload messages to get the updated conversation
                 await loadMessages();
             } else {

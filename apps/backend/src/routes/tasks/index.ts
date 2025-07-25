@@ -72,6 +72,17 @@ async function focusRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const taskData = request.body as z.infer<typeof TaskSchema>;
 
+      // Verify user exists in database
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        console.error('🔐 POST /tasks - User not found in database:', userId);
+        return reply.code(404).send({ error: 'User not found' });
+      }
+
+
       const task = await fastify.prisma.task.create({
         data: {
           ...taskData,
@@ -82,8 +93,10 @@ async function focusRoutes(fastify: FastifyInstance) {
         },
       });
 
+      console.log('🔐 POST /tasks - Task created successfully:', task.id);
       return reply.code(201).send({ success: true, data: task });
     } catch (error) {
+      console.error('🔐 POST /tasks - Error:', error);
       request.log.error(error);
       return reply.code(500).send({ error: 'Internal server error' });
     }
