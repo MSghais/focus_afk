@@ -17,6 +17,7 @@ interface LlmInputsGenerationObject {
     model: string;
     systemPrompt: string;
     prompt: string;
+    output?: "array"  | "object";
     schema: z.ZodSchema;
 }
 
@@ -83,6 +84,9 @@ export class AiService {
                 system: inputs.systemPrompt,
                 schema: inputs?.schema as ZodSchema,
                 mode: "json",
+                output: "object",
+                // output:"object",
+                // output: "no-schema",
                 prompt: inputs.prompt,
             });
             console.log("object", object);

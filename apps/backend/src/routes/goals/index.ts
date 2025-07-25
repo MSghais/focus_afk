@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import dotenv from 'dotenv';
 import { AiService } from '../../services/ai/ai';
-import { DEFAULT_MODEL } from '../../config/models';
+import { DEFAULT_MODEL, LLM_EXPENSIVE_MODELS_NAME, LLM_FREE_MODELS_NAME, LLM_LOW_COST_MODELS_NAME } from '../../config/models';
 dotenv.config();
 
 const GoalSchema = z.object({
@@ -229,35 +229,47 @@ async function goalsRoutes(fastify: FastifyInstance) {
       const prompt = `
       You are a goal recommendation system.
       You are given a goal and a list of tasks.
-      You need to recommend a list of tasks that are related to the goal.
+      You need to recommend a list of tasks around 2 or 3 tasks that are related to the goal.
       Fast, simple and concise. actionable tasks.
+      Diversity of tasks and the difficulty, perspsectives and approaches. 
+
       The goal is: ${goal.title}
       Description: ${goal.description}
       The tasks are: ${taskIds.join(', ')}
       `;
 
       const response = await aiService.generateObject({
-        model: DEFAULT_MODEL,
+        // output: 'array',
+        model: LLM_EXPENSIVE_MODELS_NAME?.GPT_4O,
         systemPrompt: `
         You are a goal recommendation system.
         You are given a goal and a list of tasks.
-        You need to recommend a list of tasks that are related to the goal.
+        You need to recommend a list of tasks around 2 or 3 tasks that are related to the goal.
         Fast, simple and concise. actionable tasks.
+        Diversity of tasks and the difficulty, perspsectives and approaches. 
         The goal is: ${goal.title}
         Description: ${goal.description}
         `,
         schema: z.array(z.object({
-            title: z.string(),
-            description: z.string(),
-            priority:z.enum(['low', 'medium', 'high']),
-            category: z.enum(['work', 'personal', 'health', 'finance', 'learning', 'other']),
-            duration: z.number().positive(),
-            tags: z.array(z.string()),
-          })),
+          title: z.string(),
+          description: z.string(),
+          // priority:z.enum(['low', 'medium', 'high']).optional(),
+          // category: z.enum(['work', 'personal', 'health', 'finance', 'learning', 'other']).optional(),
+          // tags: z.array(z.string()).optional(),
+        })),
+        // schema: z.object({
+        //   tasks: z.array(z.object({
+        //     title: z.string(),
+        //     description: z.string(),
+        //     // priority:z.enum(['low', 'medium', 'high']).optional(),
+        //     // category: z.enum(['work', 'personal', 'health', 'finance', 'learning', 'other']).optional(),
+        //     // tags: z.array(z.string()).optional(),
+        //   })),
+        // }),
         prompt: prompt,
       });
       console.log("response", response);
-      return reply.send({ success: true, data: JSON.parse(response?.object?.tasks) });
+      return reply.send({ success: true, data: response?.object });
       
       
     } catch (error) {

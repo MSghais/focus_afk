@@ -6,6 +6,7 @@ import { ButtonPrimary } from '../../small/buttons';
 import { Goal, Task } from '../../../types';
 import { useParams } from 'next/navigation';
 import { api } from '../../../lib/api';
+import TimeLoading from '../../small/loading/time-loading';
 export interface GoalDetailProps {
   goalIdProps?: string;
   goalProps?: Goal;
@@ -23,10 +24,13 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   const foundGoal = useMemo(() => goals.find(g => Number(g.id) === Number(goalId)), [goals, goalId]);
   const foundTask = useMemo(() => tasks.find(t => Number(t.id) === Number(goal?.relatedTasks?.[0])), [tasks, goal]);
 
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState<boolean>(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const getRecommendations = async () => {
     try {
+      setIsLoadingRecommendations(true);
       const response = await api.getGoalRecommendations(goalId as string);
+      console.log("response", response);
       if(response.success && response.data) {
         setRecommendations(response.data as any[]);
       } else {
@@ -34,6 +38,8 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       }
     } catch (error) {
       console.error("error", error);
+    } finally {
+      setIsLoadingRecommendations(false);
     }
   }
 
@@ -75,11 +81,17 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     goalId = id;
   }
   if (!goalId) {
-    return <div>Goal not found</div>;
+    return <div>Goal not found
+
+      <TimeLoading />
+    </div>;
   }
 
   if (!foundGoal && !goal) {
-    return <div>Goal not found</div>;
+    return <div>Goal not found
+
+      <TimeLoading />
+    </div>;
   }
   // useEffect(() => {
   //   if (selectedGoal) {
@@ -110,8 +122,8 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     <div className="flex flex-col gap-2"> 
       <ButtonPrimary onClick={() => {
         getRecommendations();
-      }}>
-        Get Recommendations
+      }} disabled={isLoadingRecommendations}>
+        {isLoadingRecommendations ? <TimeLoading /> : "Get Recommendations"}
       </ButtonPrimary>  
     </div>
     </div>
