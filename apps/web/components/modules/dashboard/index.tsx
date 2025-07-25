@@ -9,6 +9,7 @@ import ListFocusSession from './ListFocusSession';
 import ChartFocus from './ChartFocus';
 import RecentGoals from './RecentGoals';
 import RecentTasks from './RecentTasks';
+import AvatarIcon from '../../small/AvatarIcon';
 
 export default function Dashboard() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function Dashboard() {
         setCurrentModule
     } = useFocusAFKStore();
 
+    const [level, setLevel] = useState(1);
     const [taskStats, setTaskStats] = useState({
         total: 0,
         completed: 0,
@@ -101,7 +103,14 @@ export default function Dashboard() {
 
     return (
         <div className={styles.dashboard}>
-            <h1 className={styles.title}>Dashboard</h1>
+
+            <div className="flex justify-between items-center">  
+                <h1 className={styles.title}>Dashboard</h1>
+                <div className="flex items-center gap-2">
+                    <AvatarIcon avatar={'🦸'} />
+                    <p className="text-sm text-gray-500 italic">Level {level}</p>
+                </div>
+            </div>
 
             {/* Stats Overview */}
 

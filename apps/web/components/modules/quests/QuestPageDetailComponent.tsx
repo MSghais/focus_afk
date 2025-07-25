@@ -1,10 +1,11 @@
-'use client'; 
+'use client';
 import React, { useEffect, useState } from 'react';
 import styles from './QuestDetail.module.scss';
 import api from '../../../lib/api';
 import { Quest } from '../../../lib/gamification';
 import TimeLoading from '../../small/loading/time-loading';
 import { tryMarkdownToHtml } from '../../../lib/helpers';
+import { ButtonPrimary, ButtonSimple } from '../../small/buttons';
 
 export interface QuestPageDetailProps {
   id?: string;
@@ -16,7 +17,7 @@ const QuestPageDetailComponent: React.FC<QuestPageDetailProps> = ({
   id,
   onAction,
   actionLabel,
-  }) => {
+}) => {
 
   if (!id) return null;
 
@@ -50,7 +51,24 @@ const QuestPageDetailComponent: React.FC<QuestPageDetailProps> = ({
       <div className={styles.rewards}>
         {/* <span className={styles.xp}>Reward: +{xpReward} XP</span> */}
         {badgeReward && <span className={styles.badge}>🏅 {badgeReward}</span>}
+        {!badgeReward && <span className={styles.badge}>🏅 {quest?.status}</span>}
       </div>
+
+      <div>
+        {quest?.rewardBadge && <img src={quest?.rewardBadge} alt={quest?.name} className={styles.badgeImage} />}
+        {quest?.levelRequired && <span>Level Required: {quest?.levelRequired}</span>}
+        {quest?.rewardXp && <span>XP Reward: {quest?.rewardXp}</span>}
+        {quest?.rewardBadge && <span>Badge Reward: {quest?.rewardBadge}</span>}
+      </div>
+
+      <div className={styles.questDetailActions}>
+        <ButtonSimple onClick={onAction}>{actionLabel}</ButtonSimple>
+        {quest?.status === 'completed' && (
+          <ButtonPrimary onClick={onAction}>{actionLabel}</ButtonPrimary>
+        )}
+      </div>
+
+
       {onAction && (
         <button className={styles.actionBtn} onClick={onAction}>{actionLabel}</button>
       )}
