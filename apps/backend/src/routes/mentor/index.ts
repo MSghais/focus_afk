@@ -183,10 +183,13 @@ async function mentorRoutes(fastify: FastifyInstance) {
       // If extraData is provided, merge it into the context
       if (enableMemory && extraData && memory) {
         // Merge extraData into the userContext
-        memory = await enhancedAiService.memoryManager.updateMemory(
+        const updatedMemory = await enhancedAiService.memoryManager.updateMemory(
           sessionId || `${userId}_${mentorId || 'default'}`,
           { userContext: { ...memory.userContext, ...extraData } }
         );
+        if (updatedMemory) {
+          memory = updatedMemory;
+        }
       }
 
       // Use the context helper to build the context string

@@ -111,6 +111,7 @@ model Mentor {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   chats Chat[]
+  messages Message[]
 
   @@map("mentors")
 }
@@ -142,6 +143,7 @@ model Message {
   id        String   @id @default(cuid())
   userId    String   // Link to the user who owns this message
   chatId    String?  // Optional link to the chat conversation
+  mentorId  String?  // Optional link to the mentor
   role      String   // user, assistant, system
   content   String   // The message content
   prompt    String?
@@ -154,6 +156,7 @@ model Message {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   chat Chat? @relation(fields: [chatId], references: [id], onDelete: SetNull)
+  mentor Mentor? @relation(fields: [mentorId], references: [id], onDelete: SetNull)
 
   @@map("messages")
 }

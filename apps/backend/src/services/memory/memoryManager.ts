@@ -583,9 +583,33 @@ export class MemoryManager {
       // Update the last message with memory metadata
       if (memory.messages.length > 0) {
         const lastMessage = memory.messages[memory.messages.length - 1];
-        await this.prisma.message.update({
+        
+        // Skip temporary messages that don't exist in the database
+        if (lastMessage.id.startsWith('temp_')) {
+          console.log('Skipping persistence for temporary message:', lastMessage.id);
+          return;
+        }
+        
+        // Use upsert to either update existing message or create a new one
+        console.log(`Persisting memory for message ${lastMessage.id} (session: ${memory.sessionId})`);
+        await this.prisma.message.upsert({
           where: { id: lastMessage.id },
-          data: {
+          update: {
+            metadata: {
+              memoryContext: {
+                sessionId: memory.sessionId,
+                contextVersion: memory.metadata.contextVersion,
+                lastUpdated: memory.metadata.lastUpdated,
+                dataSources: memory.metadata.dataSources
+              }
+            }
+          },
+          create: {
+            id: lastMessage.id,
+            role: lastMessage.role,
+            content: lastMessage.content,
+            userId: memory.userId,
+            createdAt: lastMessage.createdAt,
             metadata: {
               memoryContext: {
                 sessionId: memory.sessionId,
@@ -596,9 +620,11 @@ export class MemoryManager {
             }
           }
         });
+        console.log(`Successfully persisted memory for message ${lastMessage.id}`);
       }
     } catch (error) {
       console.error('Error persisting memory to database:', error);
+      // Don't throw the error, just log it to prevent crashes
     }
   }
 } 
