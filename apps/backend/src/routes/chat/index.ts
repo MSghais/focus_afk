@@ -154,10 +154,14 @@ async function chatRoutes(fastify: FastifyInstance) {
       const chatId = (request.params as { id: string }).id;
       const { limit, offset } = request.query as any;
 
+      console.log(`Getting messages for chat ${chatId}, user ${userId}, limit ${limit}, offset ${offset}`);
+
       const messages = await chatService.getChatMessages(chatId, userId, {
         limit,
         offset,
       });
+
+      console.log(`Found ${messages.length} messages for chat ${chatId}`);
 
       return reply.code(200).send(messages);
     } catch (error) {

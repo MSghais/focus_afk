@@ -188,21 +188,34 @@ export class ChatService {
   } = {}) {
     const { limit = 50, offset = 0 } = options;
 
+    console.log(`ChatService: Getting messages for chat ${chatId}, user ${userId}`);
+
     // Verify the chat belongs to the user
     const chat = await this.prisma.chat.findFirst({
       where: { id: chatId, userId },
     });
 
     if (!chat) {
+      console.log(`ChatService: Chat ${chatId} not found for user ${userId}`);
       throw new Error('Chat not found');
     }
 
-    return this.prisma.message.findMany({
+    console.log(`ChatService: Found chat ${chatId}, getting messages`);
+
+    const messages = await this.prisma.message.findMany({
       where: { chatId },
       orderBy: { createdAt: 'asc' },
       take: limit,
       skip: offset,
     });
+
+    console.log(`ChatService: Found ${messages.length} messages for chat ${chatId}`);
+    if (messages.length > 0) {
+      console.log(`ChatService: First message: ${messages[0].id} - ${messages[0].role} - ${messages[0].content.substring(0, 50)}...`);
+      console.log(`ChatService: Last message: ${messages[messages.length - 1].id} - ${messages[messages.length - 1].role} - ${messages[messages.length - 1].content.substring(0, 50)}...`);
+    }
+
+    return messages;
   }
 
   // Save a conversation (user message + assistant response) to a chat
@@ -216,19 +229,26 @@ export class ChatService {
       tokens?: number;
       metadata?: any;
       taskId?: string;
+      mentorId?: string;
     } = {}
   ) {
-    const { model, tokens, metadata, taskId } = options;
+    const { model, tokens, metadata, taskId, mentorId } = options;
 
+    // Get the chat to find the mentorId if not provided
+    const chat = await this.prisma.chat.findUnique({
+      where: { id: chatId },
+      select: { mentorId: true }
+    });
+
+    const messageMentorId = mentorId || chat?.mentorId;
+
+    console.log(`ChatService: Saving user message to chat ${chatId} with mentorId: ${messageMentorId}`);
     // Save user message
     const userMsg = await this.prisma.message.create({
       data: {
-        chat: {
-          connect: { id: chatId }
-        },
-        user: {
-          connect: { id: userId }
-        },
+        chatId,
+        userId,
+        ...(messageMentorId && { mentorId: messageMentorId }),
         role: 'user',
         content: userMessage,
         model,
@@ -236,16 +256,15 @@ export class ChatService {
         taskId,
       },
     });
+    console.log(`ChatService: Saved user message with ID: ${userMsg.id}`);
 
+    console.log(`ChatService: Saving assistant message to chat ${chatId} with mentorId: ${messageMentorId}`);
     // Save assistant response
     const assistantMsg = await this.prisma.message.create({
       data: {
-        chat: {
-          connect: { id: chatId }
-        },
-        user: {
-          connect: { id: userId }
-        },
+        chatId,
+        userId,
+        ...(messageMentorId && { mentorId: messageMentorId }),
         role: 'assistant',
         content: assistantResponse,
         model,
@@ -254,6 +273,7 @@ export class ChatService {
         taskId,
       },
     });
+    console.log(`ChatService: Saved assistant message with ID: ${assistantMsg.id}`);
 
     // Update chat's updatedAt timestamp
     await this.prisma.chat.update({

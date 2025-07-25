@@ -232,6 +232,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
       }
 
       // Save the conversation to the chat
+      console.log(`Saving conversation to chat ${chat.id} for user ${userId}`);
       const conversation = await chatService.saveConversation(
         chat.id,
         userId,
@@ -240,6 +241,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
         {
           model,
           tokens: response.usage?.total_tokens,
+          mentorId: mentorId || undefined,
           metadata: {
             sessionId: response.memory.sessionId,
             contextVersion: response.memory.contextVersion,
@@ -253,6 +255,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
           }
         }
       );
+      console.log(`Saved conversation with user message ID: ${conversation.userMessage.id}, assistant message ID: ${conversation.assistantMessage.id}`);
 
       return reply.code(200).send({
         success: true,

@@ -106,32 +106,53 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
             // If we have a current chat ID, load messages from that chat
             if (currentChatId) {
+                console.log('Loading messages for chat:', currentChatId);
                 const response = await apiService.getChatMessages(currentChatId, { limit: 50 });
+                console.log('Chat messages response:', response);
                 
+                // Handle both wrapped and direct array responses
                 if (response && response.data && Array.isArray(response.data)) {
                     messagesArray = response.data;
                 } else if (Array.isArray(response)) {
+                    messagesArray = response;
+                } else if (response && Array.isArray(response)) {
                     messagesArray = response;
                 }
             } else {
                 // Try to find an existing chat for the selected mentor
                 if (selectedMentor?.id) {
+                    console.log('Looking for existing chat for mentor:', selectedMentor.id);
                     const chatsResponse = await apiService.getChats({ 
                         mentorId: selectedMentor.id.toString(), 
                         limit: 1 
                     });
+                    console.log('Chats response:', chatsResponse);
                     
-                    if (chatsResponse && chatsResponse.data && chatsResponse.data.length > 0) {
-                        const chat = chatsResponse.data[0];
+                    // Handle both wrapped and direct array responses for chats
+                    let chats = [];
+                    if (chatsResponse && chatsResponse.data && Array.isArray(chatsResponse.data)) {
+                        chats = chatsResponse.data;
+                    } else if (Array.isArray(chatsResponse)) {
+                        chats = chatsResponse;
+                    }
+                    
+                    if (chats.length > 0) {
+                        const chat = chats[0];
+                        console.log('Found existing chat:', chat.id);
                         setCurrentChatId(chat.id);
                         
                         // Load messages from this chat
                         const messagesResponse = await apiService.getChatMessages(chat.id, { limit: 50 });
+                        console.log('Messages response for existing chat:', messagesResponse);
+                        
+                        // Handle both wrapped and direct array responses for messages
                         if (messagesResponse && messagesResponse.data && Array.isArray(messagesResponse.data)) {
                             messagesArray = messagesResponse.data;
                         } else if (Array.isArray(messagesResponse)) {
                             messagesArray = messagesResponse;
                         }
+                    } else {
+                        console.log('No existing chat found for mentor');
                     }
                 }
             }
@@ -145,6 +166,8 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 });
                 setMessages(sortedMessages);
                 console.log('Loaded messages:', sortedMessages.length);
+                console.log('First message:', sortedMessages[0]);
+                console.log('Last message:', sortedMessages[sortedMessages.length - 1]);
             } else {
                 console.log('No messages found or empty response');
                 setMessages([]);
@@ -170,15 +193,19 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         logClickedEvent('send_message_deep_mode');
 
         try {
+            console.log('Sending message:', userMessage, 'to mentor:', selectedMentor?.id);
             // Send message to backend
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
                 mentorId: selectedMentor?.id?.toString() || undefined,
             });
 
+            console.log('Send message response:', response);
+
             if (response?.success || response) {
                 // Update current chat ID if this is a new chat
                 if (response.data?.chatId && !currentChatId) {
+                    console.log('Setting new chat ID:', response.data.chatId);
                     setCurrentChatId(response.data.chatId);
                 }
                 
@@ -256,7 +283,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                             </div>
                         ) : (
                             messages.map((message) => {
-                                // console.log('Rendering message:', message.role, message.content?.substring(0, 50) + '...');
+                                console.log('Rendering message:', message.id, message.role, message.content?.substring(0, 50) + '...');
                                 return (
                                     <div key={message.id} className={`${styles.message} ${styles[message.role]}`}>
 

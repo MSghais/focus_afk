@@ -609,6 +609,7 @@ export class MemoryManager {
             role: lastMessage.role,
             content: lastMessage.content,
             userId: memory.userId,
+            ...(memory.mentorId && { mentorId: memory.mentorId }),
             createdAt: lastMessage.createdAt,
             metadata: {
               memoryContext: {
