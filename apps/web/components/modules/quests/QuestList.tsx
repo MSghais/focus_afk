@@ -19,13 +19,12 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefres
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loadQuests = async () => {
-    console.log("userConnected", userConnected);
 
     try {
       if (!userConnected?.id) return;
-      console.log("loadQuests", userConnected.id);
+      // console.log("loadQuests", userConnected.id);
       const res = await apiService.getQuests(userConnected.id)
-      console.log("res", res);
+      // console.log("res", res);
       if (
         Array.isArray((res as any).quests)
       ) {
@@ -57,7 +56,7 @@ const QuestList: React.FC<QuestListProps> = ({ quests, onSelect, isEnabledRefres
     setQuestsState(quests);
   }, [quests]);
 
-  console.log("questsState", questsState);
+  // console.log("questsState", questsState);
   return (
 
     <div className="flex flex-col gap-2">

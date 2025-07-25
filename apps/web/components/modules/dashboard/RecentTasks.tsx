@@ -110,12 +110,12 @@ export default function RecentTasks() {
                     {recentTasks.map((task) => (
                         <div key={task.id} className={styles.listItem}>
                             <div className={styles.itemContent}>
-                                <input
+                                {/* <input
                                     type="checkbox"
                                     checked={task.completed}
                                     readOnly
                                     className={styles.itemCheckbox}
-                                />
+                                /> */}
                                 <div className={styles.itemInfo}>
                                     <p className={`${styles.itemTitle} ${task.completed ? styles.completed : ''}`}>
                                         {task.title}

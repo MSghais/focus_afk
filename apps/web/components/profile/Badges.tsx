@@ -36,13 +36,13 @@ export default function Badges({ isEnabledRefreshButton = true, isDailyBadgeEnab
         setCurrentModule
     } = useFocusAFKStore();
     const loadBadges = async () => {
-        console.log("userConnected", userConnected);
+        // console.log("userConnected", userConnected);
 
         try {
             if (!userConnected?.id) return;
-            console.log("loadBadges", userConnected.id);
+            // console.log("loadBadges", userConnected.id);
             const res = await apiService.getBadges(userConnected.id)
-            console.log("res", res);
+            // console.log("res", res);
             if (
                 res.success &&
                 Array.isArray((res as any).badges)
@@ -120,7 +120,7 @@ export default function Badges({ isEnabledRefreshButton = true, isDailyBadgeEnab
     };
 
     const streak = calculateStreak(focusStats.sessionsByDay || []);
-    console.log("badges", badges);
+    // console.log("badges", badges);
     return (
         <div className="w-full  mx-auto p-4 shadow-md rounded-lg my-2">
             <h2 className="text-xl font-bold mb-4">Your Badges</h2>

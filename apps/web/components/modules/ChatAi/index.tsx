@@ -133,9 +133,9 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
             // If we have a current chat ID, load messages from that chat
             if (currentChatId) {
-                console.log('Loading messages for chat:', currentChatId);
+                // console.log('Loading messages for chat:', currentChatId);
                 const response = await apiService.getChatMessages(currentChatId, { limit: 50 });
-                console.log('Chat messages response:', response);
+                // console.log('Chat messages response:', response);
                 
                 // Handle both wrapped and direct array responses
                 if (response && response.data && Array.isArray(response.data)) {
@@ -148,7 +148,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
             } else {
                 // Try to find an existing chat for the selected mentor
                 if (selectedMentor?.id) {
-                    console.log('Looking for existing chat for mentor:', selectedMentor.id);
+                    // console.log('Looking for existing chat for mentor:', selectedMentor.id);
                     const chatsResponse = await apiService.getChats({ 
                         mentorId: selectedMentor.id.toString(), 
                         limit: 1 
@@ -179,7 +179,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                             messagesArray = messagesResponse;
                         }
                     } else {
-                        console.log('No existing chat found for mentor');
+                        // console.log('No existing chat found for mentor');
                     }
                 }
             }
@@ -196,7 +196,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 // console.log('First message:', sortedMessages[0]);
                 // console.log('Last message:', sortedMessages[sortedMessages.length - 1]);
             } else {
-                console.log('No messages found or empty response');
+                // console.log('No messages found or empty response');
                 setMessages([]);
             }
         } catch (error) {
