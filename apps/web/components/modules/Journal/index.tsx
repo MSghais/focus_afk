@@ -1,0 +1,31 @@
+'use client';
+
+import { useState } from "react";
+import Goals from "../goals/GoalsOverview";
+import Tasks from "../tasks";
+import NotesOverview from "../Notes";
+
+export default function JournalMainComponent() {
+    const [activeTab, setActiveTab] = useState<"notes" | "goals" | "tasks">('goals');
+
+    return (
+        <div className="flex flex-col gap-2 p-4">
+            {/* <h1 className="text-2xl font-bold">Journal</h1> */}
+            <div className="flex flex-row gap-2">
+
+                <button
+                    className={`rounded-md p-4 ${activeTab === 'goals' ? 'border border-gray-300' : ''}`}
+                    onClick={() => setActiveTab('goals')}> 🎯 Goals</button>
+                <button
+                    className={`rounded-md p-4 ${activeTab === 'tasks' ? 'border border-gray-300' : ''}`}
+                    onClick={() => setActiveTab('tasks')}>➕ Tasks</button>
+                <button
+                    className={`rounded-md p-4 ${activeTab === 'notes' ? 'border border-gray-300' : ''}`}
+                    onClick={() => setActiveTab('notes')}>Notes 📝</button>
+            </div>
+            {activeTab === 'notes' && <NotesOverview />}
+            {activeTab === 'goals' && <Goals />}
+            {activeTab === 'tasks' && <Tasks />}
+        </div>
+    );
+}

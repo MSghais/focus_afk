@@ -56,6 +56,8 @@ model User {
   badges Badge[]
   quests Quests[]
 
+  notes Notes[]
+
   @@map("users")
 }
 
@@ -375,4 +377,32 @@ model Quests {
 
   @@index([userId, type], map: "quests_userId_type_idx")
   @@map("quests")
+}
+
+
+model Notes {
+  id          String   @id @default(cuid())
+  requirements String[]
+
+  text String?
+  description String?
+  summary String?
+  topics String[]
+  sources String[]
+
+  aiSources String[]
+  aiTopics String[]
+  metadata  Json?
+
+  aiSummary String?
+
+  type        String?  
+  
+  difficulty Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId      String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 }

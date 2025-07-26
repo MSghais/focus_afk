@@ -13,6 +13,7 @@ import { useFocusAFKStore } from "../../store/store";
 import Learning from "../../components/modules/learning";
 import GoalsOverview from "../../components/modules/goals/GoalsOverview";
 import TimeLoading from "../../components/small/loading/time-loading";
+import JournalMainComponent from "../../components/modules/Journal";
   
 export default function DashboardPage() {
   const { ready, authenticated, user } = usePrivy();
@@ -47,7 +48,9 @@ export default function DashboardPage() {
         return <Settings />; // Settings component is in console module
       case 'focus':
         return <Focus />;
-      default:
+      case 'journal':
+        return <JournalMainComponent />;
+        default:
         return <Dashboard />;
     }
   };

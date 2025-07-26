@@ -22,7 +22,7 @@ interface TimerState {
 
 // UI state interface
 interface UIState {
-  currentModule: 'dashboard' | 'tasks' | 'timer' | 'focus' | 'goals' | 'mentor' | 'settings' | 'learning';
+  currentModule: 'dashboard' | 'tasks' | 'timer' | 'focus' | 'goals' | 'mentor' | 'settings' | 'learning' | 'journal';
   sidebarOpen: boolean;
   theme: 'light' | 'dark' | 'auto';
   notifications: boolean;
