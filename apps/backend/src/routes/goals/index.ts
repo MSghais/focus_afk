@@ -204,11 +204,15 @@ async function goalsRoutes(fastify: FastifyInstance) {
 
       // Convert relatedTaskIds to strings if they're numbers
       const relatedTaskIds = updateData.relatedTaskIds?.map(id => id.toString()) || [];
+      console.log("relatedTaskIds", relatedTaskIds);
+      
+      // Filter out fields that don't exist in the Prisma schema
+      const { relatedTaskIds: _, ...prismaUpdateData } = updateData;
       
       const updatedGoal = await fastify.prisma.goal.update({
         where: { id },
         data: {
-          ...updateData,
+          ...prismaUpdateData,
           relatedTaskIds,
           targetDate: updateData.targetDate ? new Date(updateData.targetDate) : undefined,
           updatedAt: new Date(),

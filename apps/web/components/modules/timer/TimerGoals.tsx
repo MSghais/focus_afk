@@ -6,6 +6,7 @@ import { useGamificationStore } from '../../../store/gamification';
 import { logClickedEvent } from "../../../lib/analytics";
 import { Task, Goal } from "../../../types";
 import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
+import { useUIStore } from "../../../store/uiStore";
 
 function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -39,6 +40,8 @@ export default function TimerGoal({
         setTimerDuration,
         loadSettings
     } = useFocusAFKStore();
+
+    const { showModal, showToast } = useUIStore();
 
     const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>();
     const [selectedGoalId, setSelectedGoalId] = useState<string | undefined>();
@@ -168,6 +171,26 @@ export default function TimerGoal({
     // Calculate training rewards
     const xpEarned = Math.floor((timer.totalSeconds - timer.secondsLeft) / 60) * 5; // 5 XP per minute
     const focusPointsEarned = Math.floor((timer.totalSeconds - timer.secondsLeft) / 60) * 2; // 2 focus points per minute
+
+    const renderSessionComplete = () => {
+        return (
+            <div className="w-full bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
+            <div className="text-4xl mb-2">🎉</div>
+            <div className="text-green-400 font-bold text-lg mb-2">
+                {timer.isBreak ? 'Break Complete!' : 'Training Session Complete!'}
+            </div>
+            <div className="text-gray-300 text-sm">
+                You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> and <span className="text-blue-400 font-bold">{focusPointsEarned} Focus Points</span>
+            </div>
+        </div>
+        )
+    }
+
+    useEffect(() => {
+        if(timer?.secondsLeft === 0){
+            showModal(renderSessionComplete())
+        }
+    }, [timer?.secondsLeft])
 
     return (
         <div className="w-full flex flex-col  space-y-6 justify-center items-center">
@@ -389,15 +412,7 @@ export default function TimerGoal({
 
             {/* Session Complete Message */}
             {timer.secondsLeft === 0 && (
-                <div className="w-full bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
-                    <div className="text-4xl mb-2">🎉</div>
-                    <div className="text-green-400 font-bold text-lg mb-2">
-                        {timer.isBreak ? 'Break Complete!' : 'Training Session Complete!'}
-                    </div>
-                    <div className="text-gray-300 text-sm">
-                        You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> and <span className="text-blue-400 font-bold">{focusPointsEarned} Focus Points</span>
-                    </div>
-                </div>
+                renderSessionComplete()
             )}
 
             {/* Training Tips */}

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
+import GoalEdit from './GoalEdit';
 import { useFocusAFKStore } from '../../../store/store';
 import { ButtonPrimary, ButtonSimple } from '../../small/buttons';
 import { Goal, Task } from '../../../types';
@@ -25,7 +26,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   const [showCreate, setShowCreate] = useState<boolean>(false);
   const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal, addTask } = useFocusAFKStore();
 
-  const { showToast } = useUIStore();
+  const { showToast, showModal, hideModal } = useUIStore();
   const { setTasksRecommendations, tasksRecommendations } = useRecommendersStore();
   const [goal, setGoal] = useState<Goal | null>(goalProps || null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -166,6 +167,24 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     }
   };
 
+  const handleEditGoal = () => {
+    if (!goal) return;
+    
+    showModal(
+      <GoalEdit
+        goal={goal}
+        tasks={tasks}
+        onSave={(updatedGoal) => {
+          setGoal(updatedGoal);
+          setSelectedGoal(updatedGoal);
+          hideModal();
+          showToast({ message: "Goal updated successfully", type: "success" });
+        }}
+        onCancel={hideModal}
+      />
+    );
+  };
+
   // Load initial data
   useEffect(() => {
     loadGoals();
@@ -265,7 +284,16 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-bold">🎯 Goal</h2>
+          <div className="flex justify-between items-start">
+            <h2 className="text-lg font-bold">🎯 Goal</h2>
+            <ButtonSimple
+              onClick={handleEditGoal}
+              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              <Icon name="create" className="w-4 h-4 mr-1" />
+              Edit
+            </ButtonSimple>
+          </div>
           <p className="text-2xl font-bold">{goal.title}</p>
           <p className="text-sm text-gray-500">{goal.description}</p>
           <p className="text-sm text-gray-500">
