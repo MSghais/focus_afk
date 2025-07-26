@@ -198,6 +198,11 @@
   @media (min-width: 768px) {
     padding: 1.5rem;
   }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
   
   &:hover {
     transform: scale(1.02);
@@ -208,6 +213,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
+
 }
 
 .actionInfo {
@@ -226,6 +236,11 @@
   @media (min-width: 768px) {
     font-size: 1.125rem;
   }
+
+  @media (max-width: 768px) {
+
+    font-size: 0.875rem;
+  }
 }
 
 .actionDescription {
@@ -234,6 +249,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
 }
 
 .actionIcon {
@@ -241,9 +260,10 @@
   margin-left: 0.75rem;
   flex-shrink: 0;
   
-  @media (min-width: 768px) {
-    font-size: 2rem;
-  }
+    @media (min-width: 768px) {
+      font-size: 2rem;
+    }
+    
 }
 
 .contentGrid {

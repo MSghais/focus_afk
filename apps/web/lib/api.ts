@@ -1,4 +1,4 @@
-import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User } from '../types';
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note } from '../types';
 import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
@@ -455,6 +455,43 @@ class ApiService {
         taskIds: [],
       }),
     });
+  }
+
+  async getNotes(filters?: {
+    type?: string;
+    source?: string;
+    topic?: string;
+  }): Promise<ApiResponse<Note[]>> {
+    const params = new URLSearchParams();
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.source) params.append('source', filters.source);
+    if (filters?.topic) params.append('topic', filters.topic);
+
+    return this.request<Note[]>(`/notes?${params.toString()}`);
+  }
+
+  async createNote(noteData: Note): Promise<ApiResponse<Note>> {
+    return this.request<Note>('/notes', {
+      method: 'POST',
+      body: JSON.stringify(noteData),
+    });
+  }
+
+  async updateNote(id: string, noteData: Note): Promise<ApiResponse<Note>> {
+    return this.request<Note>(`/notes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(noteData),
+    });
+  }
+
+  async deleteNote(id: string): Promise<ApiResponse> {
+    return this.request(`/notes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getNoteSources(): Promise<ApiResponse<string[]>> {
+    return this.request<string[]>('/notes/sources');
   }
 }
 

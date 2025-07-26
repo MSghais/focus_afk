@@ -49,7 +49,7 @@ export default function ActionsDashboard() {
                     router.push('/journal');
                 }}
                 className={styles.actionButton}
-                style={{ background: 'linear-gradient(to right, #10B981, #059669)', color: 'white' }}
+                style={{ background: 'linear-gradient(to right,rgb(87, 53, 8), rgb(190, 120, 14))', color: 'white' }}
             >
                 <div className={styles.actionContent}>
                     <div className={styles.actionInfo}>

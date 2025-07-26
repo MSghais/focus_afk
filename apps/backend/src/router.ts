@@ -12,6 +12,7 @@ import timerRoutes from './routes/timer';
 import goalsRoutes from './routes/goals';
 import tasksRoutes from './routes/tasks';
 import questsRoutes from './routes/quests';
+import notesRoutes from './routes/notes';
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -28,6 +29,7 @@ function declareRoutes(
   fastify.register(goalsRoutes, { prefix: '/goals' });
   fastify.register(tasksRoutes, { prefix: '/tasks' });
   fastify.register(questsRoutes, { prefix: '/quests' });
+  fastify.register(notesRoutes, { prefix: '/notes' });
 }
 
 export default declareRoutes;

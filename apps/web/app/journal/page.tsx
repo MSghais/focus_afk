@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function JournalPage() {
     return (
-        <div className="w-full h-full flex flex-col p-6 bg-[var(--background)]">
+        <div className="w-full h-full flex flex-col bg-[var(--background)]">
             <JournalMainComponent />
         </div>
     )

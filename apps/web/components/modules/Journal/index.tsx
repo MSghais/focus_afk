@@ -9,18 +9,18 @@ export default function JournalMainComponent() {
     const [activeTab, setActiveTab] = useState<"notes" | "goals" | "tasks">('goals');
 
     return (
-        <div className="flex flex-col gap-2 p-4">
+        <div className="flex flex-col gap-2 p-2 w-full">
             {/* <h1 className="text-2xl font-bold">Journal</h1> */}
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row gap-2 justify-center my-4">
 
                 <button
-                    className={`rounded-md p-4 ${activeTab === 'goals' ? 'border border-gray-300' : ''}`}
+                    className={`cursor-pointer rounded-md p-2 ${activeTab === 'goals' ? 'border border-gray-300' : ''}`}
                     onClick={() => setActiveTab('goals')}> 🎯 Goals</button>
                 <button
-                    className={`rounded-md p-4 ${activeTab === 'tasks' ? 'border border-gray-300' : ''}`}
+                    className={`cursor-pointer rounded-md p-2 ${activeTab === 'tasks' ? 'border border-gray-300' : ''}`}
                     onClick={() => setActiveTab('tasks')}>➕ Tasks</button>
                 <button
-                    className={`rounded-md p-4 ${activeTab === 'notes' ? 'border border-gray-300' : ''}`}
+                    className={`cursor-pointer rounded-md p-2 ${activeTab === 'notes' ? 'border border-gray-300' : ''}`}
                     onClick={() => setActiveTab('notes')}>Notes 📝</button>
             </div>
             {activeTab === 'notes' && <NotesOverview />}

@@ -267,3 +267,23 @@ export interface Quest {
     isTaskPublic?: boolean;
     user?: User;
 }
+
+export interface Note {
+    id?: string;
+    userId: string;
+    text?: string;
+    description?: string;
+    summary?: string;
+    topics: string[];
+    sources: string[];
+    aiSources: string[];
+    aiTopics: string[];
+    metadata?: any;
+    aiSummary?: string;
+    type?: 'user' | 'ai';
+    difficulty?: number;
+    requirements: string[];
+    createdAt?: string;
+    updatedAt?: string;
+    user?: User;
+}

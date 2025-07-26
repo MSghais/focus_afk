@@ -394,6 +394,11 @@ model Notes {
   aiTopics String[]
   metadata  Json?
 
+  externalLink String?
+  externalLinks String[]
+
+  platform String?
+
   aiSummary String?
 
   type        String?  
@@ -405,4 +410,5 @@ model Notes {
   userId      String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@map("notes")
 }
