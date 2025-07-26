@@ -1,4 +1,4 @@
-import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note } from '../types';
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note, NoteRelation } from '../types';
 import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
@@ -477,6 +477,10 @@ class ApiService {
     });
   }
 
+  async getNote(id: string): Promise<ApiResponse<Note>> {
+    return this.request<Note>(`/notes/${id}`);
+  }
+
   async updateNote(id: string, noteData: Note): Promise<ApiResponse<Note>> {
     return this.request<Note>(`/notes/${id}`, {
       method: 'PUT',
@@ -493,6 +497,10 @@ class ApiService {
   async getNoteSources(): Promise<ApiResponse<string[]>> {
     return this.request<string[]>('/notes/sources');
   }
+
+  async getNoteRelations(id: string): Promise<ApiResponse<NoteRelation[]>> {
+    return this.request<NoteRelation[]>(`/notes/${id}/relations`);
+  } 
 }
 
 export const api = new ApiService();

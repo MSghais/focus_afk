@@ -397,6 +397,8 @@ model Notes {
   externalLink String?
   externalLinks String[]
 
+  isRoot Boolean @default(false)
+
   platform String?
 
   aiSummary String?

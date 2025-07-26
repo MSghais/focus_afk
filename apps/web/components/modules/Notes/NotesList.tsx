@@ -42,7 +42,7 @@ export default function NotesList({
         note.description?.toLowerCase().includes(term) ||
         note.summary?.toLowerCase().includes(term) ||
         note.topics?.some(topic => topic.toLowerCase().includes(term)) ||
-        note.sources?.some(source => source.toLowerCase().includes(term))
+        note.sources?.some(source => source.title?.toLowerCase().includes(term) || source.content?.toLowerCase().includes(term))
       );
     }
 
@@ -251,9 +251,16 @@ export default function NotesList({
 
                 {/* Content */}
                 <div className="space-y-3">
-                  <h3 className="text-lg font-semibold line-clamp-2">
-                    {note.text ? truncateText(note.text, 100) : 'Untitled Note'}
-                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-lg font-semibold line-clamp-2">
+                      {note.text ? truncateText(note.text, 100) : 'Untitled Note'}
+                    </h3>
+                    {note.isNotebook && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        📓 Notebook
+                      </span>
+                    )}
+                  </div>
                   
                   {note.description && (
                     <p className="text-sm line-clamp-3">

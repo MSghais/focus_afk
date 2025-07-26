@@ -5,9 +5,10 @@ import { Note } from '../../../types';
 import NotesList from './NotesList';
 import NoteDetail from './NoteDetail';
 import NoteCreateForm from './NoteCreateForm';
+import NotebookView from './NotebookView';
 import api from '../../../lib/api';
 
-type ViewMode = 'list' | 'detail' | 'create' | 'edit';
+type ViewMode = 'list' | 'detail' | 'create' | 'edit' | 'notebook';
 
 export default function NotesOverview() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -122,7 +123,11 @@ export default function NotesOverview() {
   // Event handlers
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
-    setViewMode('detail');
+    if (note.isNotebook) {
+      setViewMode('notebook');
+    } else {
+      setViewMode('detail');
+    }
   };
 
   const handleEditNote = (note: Note) => {
@@ -138,6 +143,11 @@ export default function NotesOverview() {
   const handleBackToList = () => {
     setSelectedNote(null);
     setViewMode('list');
+  };
+
+  const handleOpenNotebook = (note: Note) => {
+    setSelectedNote(note);
+    setViewMode('notebook');
   };
 
   const handleShareNote = (note: Note) => {
@@ -227,6 +237,7 @@ export default function NotesOverview() {
             onDelete={deleteNote}
             onBack={handleBackToList}
             onShare={handleShareNote}
+            onOpenNotebook={handleOpenNotebook}
           />
         </div>
       ) : (
@@ -234,6 +245,31 @@ export default function NotesOverview() {
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400 text-lg">
               Note not found
+            </div>
+            <button
+              onClick={handleBackToList}
+              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Back to Notes
+            </button>
+          </div>
+        </div>
+      );
+
+    case 'notebook':
+      return selectedNote ? (
+        <div className="h-full">
+          <NotebookView
+            note={selectedNote}
+            onUpdate={updateNote}
+            onBack={handleBackToList}
+          />
+        </div>
+      ) : (
+        <div className="mx-auto p-6">
+          <div className="text-center py-12">
+            <div className="text-gray-500 dark:text-gray-400 text-lg">
+              Notebook not found
             </div>
             <button
               onClick={handleBackToList}
