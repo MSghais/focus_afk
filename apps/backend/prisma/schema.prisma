@@ -221,8 +221,10 @@ model Task {
   actualMinutes   Int?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  
 
+  isArchived Boolean @default(false)
+  order Int?
+  
   isPublic Boolean @default(false)
 
   // Subtask relationships
@@ -255,6 +257,8 @@ model Goal {
   taskIds String[] // Array of task IDs for direct relationship
   isPublic Boolean @default(false)
   isProfilePublic Boolean @default(false)
+
+  isArchived Boolean @default(false)
 
   topics String[]
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

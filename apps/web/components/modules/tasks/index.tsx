@@ -14,7 +14,7 @@ import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
 
 export default function Tasks() {
-    const { showModal } = useUIStore();
+    const { showModal , showToast} = useUIStore();
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
@@ -350,7 +350,7 @@ export default function Tasks() {
                         {tasks.map((task) => (
                             <div
                                 key={task.id}
-                                className={`p-4 border rounded-lg transition-all ${task.completed ? 'bg-gray-50 opacity-75' : 'hover:shadow-md'
+                                className={`p-4 border rounded-lg transition-all ${task.completed ? 'bg-gray-500 opacity-75' : 'hover:shadow-md'
                                     }`}
                             >
                                 {editingTask?.id === task.id ? (
@@ -411,10 +411,20 @@ export default function Tasks() {
                                                 <input
                                                     type="checkbox"
                                                     checked={task.completed}
-                                                    onChange={() => {
+                                                    onChange={async () => {
+                                                        console.log('toggleTaskComplete', task.id);
                                                         if (task.id) {
-                                                            const id = typeof task.id === 'string' ? parseInt(task.id) : task.id;
-                                                            toggleTaskComplete(id);
+                                                            console.log('task.id', task.id);
+                                                            const id = typeof task.id === 'string' ?    task.id : String(task.id);
+                                                            const res = await toggleTaskComplete(id, !task.completed);
+                                                            console.log('res', res);
+
+                                                            showToast({
+                                                                message: res ? 'Task completed' : 'Task uncompleted',
+                                                                description: res ? 'Task completed successfully' : 'Task uncompleted successfully',
+                                                                type: 'success',
+                                                                duration: 3000
+                                                            });
                                                         }
                                                     }}
                                                     className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"

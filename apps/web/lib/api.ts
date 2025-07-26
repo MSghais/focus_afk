@@ -7,7 +7,7 @@ class ApiService {
   constructor() {
     this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
     console.log('🔧 API Service - Backend URL:', this.baseUrl);
-  } 
+  }
 
   private getAuthToken(): string | null {
     // Use the centralized auth utility to get JWT token
@@ -28,7 +28,7 @@ class ApiService {
     // console.log('🔐 API Request - Endpoint:', endpoint);
     // console.log('🔐 API Request - Token available:', !!token);
     // console.log('🔐 API Request - Token preview:', token ? `${token.substring(0, 20)}...` : 'None');
-    
+
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -128,6 +128,13 @@ class ApiService {
     return this.request<Task>(`/tasks/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
+    });
+  }
+
+  async updateTaskCompleted(id: string, completed: boolean): Promise<ApiResponse<Task>> {
+    return this.request<Task>(`/tasks/${id}/completed`, {
+      method: 'PUT',
+      body: JSON.stringify({ completed }),
     });
   }
 
@@ -363,14 +370,14 @@ class ApiService {
     prompt: string;
     model?: string;
     mentorId?: string;
-  }): Promise<ApiResponse<{ 
+  }): Promise<ApiResponse<{
     response: string;
     chatId: string;
     messageId: string;
     memory: any;
     usage: any;
   }>> {
-    return this.request<{ 
+    return this.request<{
       response: string;
       chatId: string;
       messageId: string;
@@ -451,7 +458,7 @@ class ApiService {
   }
 }
 
-export const api = new ApiService(); 
-export const apiService =api; 
+export const api = new ApiService();
+export const apiService = api;
 
 export default api;

@@ -291,6 +291,35 @@ async function focusRoutes(fastify: FastifyInstance) {
 
 
 
+    // Statistics routes
+    fastify.put('/:id/completed', {
+      onRequest: [fastify.authenticate],
+    }, async (request, reply) => {
+      try {
+        const userId = request.user.id;
+        const { id } = request.params as { id: string };
+        const { completed } = request.body as { completed: boolean };
+  
+        const task = await fastify.prisma.task.findFirst({
+          where: { id, userId },
+        });
+
+        if(!task) {
+          return reply.code(404).send({ error: 'Task not found' });
+        }
+
+        const updatedTask = await fastify.prisma.task.update({
+          where: { id },
+          data: { completed: !task.completed },
+        });
+  
+        return reply.send({ success: true, data: updatedTask?.completed });
+      } catch (error) {
+        request.log.error(error);
+        return reply.code(500).send({ error: 'Internal server error' });
+      }
+    });
+
 
 
   // Statistics routes

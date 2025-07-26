@@ -57,7 +57,7 @@ interface FocusAFKStore {
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task | null | undefined>;
   updateTask: (id: string | number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   deleteTask: (id: string | number) => Promise<void>;
-  toggleTaskComplete: (id: string | number) => Promise<void>;
+  toggleTaskComplete: (id: string | number, completed: boolean) => Promise<boolean | undefined>;
   loadTasks: () => Promise<void>;
   getTask: (id: string | number) => Promise<Task | null>;
   syncTasksToBackend: () => Promise<any>;
@@ -237,7 +237,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
     updateTask: async (id, updates) => {
-      const idNum = typeof id === 'string' ? parseInt(id) : id;
+      const idNum = typeof id === 'string' ? String(id) : id.toString();
       await dbUtils.updateTask(idNum, updates);
       set((state) => ({
         tasks: state.tasks.map((task) =>
@@ -282,11 +282,46 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }
     },
 
-    toggleTaskComplete: async (id) => {
-      const task = get().tasks.find((t) => t.id === id);
+    toggleTaskComplete: async (id, completed) => {
+      console.log('id', id);
+      console.log('completed', completed);
+      const task = get().tasks.find((t) => t.id?.toString() === id.toString());
+      console.log('task', task);
       if (task) {
+        console.log('toggleTaskComplete', id);
+
+        if(isUserAuthenticated()) {
+          try {
+            const token = getJwtToken();
+            if (token) {
+              await api.updateTask(id.toString(), { completed: !task.completed });
+            }
+          } catch (err) {
+            console.error('❌ Failed to sync task completion to backend:', err);
+          }
+        } 
+        
         await get().updateTask(id, { completed: !task.completed });
+
+
+        return !task.completed;
+    
+      } else {
+        console.log('task not found');
+        if(isUserAuthenticated()) {
+          try {
+            const token = getJwtToken();
+            if (token) {
+             const res = await api.updateTaskCompleted(id.toString(),  completed);
+             console.log('res', res);
+             return res?.data?.completed
+            }
+          } catch (err) {
+            console.error('❌ Failed to sync task completion to backend:', err);
+          }
+        } 
       }
+
     },
 
     loadTasks: async () => {

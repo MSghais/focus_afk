@@ -36,7 +36,8 @@ export const dbUtils = {
     });
   },
 
-  async updateTask(id: number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<void> {
+  async updateTask(id: string | number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<void> {
+    const idNum = typeof id === 'string' ? parseInt(id) : id;
     await db.tasks.update(id, {
       ...updates,
       updatedAt: new Date()
