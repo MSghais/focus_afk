@@ -82,7 +82,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
   const SourceModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Add Source</h3>
           <button
@@ -180,14 +180,14 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
         </div>
 
         {/* Source Limit Indicator */}
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <div className="flex justify-between items-center">
+        <div className="mt-6 p-4 rounded-lg">
+          <div className="flex justify-between items-center">   
             <span className="text-sm font-medium">Source Limit</span>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm">
               {(note.sources?.length || 0)}/300
             </span>
           </div>
-          <div className="mt-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+          <div className="mt-2 w-full rounded-full h-2">
             <div
               className="bg-blue-500 h-2 rounded-full transition-all"
               style={{ width: `${Math.min(((note.sources?.length || 0) / 300) * 100, 100)}%` }}
@@ -219,7 +219,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
   const LinkNoteModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className=" rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Link Note</h3>
           <button
