@@ -6,6 +6,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { ButtonPrimary, ButtonSimple } from '../../small/buttons';
 import { Goal, Task } from '../../../types';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '../../../lib/api';
 import TimeLoading from '../../small/loading/time-loading';
 import { useRecommendersStore } from '../../../store/recommenders';
@@ -38,6 +39,21 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
   const foundGoal = useMemo(() => goals.find(g => Number(g.id) === Number(goalId)), [goals, goalId]);
   const foundTask = useMemo(() => tasks.find(t => Number(t.id) === Number(goal?.relatedTasks?.[0])), [tasks, goal]);
+
+  // Get related tasks for the current goal
+  const relatedTasks = useMemo(() => {
+    if (!goal || !tasks.length) return [];
+    
+    // Handle both relatedTasks (number[]) and relatedTaskIds (string[])
+    const taskIds = goal.relatedTasks || goal.relatedTaskIds || [];
+    
+    return tasks.filter(task => {
+      if (!task.id) return false;
+      return taskIds.some(id => 
+        task.id?.toString() === id.toString()
+      );
+    });
+  }, [goal, tasks]);
 
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState<boolean>(false);
   const [recommendations, setRecommendations] = useState<any[]>([]);
@@ -305,6 +321,97 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
           </p>
           <p className="text-sm text-gray-500">Category: {goal.category || 'Uncategorized'}</p>
         </div>
+      </div>
+
+      {/* Related Tasks Section */}
+      <div className="flex flex-col gap-2 mt-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">📋 Related Tasks</h2>
+          {relatedTasks.length > 0 && (
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {relatedTasks.filter(t => t.completed).length} of {relatedTasks.length} completed
+            </div>
+          )}
+        </div>
+        {relatedTasks.length > 0 && (
+          <div className="w-full rounded-full h-2 dark:bg-gray-700">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ 
+                width: `${(relatedTasks.filter(t => t.completed).length / relatedTasks.length) * 100}%` 
+              }}
+            ></div>
+          </div>
+        )}
+        {relatedTasks.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {relatedTasks.map((task) => (
+              <div key={task.id} className="p-3 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900 dark:text-white">{task.title}</h3>
+                    {task.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <span className={`px-2 py-1 rounded-full ${
+                        task.completed 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      }`}>
+                        {task.completed ? 'Completed' : 'Pending'}
+                      </span>
+                      {task.priority && (
+                        <span className={`px-2 py-1 rounded-full ${
+                          task.priority === 'high' 
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : task.priority === 'medium'
+                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        }`}>
+                          {task.priority}
+                        </span>
+                      )}
+                      {task.category && (
+                        <span className="px-2 py-1 rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                          {task.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Link 
+                      href={`/tasks`}
+                      className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                    >
+                      View Task
+                    </Link>
+                    {!task.completed && (
+                      <button
+                        onClick={() => {
+                          // TODO: Add task completion toggle functionality
+                          showToast({ 
+                            message: `Marking "${task.title}" as completed`, 
+                            type: "info" 
+                          });
+                        }}
+                        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition"
+                      >
+                        Complete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+            <Icon name="list" className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p>No tasks linked to this goal yet.</p>
+            <p className="text-sm mt-1">Edit the goal to link tasks or create new tasks.</p>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-2 mt-6">
