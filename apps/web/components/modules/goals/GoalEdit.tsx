@@ -21,20 +21,52 @@ export default function GoalEdit({ goal, tasks, onSave, onCancel }: GoalEditProp
   const [name, setName] = useState<string>(goal.title || "");
   const [type, setType] = useState<string>(goal?.category || GOAL_TYPES[0]);
   const [description, setDescription] = useState<string>(goal.description || "");
-  const [targetDate, setTargetDate] = useState<string>(
-    goal.targetDate ? new Date(goal.targetDate).toISOString().split('T')[0] : ""
-  );
-  const [linkedTaskIds, setLinkedTaskIds] = useState<(number | string)[]>(
-    goal.relatedTasks || (goal.relatedTaskIds ? goal.relatedTaskIds.map(id => typeof id === 'string' ? parseInt(id) : id) : []) || []
-  );
+  const [targetDate, setTargetDate] = useState<string>("");
+  
+  // Initialize linkedTaskIds by combining both relatedTasks and relatedTaskIds
+  // and converting all to strings for consistency
+  const [linkedTaskIds, setLinkedTaskIds] = useState<string[]>(() => {
+    const relatedTasks = goal.relatedTasks || [];
+    const relatedTaskIds = goal.relatedTaskIds || [];
+    
+    // Convert all IDs to strings and combine them
+    const allIds = [
+      ...relatedTasks.map(id => id.toString()),
+      ...relatedTaskIds.map(id => id.toString())
+    ];
+    
+    // Remove duplicates
+    return [...new Set(allIds)];
+  });
+  
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleTaskToggle = (taskId: number | string) => {
-    setLinkedTaskIds((prev: (number | string)[]) =>
+  // Initialize targetDate when component mounts
+  useEffect(() => {
+    if (goal.targetDate) {
+      try {
+        const dateString = new Date(goal.targetDate).toISOString().split('T')[0];
+        if (dateString) {
+          setTargetDate(dateString);
+        }
+      } catch (error) {
+        console.error('Error parsing target date:', error);
+      }
+    }
+  }, [goal.targetDate]);
+
+  const handleTaskToggle = (taskId: string) => {
+    setLinkedTaskIds((prev: string[]) =>
       prev.includes(taskId)
         ? prev.filter((id) => id !== taskId)
         : [...prev, taskId]
     );
+  };
+
+  // Helper function to check if a task is linked
+  const isTaskLinked = (taskId: string | undefined): boolean => {
+    if (!taskId) return false;
+    return linkedTaskIds.includes(taskId);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,7 +88,7 @@ export default function GoalEdit({ goal, tasks, onSave, onCancel }: GoalEditProp
         description: description,
         targetDate: targetDate ? new Date(targetDate) : undefined,
         category: type,
-        relatedTaskIds: linkedTaskIds.map(id => id.toString()),
+        relatedTaskIds: linkedTaskIds,
       });
 
       const updatedGoal: Goal = {
@@ -65,7 +97,7 @@ export default function GoalEdit({ goal, tasks, onSave, onCancel }: GoalEditProp
         description: description,
         targetDate: targetDate ? new Date(targetDate) : undefined,
         category: type,
-        relatedTaskIds: linkedTaskIds.map(id => id.toString()),
+        relatedTaskIds: linkedTaskIds,
         updatedAt: new Date(),
       };
 
@@ -146,7 +178,7 @@ export default function GoalEdit({ goal, tasks, onSave, onCancel }: GoalEditProp
               <label key={task.id || 'temp'} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                 <input 
                   type="checkbox" 
-                  checked={task.id ? linkedTaskIds.includes(task.id) : false} 
+                  checked={isTaskLinked(task.id)} 
                   onChange={() => task.id && handleTaskToggle(task.id)} 
                 />
                 <span>{task.title}</span>
@@ -158,7 +190,7 @@ export default function GoalEdit({ goal, tasks, onSave, onCancel }: GoalEditProp
               {linkedTaskIds.map(id => {
                 const task = tasks.find(t => t.id === id);
                 return task ? (
-                  <span key={id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs dark:bg-blue-900 dark:text-blue-200">
+                  <span key={id} className="px-2 py-1 text-blue-700 rounded-full text-xs border border-blue-700">
                     {task.title}
                   </span>
                 ) : null;
