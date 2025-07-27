@@ -413,13 +413,13 @@ model Notes {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // New relation to structured sources
-  noteSources NoteSource[]
+  noteSources NoteSources[]
 
   @@map("notes")
 }
 
 // New model for structured note sources
-model NoteSource {
+model NoteSources {
   id          String   @id @default(cuid())
   noteId      String
   type        String   // 'text', 'link', 'youtube', 'google_drive', 'file', 'website'
@@ -435,5 +435,5 @@ model NoteSource {
   // Relations
   note Notes @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
-  @@map("note_sources")
+  @@map("noteSources")
 }

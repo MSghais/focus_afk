@@ -35,7 +35,7 @@ async function notesRoutes(fastify: FastifyInstance) {
 
       // Create associated sources if provided
       if (noteSources && Array.isArray(noteSources)) {
-        await fastify.prisma.noteSource.createMany({
+        await fastify.prisma.noteSources.createMany({
           data: noteSources.map((source: NoteSourceInput) => ({
             noteId: note.id,
             type: source.type,
@@ -114,7 +114,10 @@ async function notesRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ message: 'Note not found' });
       }
 
-      return reply.code(200).send(note);
+      return reply.code(200).send({
+        success: true,
+        data: note,
+      });
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ message: 'Internal Server Error' });
@@ -141,6 +144,8 @@ async function notesRoutes(fastify: FastifyInstance) {
         where: { id: noteId, userId },
         data: noteFields,
       });
+
+      
       
       if (note.count === 0) {
         return reply.code(404).send({ message: 'Note not found' });
@@ -149,13 +154,13 @@ async function notesRoutes(fastify: FastifyInstance) {
       // Update sources if provided
       if (noteSources !== undefined) {
         // Delete existing sources
-        await fastify.prisma.noteSource.deleteMany({
+        await fastify.prisma.noteSources.deleteMany({
           where: { noteId },
         });
 
         // Create new sources if provided
         if (Array.isArray(noteSources) && noteSources.length > 0) {
-          await fastify.prisma.noteSource.createMany({
+          await fastify.prisma.noteSources.createMany({
             data: noteSources.map((source: NoteSourceInput) => ({
               noteId,
               type: source.type,
@@ -178,7 +183,10 @@ async function notesRoutes(fastify: FastifyInstance) {
         },
       });
 
-      return reply.code(200).send(updatedNote);
+      return reply.code(200).send({
+        success: true,
+        data: updatedNote,
+      });
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ message: 'Internal Server Error' });
@@ -194,7 +202,7 @@ async function notesRoutes(fastify: FastifyInstance) {
       const noteId = (request.params as { id: string }).id;
       
       // Delete associated sources first (cascade should handle this, but being explicit)
-      await fastify.prisma.noteSource.deleteMany({
+      await fastify.prisma.noteSources.deleteMany({
         where: { noteId },
       });
       
@@ -269,7 +277,7 @@ async function notesRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const sourceType = (request.params as { type: string }).type;
       
-      const sources = await fastify.prisma.noteSource.findMany({
+      const sources = await fastify.prisma.noteSources.findMany({
         where: {
           note: {
             userId,

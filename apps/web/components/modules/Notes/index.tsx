@@ -74,10 +74,12 @@ export default function NotesOverview() {
     setIsLoading(true);
     setError(null);
     try {
-      // Ensure userId is present and is a string to satisfy Note type
-      if (noteData.userId === undefined || typeof noteData.userId !== 'string') {
-        throw new Error('User ID is required to update a note');
-      }
+      // For updates, we don't need to validate userId since it should already be associated with the note
+      // Only validate userId for new notes (createNote function)
+      console.log('🔄 Updating note:', selectedNote.id);
+      console.log('📝 Update data:', noteData);
+      console.log('📋 Selected note:', selectedNote);
+      
       const response = await api.updateNote(selectedNote.id, noteData as Note);
       if (!response.success) {
         throw new Error('Failed to update note');
