@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+// Source type validation schema
+const noteSourceSchema = z.object({
+  id: z.string().optional(),
+  type: z.enum(['text', 'link', 'youtube', 'google_drive', 'file', 'website']),
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().optional(),
+  url: z.string().url().optional(),
+  fileType: z.string().optional(),
+  fileSize: z.number().optional(),
+  metadata: z.any().optional(),
+});
+
 // Zod schemas for TypeScript types
 export const notesZodSchema = {
   createNotes: z.object({
@@ -7,7 +19,8 @@ export const notesZodSchema = {
     description: z.string().optional(),
     summary: z.string().optional(),
     topics: z.array(z.string()).optional(),
-    sources: z.array(z.string()).optional(),
+    sources: z.array(z.string()).optional(), // Keep for backward compatibility
+    noteSources: z.array(noteSourceSchema).optional(), // New structured sources
     aiSources: z.array(z.string()).optional(),
     aiTopics: z.array(z.string()).optional(),
     metadata: z.any().optional(),
@@ -22,7 +35,8 @@ export const notesZodSchema = {
     description: z.string().optional(),
     summary: z.string().optional(),
     topics: z.array(z.string()).optional(),
-    sources: z.array(z.string()).optional(),
+    sources: z.array(z.string()).optional(), // Keep for backward compatibility
+    noteSources: z.array(noteSourceSchema).optional(), // New structured sources
     aiSources: z.array(z.string()).optional(),
     aiTopics: z.array(z.string()).optional(),
     metadata: z.any().optional(),
@@ -59,6 +73,26 @@ export const notesSchema = {
         type: 'array',
         items: { type: 'string' }
       },
+      noteSources: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            type: { 
+              type: 'string',
+              enum: ['text', 'link', 'youtube', 'google_drive', 'file', 'website']
+            },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            url: { type: 'string' },
+            fileType: { type: 'string' },
+            fileSize: { type: 'number' },
+            metadata: { type: 'object' }
+          },
+          required: ['type', 'title']
+        }
+      },
       aiSources: {
         type: 'array',
         items: { type: 'string' }
@@ -91,6 +125,26 @@ export const notesSchema = {
       sources: {
         type: 'array',
         items: { type: 'string' }
+      },
+      noteSources: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            type: { 
+              type: 'string',
+              enum: ['text', 'link', 'youtube', 'google_drive', 'file', 'website']
+            },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            url: { type: 'string' },
+            fileType: { type: 'string' },
+            fileSize: { type: 'number' },
+            metadata: { type: 'object' }
+          },
+          required: ['type', 'title']
+        }
       },
       aiSources: {
         type: 'array',
@@ -131,4 +185,5 @@ export const notesSchema = {
 export type CreateNotesInput = z.infer<typeof notesZodSchema.createNotes>;
 export type UpdateNotesInput = z.infer<typeof notesZodSchema.updateNotes>;
 export type GetNotesInput = z.infer<typeof notesZodSchema.getNotes>;
-export type GetSourcesInput = z.infer<typeof notesZodSchema.getSources>; 
+export type GetSourcesInput = z.infer<typeof notesZodSchema.getSources>;
+export type NoteSourceInput = z.infer<typeof noteSourceSchema>; 

@@ -109,7 +109,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 onClick={() => setSourceFormData(prev => ({ ...prev, type: type as NoteSource['type'] }))}
                 className={`p-4 border rounded-lg text-left transition-colors ${
                   sourceFormData.type === type
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    ? 'border-blue-500 dark:bg-blue-900/20'
                     : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
                 }`}
               >
@@ -401,7 +401,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           <div className="flex-1 p-6">
             {activeTab === 'discussion' && (
               <div className="space-y-4">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                   <textarea
                     placeholder="Ask a question about your sources..."
                     className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 h-32 resize-none"
@@ -416,7 +416,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                       </button>
                     </div>
                     <div className="text-sm text-gray-500">
-                      NotebookLM can make mistakes. Please verify its answers.
+                      AI can make mistakes. Please verify its answers.
                     </div>
                   </div>
                 </div>

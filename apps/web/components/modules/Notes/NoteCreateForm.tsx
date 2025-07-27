@@ -85,7 +85,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
 
   const SourceModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="ounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Add Source</h3>
           <button
@@ -110,11 +110,10 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
                 key={type}
                 type="button"
                 onClick={() => setSourceFormData(prev => ({ ...prev, type: type as NoteSource['type'] }))}
-                className={`p-4 border rounded-lg text-left transition-colors ${
-                  sourceFormData.type === type
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                className={`p-4 border rounded-lg text-left transition-colors ${sourceFormData.type === type
+                    ? 'border-blue-500'
                     : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
-                }`}
+                  }`}
               >
                 <div className="text-2xl mb-2">{icon}</div>
                 <div className="font-medium">{label}</div>
@@ -183,20 +182,20 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
         </div>
 
         {/* Source Limit Indicator */}
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        {/* <div className="mt-6 p-4  dark:bg-gray-700 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">Source Limit</span>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {(formData.sources?.length || 0)}/300
+              {(formData.sources?.length || 0)}/20
             </span>
           </div>
-          <div className="mt-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+          <div className="mt-2 w-full  dark:bg-gray-600 rounded-full h-2">
             <div
               className="bg-blue-500 h-2 rounded-full transition-all"
-              style={{ width: `${Math.min(((formData.sources?.length || 0) / 300) * 100, 100)}%` }}
+              style={{ width: `${Math.min(((formData.sources?.length || 0) / 20) * 100, 100)}%` }}
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-3 mt-6">
@@ -223,7 +222,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
   return (
     <div className="rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6"> {note ? 'Edit Note' : 'Create New Note'} </h2>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Notebook Toggle */}
         <div className="flex items-center space-x-3">
@@ -237,6 +236,19 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
           <label htmlFor="isNotebook" className="text-sm font-medium">
             Create as Notebook Project (with sources and linked notes)
           </label>
+        </div>
+
+        <div className="flex justify-between items-center mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Sources
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowSourceModal(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
+          >
+            + Add Source
+          </button>
         </div>
 
         {/* Main Text */}
@@ -269,19 +281,8 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
 
         {/* Sources Section */}
         <div>
-          <div className="flex justify-between items-center mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Sources
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowSourceModal(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
-            >
-              + Add Source
-            </button>
-          </div>
-          
+
+
           {/* Sources List */}
           <div className="space-y-2">
             {formData.sources?.map((source, index) => (

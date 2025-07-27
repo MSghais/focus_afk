@@ -388,8 +388,7 @@ model Notes {
   description String?
   summary String?
   topics String[]
-  sources String[]
-
+  sources String[] // Keep for backward compatibility
   aiSources String[]
   aiTopics String[]
   metadata  Json?
@@ -412,5 +411,28 @@ model Notes {
   userId      String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // New relation to structured sources
+  noteSources NoteSource[]
+
   @@map("notes")
+}
+
+// New model for structured note sources
+model NoteSource {
+  id          String   @id @default(cuid())
+  noteId      String
+  type        String   // 'text', 'link', 'youtube', 'google_drive', 'file', 'website'
+  title       String
+  content     String?  // For text sources
+  url         String?  // For link/youtube/website sources
+  fileType    String?  // For file sources
+  fileSize    Int?     // For file sources
+  metadata    Json?    // Additional metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  note Notes @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("note_sources")
 }
