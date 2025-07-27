@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
-import { AiService } from '../ai/ai';
+import { AiService } from '../../ai/ai';
 import { DEFAULT_MODEL } from '../../config/models';
 
 const prisma = new PrismaClient();

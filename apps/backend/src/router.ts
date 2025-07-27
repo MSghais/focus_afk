@@ -13,6 +13,7 @@ import goalsRoutes from './routes/goals';
 import tasksRoutes from './routes/tasks';
 import questsRoutes from './routes/quests';
 import notesRoutes from './routes/notes';
+import sourceAgentRoutes from './routes/notes/source-agent';
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -30,6 +31,7 @@ function declareRoutes(
   fastify.register(tasksRoutes, { prefix: '/tasks' });
   fastify.register(questsRoutes, { prefix: '/quests' });
   fastify.register(notesRoutes, { prefix: '/notes' });
+  fastify.register(sourceAgentRoutes, { prefix: '/notes/source-agent' });
 }
 
 export default declareRoutes;

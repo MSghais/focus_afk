@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import dotenv from 'dotenv';
-import { AiService } from '../../services/ai/ai';
-import { DEFAULT_MODEL, LLM_EXPENSIVE_MODELS_NAME, LLM_FREE_MODELS_NAME, LLM_LOW_COST_MODELS_NAME } from '../../config/models';
+import { AiService } from '../../ai/ai';
+import { LLM_EXPENSIVE_MODELS_NAME } from '../../config/models';
 dotenv.config();
 
 const GoalSchema = z.object({

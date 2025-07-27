@@ -2,11 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { streamEvents, STREAM_EVENTS } from './index';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
-import { AiService } from '../ai/ai';
 import { generateDailyQuest } from './generate_quest';
-
-const prisma = new PrismaClient();
-const aiService = new AiService();
 
 function isToday(date) {
   const now = new Date();

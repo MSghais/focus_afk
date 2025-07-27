@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Note } from '../../../types';
+import SourceAgent from './SourceAgent';
 
 interface NoteDetailProps {
   note: Note;
@@ -39,7 +40,7 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
 
   const handleDelete = async () => {
     if (!note.id) return;
-    
+
     if (window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
       setIsDeleting(true);
       try {
@@ -84,8 +85,29 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
           </div>
         </div>
 
-        <div className="flex space-x-2">
-          {onShare && (
+        <div className="flex space-x-2 overflow-x-auto">
+
+          {onOpenNotebook && (
+            <button
+              onClick={() => onOpenNotebook(note)}
+              className="flex flex-row items-center p-4 py-2 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+            >
+              <svg className="w-6 h-6 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span className="text-sm text-primary">Open</span>
+            </button>
+          )}
+          <button
+            onClick={() => onEdit(note)}
+            className="flex flex-row items-center p-4 py-2 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+          >
+            <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit
+          </button>
+          {/* {onShare && (
             <button
               onClick={() => onShare(note)}
               className="px-4 py-2 text-foreground border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
@@ -98,30 +120,89 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
             className="px-4 py-2 text-foreground border border-border rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
           >
             Copy
-          </button>
-          <button
-            onClick={() => onEdit(note)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            Edit
-          </button>
+          </button> */}
+
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-destructive text-destructive-foreground border border-destructive/20 rounded-lg hover:bg-destructive/90 focus:outline-none focus:ring-2 focus:ring-destructive disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </div>
 
+
+      {/* Quick Actions */}
+      {/* <div className=" rounded-lg shadow-lg p-6">
+        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button
+            onClick={() => copyToClipboard(note.text || '')}
+            className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
+          >
+            <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span className="text-sm">Copy Content</span>
+          </button>
+
+          <button
+            onClick={() => onEdit(note)}
+            className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
+          >
+            <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span className="text-sm">Edit Note</span>
+          </button>
+
+          {onOpenNotebook && (
+            <button
+              onClick={() => onOpenNotebook(note)}
+              className="flex flex-col items-center p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+            >
+              <svg className="w-6 h-6 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span className="text-sm text-primary">Open Notebook</span>
+            </button>
+          )}
+
+          {onShare && (
+            <button
+              onClick={() => onShare(note)}
+              className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
+            >
+              <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+              </svg>
+              <span className="text-sm">Share</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="flex flex-col items-center p-4 border border-destructive/20 rounded-lg hover:bg-destructive/5 transition-colors disabled:opacity-50"
+          >
+            <svg className="w-6 h-6 text-destructive mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span className="text-sm text-destructive">
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </span>
+          </button>
+        </div>
+      </div> */}
+
+
       {/* Note Type and Difficulty */}
       <div className="flex items-center space-x-4">
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-          note.type === 'ai' 
-            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-            : 'bg-primary/10 text-primary'
-        }`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${note.type === 'ai'
+          ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+          : 'bg-primary/10 text-primary'
+          }`}>
           {note.type === 'ai' ? '🤖 AI Generated' : '👤 User Note'}
         </span>
         {note.difficulty && (
@@ -215,39 +296,52 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
         {(note.sources && note.sources.length > 0) || (note.noteSources && note.noteSources.length > 0) && (
           <div>
             <h3 className="text-lg font-semibold mb-3">Sources</h3>
-            <div className="space-y-2">
-              {/* Display new structured sources */}
+            <div className="space-y-4">
+              {/* Display new structured sources with AI agent for website sources */}
               {note.noteSources?.map((source, index) => (
-                <div key={`new-${index}`} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">
-                      {source.type === 'text' && '📄'}
-                      {source.type === 'link' && '🔗'}
-                      {source.type === 'youtube' && '📺'}
-                      {source.type === 'google_drive' && '☁️'}
-                      {source.type === 'file' && '📁'}
-                      {source.type === 'website' && '🌐'}
-                    </span>
-                    <div>
-                      <div className="text-sm font-medium">
-                        {source.title}
+                <div key={`new-${index}`}>
+                  {source.type === 'website' ? (
+                    <SourceAgent
+                      source={source}
+                      noteId={note.id}
+                      onSourceUpdated={(updatedSource) => {
+                        // Handle source updates if needed
+                        console.log('Source updated:', updatedSource);
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">
+                          {source.type === 'text' && '📄'}
+                          {source.type === 'link' && '🔗'}
+                          {source.type === 'youtube' && '📺'}
+                          {source.type === 'google_drive' && '☁️'}
+                          {source.type === 'file' && '📁'}
+                          {source.type === 'website' && '🌐'}
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium">
+                            {source.title}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
-                      </div>
+                      <button
+                        onClick={() => copyToClipboard(source.url || source.content || source.title)}
+                        className="ml-2 p-1 text-muted-foreground hover:text-foreground"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => copyToClipboard(source.url || source.content || source.title)}
-                    className="ml-2 p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
+                  )}
                 </div>
               ))}
-              
+
               {/* Display legacy sources for backward compatibility */}
               {note.sources?.map((source: any, index) => (
                 <div key={`legacy-${index}`} className="flex items-center justify-between p-3 bg-muted rounded-lg border-l-4 border-yellow-400">
@@ -330,68 +424,6 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
         )}
       </div>
 
-      {/* Quick Actions */}
-      <div className=" rounded-lg shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button
-            onClick={() => copyToClipboard(note.text || '')}
-            className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
-          >
-            <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <span className="text-sm">Copy Content</span>
-          </button>
-          
-          <button
-            onClick={() => onEdit(note)}
-            className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
-          >
-            <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            <span className="text-sm">Edit Note</span>
-          </button>
-
-          {onOpenNotebook && (
-            <button
-              onClick={() => onOpenNotebook(note)}
-              className="flex flex-col items-center p-4 border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
-            >
-              <svg className="w-6 h-6 text-primary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="text-sm text-primary">Open Notebook</span>
-            </button>
-          )}
-
-          {onShare && (
-            <button
-              onClick={() => onShare(note)}
-              className="flex flex-col items-center p-4 border border-border rounded-lg hover:bg-muted transition-colors"
-            >
-              <svg className="w-6 h-6 text-muted-foreground mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-              </svg>
-              <span className="text-sm">Share</span>
-            </button>
-          )}
-
-          <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex flex-col items-center p-4 border border-destructive/20 rounded-lg hover:bg-destructive/5 transition-colors disabled:opacity-50"
-          >
-            <svg className="w-6 h-6 text-destructive mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            <span className="text-sm text-destructive">
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

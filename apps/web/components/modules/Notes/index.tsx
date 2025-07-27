@@ -7,6 +7,7 @@ import NoteDetail from './NoteDetail';
 import NoteCreateForm from './NoteCreateForm';
 import NotebookView from './NotebookView';
 import api from '../../../lib/api';
+import { useAuthStore } from '../../../store/auth';
 
 type ViewMode = 'list' | 'detail' | 'create' | 'edit' | 'notebook';
 
@@ -16,6 +17,12 @@ export default function NotesOverview() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { userConnected, isAuthenticated } = useAuthStore();
+
+  // Debug authentication state
+  useEffect(() => {
+    console.log('🔐 Auth state:', { isAuthenticated, userConnected });
+  }, [isAuthenticated, userConnected]);
 
   // Fetch notes from API
   const fetchNotes = async () => {
@@ -44,16 +51,22 @@ export default function NotesOverview() {
     setIsLoading(true);
     setError(null);
     try {
-      // Ensure userId is present and is a string to satisfy Note type
-      if (!noteData.userId) {
-        throw new Error('User ID is required to create a note');
+      console.log('🔐 Creating note with auth state:', { isAuthenticated, userConnected });
+      
+      // Check if user is authenticated
+      if (!isAuthenticated || !userConnected?.id) {
+        console.error('❌ Authentication failed:', { isAuthenticated, userConnected });
+        throw new Error('You must be logged in to create notes');
       }
       
       // Ensure metadata is always an object to satisfy backend validation
       const createData = {
         ...noteData,
+        userId: userConnected.id, // Use the authenticated user's ID
         metadata: noteData.metadata || {}
       };
+      
+      console.log('📝 Creating note with data:', createData);
       
       const response = await api.createNote(createData as Note);
 
@@ -182,41 +195,65 @@ export default function NotesOverview() {
 
   // Load notes on component mount
   useEffect(() => {
-    fetchNotes();
-  }, []);
+    if (isAuthenticated) {
+      fetchNotes();
+    }
+  }, [isAuthenticated]);
 
-  // Render error state
-//   if (error) {
-//     return (
-//       <div className="max-w-4xl mx-auto p-6">
-//         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-//           <div className="flex">
-//             <div className="flex-shrink-0">
-//               <svg className="h-5 w-5 text-destructive" viewBox="0 0 20 20" fill="currentColor">
-//                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-//               </svg>
-//             </div>
-//             <div className="ml-3">
-//               <h3 className="text-sm font-medium text-destructive">
-//                 Error loading notes
-//               </h3>
-//               <div className="mt-2 text-sm text-destructive/80">
-//                 {error}
-//               </div>
-//               <div className="mt-4">
-//                 <button
-//                   onClick={fetchNotes}
-//                   className="bg-destructive/10 text-destructive px-3 py-2 rounded-md text-sm font-medium hover:bg-destructive/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
-//                 >
-//                   Try again
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   }
+  // Show authentication message if not logged in
+  if (!isAuthenticated) {
+    return (
+      <div className="mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="text-muted-foreground text-lg mb-4">
+            You need to be logged in to view and create notes
+          </div>
+          <p className="text-sm text-muted-foreground mb-6">
+            Please log in to access your notes and use the AI-powered source suggestions.
+          </p>
+          <button
+            onClick={() => window.location.href = '/profile'}
+            className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-destructive" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-destructive">
+                Error loading notes
+              </h3>
+              <div className="mt-2 text-sm text-destructive/80">
+                {error}
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={fetchNotes}
+                  className="bg-destructive/10 text-destructive px-3 py-2 rounded-md text-sm font-medium hover:bg-destructive/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
+                >
+                  Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Render based on view mode
   switch (viewMode) {

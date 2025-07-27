@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import { Note, NoteSource } from '../../../types';
+import WebsiteScraper from './WebsiteScraper';
+import SourceSuggestions from './SourceSuggestions';
+import SearchTypeSelector from './SearchTypeSelector';
+import { ButtonPrimary } from '../../small/buttons';
 
 interface NoteCreateFormProps {
   onSubmit: (note: Partial<Note>) => void;
@@ -37,6 +41,9 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
   const [newSource, setNewSource] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
   const [showSourceModal, setShowSourceModal] = useState(false);
+  const [showWebsiteScraper, setShowWebsiteScraper] = useState(false);
+  const [showSourceSuggestions, setShowSourceSuggestions] = useState(false);
+  const [searchType, setSearchType] = useState<'all' | 'articles' | 'research' | 'tutorials' | 'documentation'>('all');
   const [sourceFormData, setSourceFormData] = useState<Partial<NoteSource>>({
     type: 'text',
     title: '',
@@ -99,7 +106,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
   const SourceModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-background rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 ">
           <h3 className="text-xl font-bold">Add Source</h3>
           <button
             onClick={() => setShowSourceModal(false)}
@@ -263,13 +270,29 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
           <label className="block text-sm font-medium text-muted-foreground">
             Sources
           </label>
-          <button
-            type="button"
-            onClick={() => setShowSourceModal(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
-          >
-            + Add Source
-          </button>
+          <div className="flex space-x-2">
+            <button
+              type="button"
+              onClick={() => setShowSourceSuggestions(!showSourceSuggestions)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              💡 AI Suggestions
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowWebsiteScraper(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+            >
+              🌐 Scrape Website
+            </button>
+            <ButtonPrimary
+              type="button"
+              onClick={() => setShowSourceModal(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
+            >
+              + Add Source
+            </ButtonPrimary>
+          </div>
         </div>
 
         {/* Main Text */}
@@ -285,6 +308,32 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
             required
           />
         </div>
+
+        {/* AI Source Suggestions */}
+        {showSourceSuggestions && (
+          <div className="p-4 border border-blue-200 dark:border-blue-800 rounded-lg ">
+            <div className="mb-4">
+              <h4 className="text-sm font-medium mb-2">Search Type</h4>
+              <SearchTypeSelector
+                value={searchType}
+                onChange={setSearchType}
+              />
+            </div>
+            <SourceSuggestions
+              text={formData.text || ''}
+              onSourcesAdded={(sources) => {
+                setFormData(prev => ({
+                  ...prev,
+                  noteSources: [...(prev.noteSources || []), ...sources]
+                }));
+              }}
+              maxResults={8}
+              includeContent={true}
+              searchType={searchType}
+              minTextLength={30}
+            />
+          </div>
+        )}
 
         {/* Description */}
         <div>
@@ -460,6 +509,19 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
       </form>
 
       {showSourceModal && <SourceModal />}
+      
+      {/* Website Scraper Modal */}
+      {showWebsiteScraper && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <WebsiteScraper
+              noteId={note?.id}
+              onSourceAdded={addSource}
+              onClose={() => setShowWebsiteScraper(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

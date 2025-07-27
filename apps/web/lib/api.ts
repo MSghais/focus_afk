@@ -518,9 +518,75 @@ class ApiService {
     }>(`/notes/sources/${type}`);
   }
 
-  async getNoteRelations(id: string): Promise<ApiResponse<NoteRelation[]>> {
+    async getNoteRelations(id: string): Promise<ApiResponse<NoteRelation[]>> {
     return this.request<NoteRelation[]>(`/notes/${id}/relations`);
-  } 
+  }
+
+  // Source Agent methods
+  async scrapeWebsite(data: {
+    url: string;
+    noteId?: string;
+    maxCharacters?: number;
+    highlightQuery?: string;
+    numSentences?: number;
+  }): Promise<ApiResponse<{
+    source: NoteSource;
+    scrapedContent: any;
+  }>> {
+    return this.request(`/notes/source-agent/scrape-website`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async analyzeSource(data: {
+    sourceId: string;
+    analysisType: 'summary' | 'key_points' | 'questions' | 'insights';
+  }): Promise<ApiResponse<{
+    sourceId: string;
+    analysisType: string;
+    analysis: string;
+    source: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/analyze-source`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSourceInsights(sourceId: string): Promise<ApiResponse<{
+    sourceId: string;
+    insights: string;
+    source: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/source-insights/${sourceId}`);
+  }
+
+  async getSimilarSources(sourceId: string): Promise<ApiResponse<{
+    sourceId: string;
+    similarSources: any[];
+    originalSource: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/similar-sources/${sourceId}`);
+  }
+
+  async suggestSources(data: {
+    text: string;
+    maxResults?: number;
+    includeContent?: boolean;
+    searchType?: 'articles' | 'research' | 'tutorials' | 'documentation' | 'all';
+  }): Promise<ApiResponse<{
+    suggestions: NoteSource[];
+    query: string;
+    topics: string[];
+    totalFound: number;
+    searchType: string;
+  }>> {
+    return this.request(`/notes/source-agent/suggest-sources`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiService();

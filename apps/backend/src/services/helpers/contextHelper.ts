@@ -1,4 +1,4 @@
-import { MemoryContext } from '../../services/memory/memoryManager';
+import { MemoryContext } from '../../ai/memory/memoryManager';
 
 export function buildContextString(memory: MemoryContext | null | undefined, sources?: string[]): string {
   if (!memory) return '';
