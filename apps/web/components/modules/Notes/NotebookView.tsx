@@ -481,8 +481,9 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
         )}
 
         {/* Main Content */}
-        <ChatNotebook note={note} onUpdate={onUpdate} onBack={onBack} />
         <div className="flex-1 flex flex-col">
+        <ChatNotebook note={note} onUpdate={onUpdate} onBack={onBack} />
+
           {/* Tabs */}
           {/* <div className="border-b border-border">
             <div className="flex space-x-4 md:space-x-8 px-4 md:px-6 overflow-x-auto">
