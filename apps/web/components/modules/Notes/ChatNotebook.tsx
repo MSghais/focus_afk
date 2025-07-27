@@ -27,13 +27,13 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
   const { showToast } = useUIStore();
   const { userConnected } = useAuthStore();
   const { notes, setNotes, noteSources, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [chatId, setChatId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chat' | 'sources'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'sources' | 'studio'  >('chat');
   const [showSourcesTools, setShowSourcesTools] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +55,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
 
   const loadChatMessages = async () => {
     if (!userConnected || !note.id) return;
-    
+
     setIsLoadingMessages(true);
     try {
       const response = await api.getNoteChat(note.id);
@@ -99,6 +99,8 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
         prompt: userMessage
       });
 
+      console.log('response chat about note', response);
+
       if (response.success && response.data) {
         // Remove temp message and add real messages
         setMessages(prev => {
@@ -110,7 +112,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
             createdAt: new Date().toISOString()
           }];
         });
-        
+
         if (response.data!.chatId && !chatId) {
           setChatId(response.data!.chatId);
         }
@@ -159,7 +161,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
   const handleSourceAction = async (action: string, source: NoteSource) => {
     // Switch to chat tab when using source actions
     setActiveTab('chat');
-    
+
     switch (action) {
       case 'analyze':
         await performSourceAnalysis(source, 'key_points');
@@ -186,7 +188,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
     }
 
     setAnalyzingSource(source.id);
-    
+
     try {
       let response;
       if (analysisType === 'insights') {
@@ -200,13 +202,13 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
 
       if (response.success && response.data) {
         let analysisContent = '';
-        
+
         if (analysisType === 'insights') {
           analysisContent = (response.data as any).insights || '';
         } else {
           analysisContent = (response.data as any).analysis || '';
         }
-        
+
         if (analysisContent) {
           // Store the analysis result
           setSourceAnalysis(prev => ({
@@ -220,7 +222,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
           // Pre-fill the chat with the analysis result
           const analysisText = `Analysis of "${source.title}" (${analysisType}):\n\n${analysisContent}`;
           setInputMessage(analysisText);
-          
+
           showToast({
             message: `${analysisType.charAt(0).toUpperCase() + analysisType.slice(1)} generated successfully!`,
             type: 'success',
@@ -245,7 +247,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 flex flex-col h-full max-h-[calc(100vh-100px)]">
       {/* Header with Tabs */}
       <div className="border-b border-border">
         <div className="flex items-center justify-between p-4">
@@ -275,28 +277,36 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
             </button>
           </div>
         </div>
-        
+
         {/* Tab Navigation */}
         <div className="flex border-b border-border">
           <button
-            onClick={() => setActiveTab('chat')}
-            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-              activeTab === 'chat'
+            onClick={() => setActiveTab('sources')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'sources'
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
+          >
+            📚 Sources ({note.noteSources?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'chat'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+              }`}
           >
             💬 Chat
           </button>
+
           <button
-            onClick={() => setActiveTab('sources')}
-            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${
-              activeTab === 'sources'
+            onClick={() => setActiveTab('studio')}
+            className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'studio'
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-muted-foreground hover:text-foreground'
-            }`}
+              }`}
           >
-            📚 Sources ({note.noteSources?.length || 0})
+            Studio
           </button>
         </div>
       </div>
@@ -326,23 +336,21 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        message.role === 'user'
+                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted border border-border'
-                      }`}
+                        }`}
                     >
                       {message.role === 'assistant' ? (
-                        <div 
+                        <div
                           className="prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
                         />
                       ) : (
                         <div className="whitespace-pre-wrap">{message.content}</div>
                       )}
-                      <div className={`text-xs mt-2 ${
-                        message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      }`}>
+                      <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        }`}>
                         {formatMessageTime(message.createdAt)}
                       </div>
                     </div>
@@ -425,7 +433,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                       <span className="text-sm text-muted-foreground">🛠️ Tools enabled</span>
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {note.noteSources.map((source, index) => (
                       <div key={index} className="border border-border rounded-lg p-4 hover:border-border/80 transition-colors">
@@ -445,17 +453,17 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                             </div>
                           </div>
                         </div>
-                        
+
                         {source.content && (
                           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                             {source.content.substring(0, 150)}...
                           </p>
                         )}
-                        
+
                         {source.url && (
-                          <a 
-                            href={source.url} 
-                            target="_blank" 
+                          <a
+                            href={source.url}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-primary hover:underline block mb-3 truncate"
                           >
@@ -512,7 +520,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                                 )}
                               </button>
                             </div>
-                            
+
                             {/* Show existing analysis results */}
                             {source.id && sourceAnalysis[source.id] && (
                               <div className="mt-3 space-y-2">

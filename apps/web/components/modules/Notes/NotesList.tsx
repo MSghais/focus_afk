@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Note } from '../../../types';
+import { ButtonPrimary } from '../../small/buttons';
 
 interface NotesListProps {
   notes: Note[];
@@ -117,22 +118,21 @@ export default function NotesList({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full" >
       {/* Header with Create Button */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Notes</h1>
-        <button
+        {/* <h1 className="text-3xl font-bold">Notes</h1> */}
+        <ButtonPrimary
           onClick={onCreateNote}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
         >
           + Create Note
-        </button>
+        </ButtonPrimary>
       </div>
 
       {/* Filters and Search */}
       <div className="rounded-lg shadow p-2 space-y-4">
-        <div className="grid grid-cols- md:grid-cols-4 gap-4">
-          {/* Search */}
+        {/* <div className="grid grid-cols- md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <input
               type="text"
@@ -143,8 +143,7 @@ export default function NotesList({
             />
           </div>
 
-          {/* Type Filter */}
-          {/* <div>
+          <div>
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as 'all' | 'user' | 'ai')}
@@ -154,9 +153,8 @@ export default function NotesList({
               <option value="user">User Notes</option>
               <option value="ai">AI Generated</option>
             </select>
-          </div> */}
+          </div>
 
-          {/* Sort */}
           <div>
             <select
               value={`${sortBy}-${sortOrder}`}
@@ -175,7 +173,7 @@ export default function NotesList({
               <option value="type-asc">Type A-Z</option>
             </select>
           </div>
-        </div>
+        </div> */}
 
         {/* Results Count */}
         <div className="text-sm text-muted-foreground">
@@ -199,14 +197,14 @@ export default function NotesList({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 w-full">
           {filteredNotes.map((note) => (
             <div
               key={note.id}
               className="rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer"
               onClick={() => onNoteClick(note)}
             >
-              <div className="p-6">
+              <div className="p-6 border border-border rounded-lg">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                   {/* <div className="flex items-center space-x-2">

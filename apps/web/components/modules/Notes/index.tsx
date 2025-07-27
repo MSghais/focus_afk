@@ -30,12 +30,12 @@ export default function NotesOverview() {
     setError(null);
     try {
       const response = await api.getNotes();
-      
+
       console.log('fetch notes response', response);
       if (!response) {
         throw new Error('Failed to fetch notes');
       }
-      
+
       const data = response?.data || [];
       setNotes(data);
     } catch (err) {
@@ -52,22 +52,22 @@ export default function NotesOverview() {
     setError(null);
     try {
       console.log('🔐 Creating note with auth state:', { isAuthenticated, userConnected });
-      
+
       // Check if user is authenticated
       if (!isAuthenticated || !userConnected?.id) {
         console.error('❌ Authentication failed:', { isAuthenticated, userConnected });
         throw new Error('You must be logged in to create notes');
       }
-      
+
       // Ensure metadata is always an object to satisfy backend validation
       const createData = {
         ...noteData,
         userId: userConnected.id, // Use the authenticated user's ID
         metadata: noteData.metadata || {}
       };
-      
+
       console.log('📝 Creating note with data:', createData);
-      
+
       const response = await api.createNote(createData as Note);
 
       if (!response.success) {
@@ -90,7 +90,7 @@ export default function NotesOverview() {
   // Update note
   const updateNote = async (noteData: Partial<Note>) => {
     if (!selectedNote?.id) return;
-    
+
     setIsLoading(true);
     setError(null);
     try {
@@ -99,13 +99,13 @@ export default function NotesOverview() {
       console.log('🔄 Updating note:', selectedNote.id);
       console.log('📝 Update data:', noteData);
       console.log('📋 Selected note:', selectedNote);
-      
+
       // Ensure metadata is always an object to satisfy backend validation
       const updateData = {
         ...noteData,
         metadata: noteData.metadata || selectedNote.metadata || {}
       };
-      
+
       const response = await api.updateNote(selectedNote.id, updateData);
       if (!response.success) {
         throw new Error('Failed to update note');
@@ -130,11 +130,11 @@ export default function NotesOverview() {
     setError(null);
     try {
       const response = await api.deleteNote(noteId);
-      
+
       if (!response.success) {
         throw new Error('Failed to delete note');
       }
-      
+
       setNotes(prev => prev.filter(note => note.id !== noteId));
       if (selectedNote?.id === noteId) {
         setSelectedNote(null);
@@ -283,7 +283,9 @@ export default function NotesOverview() {
     case 'detail':
       return selectedNote ? (
         <div className="">
-          <NoteDetail
+
+          <NotebookView note={selectedNote} onUpdate={updateNote} onBack={handleBackToList} />
+          {/* <NoteDetail
             note={selectedNote}
             onEdit={handleEditNote}
             onDelete={deleteNote}
@@ -291,6 +293,7 @@ export default function NotesOverview() {
             onShare={handleShareNote}
             onOpenNotebook={handleOpenNotebook}
           />
+        */}
         </div>
       ) : (
         <div className=" mx-auto p-6">
@@ -335,7 +338,7 @@ export default function NotesOverview() {
 
     default:
       return (
-        <div className="mx-auto p-0">
+        <div className="w-full p-0">
           <NotesList
             notes={notes}
             onNoteClick={handleNoteClick}

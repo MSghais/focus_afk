@@ -367,6 +367,24 @@ async function notesRoutes(fastify: FastifyInstance) {
         contextString += `Topics: ${note.topics.join(', ')}\n\n`;
       }
 
+      const messages = await fastify.prisma.message.findMany({
+        where: {
+          userId,
+          chat: {
+            metadata: {
+              path: ['noteId'],
+              equals: noteId
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      });
+
+      for(let i = 0; i < messages.length; i++) {
+        contextString += `Message ${i + 1}:\n${messages[i].content}\n\n`;
+      }
+
       // Add sources context
       if (note.noteSources && note.noteSources.length > 0) {
         contextString += `Sources:\n`;
@@ -400,7 +418,7 @@ Please respond to the user's question about this note and its sources.`;
         systemPrompt,
         prompt,
         userId,
-        mentorId,
+        mentorId: mentorId || undefined,
         sessionId: `note_chat_${noteId}`,
         enableMemory: true,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor'],
@@ -411,10 +429,13 @@ Please respond to the user's question about this note and its sources.`;
       }
 
       // Get or create a chat for this note conversation
-      let chat = await chatService.getOrCreateMentorChat(userId, mentorId || 'note-assistant');
+      let chat;
 
-      // If no mentor specified, create a note-specific chat
-      if (!mentorId) {
+      if (mentorId) {
+        // If mentor is specified, use the mentor chat system
+        chat = await chatService.getOrCreateMentorChat(userId, mentorId);
+      } else {
+        // If no mentor specified, create a note-specific chat
         // Try to find existing chat for this note
         const existingChats = await fastify.prisma.chat.findMany({
           where: {
