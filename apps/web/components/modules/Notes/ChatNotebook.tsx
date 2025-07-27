@@ -9,6 +9,7 @@ import SourceToolsRecommendation from './SourceToolsRecommendation';
 import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
 import { tryMarkdownToHtml } from '../../../lib/helpers';
+import StudioNotebook from './StudioNotebook';
 
 interface ChatMessage {
   id: string;
@@ -19,6 +20,7 @@ interface ChatMessage {
 
 interface ChatNotebookProps {
   note: Note;
+  notesSources?: NoteSource[];
   onUpdate: (note: Partial<Note>) => void;
   onBack: () => void;
 }
@@ -252,7 +254,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
       <div className="border-b border-border">
         <div className="flex items-center justify-between p-4">
           <div>
-            <h2 className="text-lg font-semibold">Note Assistant</h2>
+            {/* <h2 className="text-lg font-semibold">Note Assistant</h2> */}
             <p className="text-sm text-muted-foreground">
               Chat and analyze your note with {note.noteSources?.length || 0} sources
             </p>
@@ -554,6 +556,13 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'studio' && (
+          <StudioNotebook
+            note={note}
+            notesSources={note.noteSources || []}
+          />
         )}
       </div>
     </div>

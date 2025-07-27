@@ -8,6 +8,7 @@ import NoteCreateForm from './NoteCreateForm';
 import NotebookView from './NotebookView';
 import api from '../../../lib/api';
 import { useAuthStore } from '../../../store/auth';
+import { useUIStore } from '../../../store/uiStore';
 
 type ViewMode = 'list' | 'detail' | 'create' | 'edit' | 'notebook';
 
@@ -18,6 +19,7 @@ export default function NotesOverview() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { userConnected, isAuthenticated } = useAuthStore();
+  const { showModal, showToast } = useUIStore()  ;
 
   // Debug authentication state
   useEffect(() => {
@@ -160,7 +162,13 @@ export default function NotesOverview() {
 
   const handleEditNote = (note: Note) => {
     setSelectedNote(note);
-    setViewMode('edit');
+    // setViewMode('edit');
+    showModal(<NoteCreateForm
+      onSubmit={updateNote}
+      onCancel={() => setViewMode('detail')}
+      isLoading={isLoading}
+      note={selectedNote || undefined}
+    />)
   };
 
   const handleCreateNote = () => {
@@ -284,7 +292,11 @@ export default function NotesOverview() {
       return selectedNote ? (
         <div className="">
 
-          <NotebookView note={selectedNote} onUpdate={updateNote} onBack={handleBackToList} />
+          <NotebookView note={selectedNote} onUpdate={updateNote}
+            onBack={handleBackToList}
+            onEdit={handleEditNote}
+            onDelete={deleteNote}
+          />
           {/* <NoteDetail
             note={selectedNote}
             onEdit={handleEditNote}
@@ -318,6 +330,8 @@ export default function NotesOverview() {
             note={selectedNote}
             onUpdate={updateNote}
             onBack={handleBackToList}
+            onEdit={handleEditNote}
+            onDelete={deleteNote}
           />
         </div>
       ) : (

@@ -12,12 +12,17 @@ interface NotebookViewProps {
   note: Note;
   onUpdate: (note: Partial<Note>) => void;
   onBack: () => void;
+  onEdit: (note: Note) => void;
+  onDelete: (noteId: string) => void;
 }
 
-export default function NotebookView({ note, onUpdate, onBack }: NotebookViewProps) {
+export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete }: NotebookViewProps) {
 
 
   const { notes, setNotes, noteSources, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'discussion' | 'studio' | 'sources'>('discussion');
   const [relatedNotes, setRelatedNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +46,15 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
       fetchRelatedNotes();
     }
   }, [note.relations]);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // You could add a toast notification here
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+    }
+  };
 
   const fetchRelatedNotes = async () => {
     setIsLoading(true);
@@ -100,6 +114,21 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
     });
   };
 
+
+  const handleDelete = async () => {
+    if (!note.id) return;
+
+    if (window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+      setIsDeleting(true);
+      try {
+        onDelete(note.id);
+      } catch (error) {
+        console.error('Error deleting note:', error);
+        setIsDeleting(false);
+      }
+    }
+  };
+
   const SourceModal = () => (
     <Modal
       isOpen={showAddSourceModal}
@@ -129,8 +158,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 type="button"
                 onClick={() => setSourceFormData(prev => ({ ...prev, type: type as NoteSource['type'] }))}
                 className={`p-4 border rounded-lg text-left transition-all duration-200 hover:scale-[1.02] ${sourceFormData.type === type
-                    ? 'border-primary bg-primary/10 shadow-md'
-                    : 'border-border hover:border-border/80 hover:bg-muted/50'
+                  ? 'border-primary bg-primary/10 shadow-md'
+                  : 'border-border hover:border-border/80 hover:bg-muted/50'
                   }`}
               >
                 <div className="text-2xl mb-2">{icon}</div>
@@ -358,6 +387,40 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               </div>
             </div>
           </div>
+          {/* <div className="flex items-center space-x-3">
+
+
+            <button
+              onClick={() => onEdit(note)}
+              className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-muted transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>Edit</span>
+            </button>
+
+            <button
+              onClick={() => copyToClipboard(note.text || '')}
+              className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-muted transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span>Copy</span>
+            </button>
+
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-destructive border border-destructive/20 rounded-lg hover:bg-destructive/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
+            </button>
+          </div> */}
           <div className="flex items-center space-x-2">
             {/* Mobile: Show sources toggle button */}
             <button
@@ -377,6 +440,41 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center space-x-3">
+
+
+        <button
+          onClick={() => onEdit(note)}
+          className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-muted transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          <span>Edit</span>
+        </button>
+
+        <button
+          onClick={() => copyToClipboard(note.text || '')}
+          className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-foreground border border-border rounded-lg hover:bg-muted transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span>Copy</span>
+        </button>
+
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="inline-flex items-center space-x-2 px-4 py-2 text-sm font-medium text-destructive border border-destructive/20 rounded-lg hover:bg-destructive/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
+        </button>
       </div>
 
       {/* <div className="flex flex-1 relative">

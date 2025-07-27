@@ -29,10 +29,17 @@ export function NoteViewPageComponent({ noteId }: NoteViewPageProps) {
         router.push('/notes');
     }
 
+    const onEdit = (note: Note) => {
+        router.push(`/notes/${note.id}`);
+    }
+    const onDelete = (noteId: string) => {
+        router.push('/notes');
+    }
+
     return (
         <div>
 
-            {note && <NotebookView note={note} onUpdate={onUpdate} onBack={onBack} />}
+            {note && <NotebookView note={note} onUpdate={onUpdate} onBack={onBack} onEdit={onEdit} onDelete={onDelete} />}
         </div>
     );
 }
