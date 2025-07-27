@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { NoteSource } from '../../../types';
 import api from '../../../lib/api';
+import { logClickedEvent } from '../../../lib/analytics';
 
 interface SourceAgentProps {
   source: NoteSource;
@@ -37,6 +38,7 @@ export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceA
     }));
 
     try {
+      logClickedEvent('source_agent_analyze_source', analysisType);
       const response = await api.analyzeSource({
         sourceId: source.id,
         analysisType
@@ -72,6 +74,7 @@ export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceA
     setError(null);
 
     try {
+      logClickedEvent('source_agent_get_insights');
       const response = await api.getSourceInsights(source.id);
 
       if (response.success && response.data?.insights) {
@@ -101,6 +104,8 @@ export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceA
     setError(null);
 
     try {
+
+      logClickedEvent('source_agent_find_similar');
       const response = await api.getSimilarSources(source.id);
 
       if (response.success && response.data) {

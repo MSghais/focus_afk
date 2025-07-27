@@ -55,6 +55,12 @@ export const notesZodSchema = {
   getSources: z.object({
     type: z.string().optional(), // 'user' or 'ai'
   }),
+
+  chatAboutNotes: z.object({
+    noteId: z.string(),
+    prompt: z.string(),
+    mentorId: z.string().optional(),
+  }),
 };
 
 // JSON Schema for Fastify validation
@@ -112,6 +118,15 @@ export const notesSchema = {
     },
   },
 
+  chatAboutNotes: {
+    type: 'object',
+    properties: {
+      noteId: { type: 'string' },
+      prompt: { type: 'string' },
+      mentorId: { type: 'string' },
+    },
+    required: ['noteId', 'prompt'],
+  },
   updateNotes: {
     type: 'object',
     properties: {
@@ -186,4 +201,5 @@ export type CreateNotesInput = z.infer<typeof notesZodSchema.createNotes>;
 export type UpdateNotesInput = z.infer<typeof notesZodSchema.updateNotes>;
 export type GetNotesInput = z.infer<typeof notesZodSchema.getNotes>;
 export type GetSourcesInput = z.infer<typeof notesZodSchema.getSources>;
+export type ChatAboutNotesInput = z.infer<typeof notesZodSchema.chatAboutNotes>;
 export type NoteSourceInput = z.infer<typeof noteSourceSchema>; 

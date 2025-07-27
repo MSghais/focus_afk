@@ -6,6 +6,7 @@ import { Modal } from '../../small/Modal/Modal';
 import api from '../../../lib/api';
 import { useNotesStore } from '../../../store/notes';
 import SourceToolsRecommendation from './SourceToolsRecommendation';
+import ChatNotebook from './ChatNotebook';
 
 interface NotebookViewProps {
   note: Note;
@@ -480,9 +481,10 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
         )}
 
         {/* Main Content */}
+        <ChatNotebook note={note} onUpdate={onUpdate} onBack={onBack} />
         <div className="flex-1 flex flex-col">
           {/* Tabs */}
-          <div className="border-b border-border">
+          {/* <div className="border-b border-border">
             <div className="flex space-x-4 md:space-x-8 px-4 md:px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('discussion')}
@@ -515,10 +517,10 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 Sources
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Tab Content */}
-          <div className="flex-1 p-4 md:p-6">
+          {/* <div className="flex-1 p-4 md:p-6">
             {activeTab === 'discussion' && (
               <div className="space-y-4">
                 <div className="border border-border rounded-lg p-4">
@@ -592,7 +594,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
 
