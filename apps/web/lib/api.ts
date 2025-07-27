@@ -587,6 +587,68 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Note chat methods
+  async getNoteChat(noteId: string, filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<{
+    messages: Message[];
+    chat: Chat | null;
+    note: {
+      id: string;
+      title: string;
+    };
+  }>> {
+    const queryParams = new URLSearchParams();
+    if (filters?.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters?.offset) queryParams.append('offset', filters.offset.toString());
+    
+    const endpoint = `/notes/${noteId}/chat${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request<{
+      messages: Message[];
+      chat: Chat | null;
+      note: {
+        id: string;
+        title: string;
+      };
+    }>(endpoint);
+  }
+
+  async chatAboutNote(data: {
+    noteId: string;
+    prompt: string;
+    mentorId?: string;
+  }): Promise<ApiResponse<{
+    response: string;
+    chatId: string;
+    messageId: string;
+    note: {
+      id: string;
+      title: string;
+      type: string;
+      sourcesCount: number;
+    };
+    memory: any;
+    usage: any;
+  }>> {
+    return this.request<{
+      response: string;
+      chatId: string;
+      messageId: string;
+      note: {
+        id: string;
+        title: string;
+        type: string;
+        sourcesCount: number;
+      };
+      memory: any;
+      usage: any;
+    }>('/notes/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiService();
