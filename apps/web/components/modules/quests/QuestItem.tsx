@@ -13,6 +13,7 @@ interface IQuestItemProps {
   onClick?: () => void;
   badgeReward?: string;
   isQuestActionDisabled?: boolean;
+  isExpanded?: boolean;
 }
 
 const QuestItem: React.FC<IQuestItemProps> = ({
@@ -20,6 +21,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
   onClick,
   badgeReward,
   isQuestActionDisabled = false,
+  isExpanded = false,
 }: IQuestItemProps) => {
   if (!quest) return null;
 
@@ -28,7 +30,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
   const { addTask, deleteTask, tasks } = useFocusAFKStore();
   const [isAddedAsTask, setIsAddedAsTask] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(isExpanded);
 
   const handleAddTask = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
