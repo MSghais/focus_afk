@@ -75,7 +75,6 @@ export function ButtonSecondary({
         border-2
         border-[var(--brand-secondary)]
         bg-[var(--button-secondary-bg,transparent)]
-        text-[var(--button-secondary-text,var(--brand-secondary))]
         px-5 py-2
         transition-colors
         hover:bg-[var(--brand-secondary)]
@@ -85,8 +84,10 @@ export function ButtonSecondary({
         disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
+      // text-[var(--button-secondary-text,var(--brand-secondary))]
+
       style={{
-        color: "var(--button-secondary-text, var(--brand-secondary))",
+        // color: "var(--button-secondary-text, var(--brand-secondary))",
         background: "var(--button-secondary-bg, transparent)",
         borderColor: "var(--brand-secondary)",
       }}

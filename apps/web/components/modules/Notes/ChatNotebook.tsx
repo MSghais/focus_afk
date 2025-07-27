@@ -10,6 +10,10 @@ import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
 import { tryMarkdownToHtml } from '../../../lib/helpers';
 import StudioNotebook from './StudioNotebook';
+import { logClickedEvent } from '../../../lib/analytics';
+import SourceCard from './SourceCard';
+import NoteCreateForm from './NoteCreateForm';
+import { ButtonSimple } from '../../small/buttons';
 
 interface ChatMessage {
   id: string;
@@ -26,7 +30,7 @@ interface ChatNotebookProps {
 }
 
 export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookProps) {
-  const { showToast } = useUIStore();
+  const { showToast, showModal } = useUIStore();
   const { userConnected } = useAuthStore();
   const { notes, setNotes, noteSources, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
 
@@ -35,7 +39,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const [chatId, setChatId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'chat' | 'sources' | 'studio'  >('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'sources' | 'studio'>('chat');
   const [showSourcesTools, setShowSourcesTools] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -164,6 +168,10 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
     // Switch to chat tab when using source actions
     setActiveTab('chat');
 
+    logClickedEvent("chat_notebook_source_action")
+
+    logClickedEvent(`${action}_chat_notebook_source`)
+
     switch (action) {
       case 'analyze':
         await performSourceAnalysis(source, 'key_points');
@@ -285,17 +293,18 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
           <button
             onClick={() => setActiveTab('sources')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'sources'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
               }`}
           >
-            📚 Sources ({note.noteSources?.length || 0})
+            📚 Sources
+            {/* 📚 Sources ({note.noteSources?.length || 0}) */}
           </button>
           <button
             onClick={() => setActiveTab('chat')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'chat'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
               }`}
           >
             💬 Chat
@@ -304,8 +313,8 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
           <button
             onClick={() => setActiveTab('studio')}
             className={`flex-1 py-3 px-4 text-sm font-medium transition-colors ${activeTab === 'studio'
-                ? 'border-b-2 border-primary text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground hover:text-foreground'
               }`}
           >
             Studio
@@ -338,9 +347,9 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                     className={`flex ${message.role === 'user' ? 'justify-start' : 'justify-end'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user' 
-                          ? 'bg-primary text-primary-foreground text-left'
-                          : 'bg-muted border border-border text-right'
+                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
+                        ? 'bg-primary text-primary-foreground text-left'
+                        : 'bg-muted border border-border text-right'
                         }`}
                     >
                       {message.role === 'assistant' ? (
@@ -426,6 +435,19 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
         {activeTab === 'sources' && (
           <div className="flex flex-col h-full">
             {/* Sources List */}
+            <ButtonSimple
+              className="max-w-fit mx-4 my-2"
+              onClick={() => {
+                logClickedEvent("chat_notebook_edit_sources")
+                showModal(<NoteCreateForm
+                  onSubmit={(note) => {
+                    console.log("note", note);
+                  }}
+                  onCancel={() => { }}
+                  note={note}
+                />)
+              }}
+            > Edit sources</ButtonSimple>
             <div className="flex-1 overflow-y-auto p-4">
               {note.noteSources && note.noteSources.length > 0 ? (
                 <div className="space-y-4">
@@ -436,112 +458,113 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto ">
                     {note.noteSources.map((source, index) => (
-                      <div key={index} className="border border-border rounded-lg p-4 hover:border-border/80 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg">
-                              {source.type === 'text' && '📄'}
-                              {source.type === 'link' && '🔗'}
-                              {source.type === 'youtube' && '📺'}
-                              {source.type === 'google_drive' && '☁️'}
-                              {source.type === 'file' && '📁'}
-                              {source.type === 'website' && '🌐'}
-                            </span>
-                            <div>
-                              <h4 className="font-medium text-sm">{source.title}</h4>
-                              <p className="text-xs text-muted-foreground capitalize">{source.type}</p>
-                            </div>
-                          </div>
-                        </div>
+                      <SourceCard source={source} />
+                      // <div key={index} className="border border-border rounded-lg p-4 hover:border-border/80 transition-colors">
+                      //   <div className="flex items-start justify-between mb-3">
+                      //     <div className="flex items-center space-x-2">
+                      //       <span className="text-lg">
+                      //         {source.type === 'text' && '📄'}
+                      //         {source.type === 'link' && '🔗'}
+                      //         {source.type === 'youtube' && '📺'}
+                      //         {source.type === 'google_drive' && '☁️'}
+                      //         {source.type === 'file' && '📁'}
+                      //         {source.type === 'website' && '🌐'}
+                      //       </span>
+                      //       <div>
+                      //         <h4 className="font-medium text-sm">{source.title}</h4>
+                      //         <p className="text-xs text-muted-foreground capitalize">{source.type}</p>
+                      //       </div>
+                      //     </div>
+                      //   </div>
 
-                        {source.content && (
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                            {source.content.substring(0, 150)}...
-                          </p>
-                        )}
+                      //   {source.content && (
+                      //     <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      //       {source.content.substring(0, 150)}...
+                      //     </p>
+                      //   )}
 
-                        {source.url && (
-                          <a
-                            href={source.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline block mb-3 truncate"
-                          >
-                            {source.url}
-                          </a>
-                        )}
+                      //   {source.url && (
+                      //     <a
+                      //       href={source.url}
+                      //       target="_blank"
+                      //       rel="noopener noreferrer"
+                      //       className="text-xs text-primary hover:underline block mb-3 truncate"
+                      //     >
+                      //       {source.url}
+                      //     </a>
+                      //   )}
 
-                        {showSourcesTools && (
-                          <div className="border-t border-border pt-3">
-                            <h5 className="text-xs font-medium text-muted-foreground mb-2">Quick Actions</h5>
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                onClick={() => handleSourceAction('analyze', source)}
-                                disabled={analyzingSource === source.id}
-                                className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Analyze this source"
-                              >
-                                {analyzingSource === source.id ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                                ) : (
-                                  '🔍 Analyze'
-                                )}
-                              </button>
-                              <button
-                                onClick={() => handleSourceAction('summarize', source)}
-                                disabled={analyzingSource === source.id}
-                                className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Summarize this source"
-                              >
-                                {analyzingSource === source.id ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                                ) : (
-                                  '📝 Summarize'
-                                )}
-                              </button>
-                              <button
-                                onClick={() => handleSourceAction('compare', source)}
-                                disabled={analyzingSource === source.id}
-                                className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Compare with note"
-                              >
-                                ⚖️ Compare
-                              </button>
-                              <button
-                                onClick={() => handleSourceAction('extract', source)}
-                                disabled={analyzingSource === source.id}
-                                className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Extract insights"
-                              >
-                                {analyzingSource === source.id ? (
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                                ) : (
-                                  '💡 Extract'
-                                )}
-                              </button>
-                            </div>
+                      //   {showSourcesTools && (
+                      //     <div className="border-t border-border pt-3">
+                      //       <h5 className="text-xs font-medium text-muted-foreground mb-2">Quick Actions</h5>
+                      //       <div className="flex flex-wrap gap-2">
+                      //         <button
+                      //           onClick={() => handleSourceAction('analyze', source)}
+                      //           disabled={analyzingSource === source.id}
+                      //           className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      //           title="Analyze this source"
+                      //         >
+                      //           {analyzingSource === source.id ? (
+                      //             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                      //           ) : (
+                      //             '🔍 Analyze'
+                      //           )}
+                      //         </button>
+                      //         <button
+                      //           onClick={() => handleSourceAction('summarize', source)}
+                      //           disabled={analyzingSource === source.id}
+                      //           className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      //           title="Summarize this source"
+                      //         >
+                      //           {analyzingSource === source.id ? (
+                      //             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                      //           ) : (
+                      //             '📝 Summarize'
+                      //           )}
+                      //         </button>
+                      //         <button
+                      //           onClick={() => handleSourceAction('compare', source)}
+                      //           disabled={analyzingSource === source.id}
+                      //           className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      //           title="Compare with note"
+                      //         >
+                      //           ⚖️ Compare
+                      //         </button>
+                      //         <button
+                      //           onClick={() => handleSourceAction('extract', source)}
+                      //           disabled={analyzingSource === source.id}
+                      //           className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      //           title="Extract insights"
+                      //         >
+                      //           {analyzingSource === source.id ? (
+                      //             <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                      //           ) : (
+                      //             '💡 Extract'
+                      //           )}
+                      //         </button>
+                      //       </div>
 
-                            {/* Show existing analysis results */}
-                            {source.id && sourceAnalysis[source.id] && (
-                              <div className="mt-3 space-y-2">
-                                <h6 className="text-xs font-medium text-muted-foreground">Previous Analysis</h6>
-                                {Object.entries(sourceAnalysis[source.id]).map(([type, content]) => (
-                                  <div key={type} className="p-2 bg-muted/30 rounded text-xs">
-                                    <div className="font-medium capitalize mb-1">
-                                      {type === 'key_points' ? 'Key Points' : type === 'summary' ? 'Summary' : 'Insights'}:
-                                    </div>
-                                    <div className="text-muted-foreground line-clamp-2">
-                                      {content as string}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      //       {/* Show existing analysis results */}
+                      //       {source.id && sourceAnalysis[source.id] && (
+                      //         <div className="mt-3 space-y-2">
+                      //           <h6 className="text-xs font-medium text-muted-foreground">Previous Analysis</h6>
+                      //           {Object.entries(sourceAnalysis[source.id]).map(([type, content]) => (
+                      //             <div key={type} className="p-2 bg-muted/30 rounded text-xs">
+                      //               <div className="font-medium capitalize mb-1">
+                      //                 {type === 'key_points' ? 'Key Points' : type === 'summary' ? 'Summary' : 'Insights'}:
+                      //               </div>
+                      //               <div className="text-muted-foreground line-clamp-2">
+                      //                 {content as string}
+                      //               </div>
+                      //             </div>
+                      //           ))}
+                      //         </div>
+                      //       )}
+                      //     </div>
+                      //   )}
+                      // </div>
                     ))}
                   </div>
                 </div>

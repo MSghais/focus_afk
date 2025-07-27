@@ -14,9 +14,10 @@ interface NotebookViewProps {
   onBack: () => void;
   onEdit: (note: Note) => void;
   onDelete: (noteId: string) => void;
+  isBackView?: boolean;
 }
 
-export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete }: NotebookViewProps) {
+export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete, isBackView = true }: NotebookViewProps) {
 
 
   const { notes, setNotes, noteSources, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
@@ -374,12 +375,14 @@ export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete 
       <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={onBack}
-              className="text-muted-foreground hover:text-foreground"
+            {isBackView && (
+              <button
+                onClick={onBack}
+                className="text-muted-foreground hover:text-foreground"
             >
               ← Back
             </button>
+            )}
             <div className="flex flex-col">
               <h1 className="text-xl font-bold truncate text-wrap text-ellipsis max-w-[200px]">{note?.text || note?.description || 'Untitled Notebook'}</h1>
               <div className="text-sm text-muted-foreground">

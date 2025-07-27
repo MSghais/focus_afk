@@ -5,6 +5,8 @@ import { NoteSource } from '../../../types';
 import api from '../../../lib/api';
 import { useUIStore } from '../../../store/uiStore';
 import { useAuthStore } from '../../../store/auth';
+import { ButtonSecondary, ButtonSimple } from '../../small/buttons';
+import { logClickedEvent } from '../../../lib/analytics';
 
 interface SourceCardProps {
   source: NoteSource;
@@ -78,6 +80,16 @@ export default function SourceCard({
   const handleManualSearch = () => {
     fetchSuggestions();
   };
+
+  const handleRemoveSource = async (source: NoteSource) => {
+    console.log("handleRemoveSource", source);
+    logClickedEvent("chat_notebook_source_remove")
+
+
+    // remove source from note
+    // remove source from note sources
+    // remove source from note sources
+  }
 
 
   const handleSourceAction = async (action: string, source: NoteSource) => {
@@ -220,6 +232,18 @@ export default function SourceCard({
             {source.url}
           </a>
         )}
+
+        <div
+          className="py-2"
+        >
+          <ButtonSimple 
+            onClick={() => handleRemoveSource(source)}
+            disabled={analyzingSource === source.id}
+            className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Remove
+          </ButtonSimple>
+        </div>
 
         {showSourcesTools && (
           <div className="border-t border-border pt-3">
