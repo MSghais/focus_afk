@@ -174,24 +174,24 @@ export default function NotesOverview() {
 //   if (error) {
 //     return (
 //       <div className="max-w-4xl mx-auto p-6">
-//         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+//         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
 //           <div className="flex">
 //             <div className="flex-shrink-0">
-//               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+//               <svg className="h-5 w-5 text-destructive" viewBox="0 0 20 20" fill="currentColor">
 //                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
 //               </svg>
 //             </div>
 //             <div className="ml-3">
-//               <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+//               <h3 className="text-sm font-medium text-destructive">
 //                 Error loading notes
 //               </h3>
-//               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+//               <div className="mt-2 text-sm text-destructive/80">
 //                 {error}
 //               </div>
 //               <div className="mt-4">
 //                 <button
 //                   onClick={fetchNotes}
-//                   className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-200 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+//                   className="bg-destructive/10 text-destructive px-3 py-2 rounded-md text-sm font-medium hover:bg-destructive/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
 //                 >
 //                   Try again
 //                 </button>
@@ -243,12 +243,12 @@ export default function NotesOverview() {
       ) : (
         <div className=" mx-auto p-6">
           <div className="text-center py-12">
-            <div className="text-gray-500 dark:text-gray-400 text-lg">
+            <div className="text-muted-foreground text-lg">
               Note not found
             </div>
             <button
               onClick={handleBackToList}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               Back to Notes
             </button>
@@ -268,12 +268,12 @@ export default function NotesOverview() {
       ) : (
         <div className="mx-auto p-6">
           <div className="text-center py-12">
-            <div className="text-gray-500 dark:text-gray-400 text-lg">
+            <div className="text-muted-foreground text-lg">
               Notebook not found
             </div>
             <button
               onClick={handleBackToList}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               Back to Notes
             </button>

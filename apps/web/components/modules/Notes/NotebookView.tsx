@@ -81,13 +81,13 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   };
 
   const SourceModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-background rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Add Source</h3>
           <button
             onClick={() => setShowAddSourceModal(false)}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>
@@ -109,8 +109,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 onClick={() => setSourceFormData(prev => ({ ...prev, type: type as NoteSource['type'] }))}
                 className={`p-4 border rounded-lg text-left transition-colors ${
                   sourceFormData.type === type
-                    ? 'border-blue-500 dark:bg-blue-900/20'
-                    : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-border/80'
                 }`}
               >
                 <div className="text-2xl mb-2">{icon}</div>
@@ -128,7 +128,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               type="text"
               value={sourceFormData.title || ''}
               onChange={(e) => setSourceFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+              className="w-full p-3 border border-border rounded-lg bg-background"
               placeholder="Enter source title"
             />
           </div>
@@ -139,7 +139,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               <textarea
                 value={sourceFormData.content || ''}
                 onChange={(e) => setSourceFormData(prev => ({ ...prev, content: e.target.value }))}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 h-32"
+                className="w-full p-3 border border-border rounded-lg bg-background h-32"
                 placeholder="Paste your text content here..."
               />
             </div>
@@ -152,7 +152,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 type="url"
                 value={sourceFormData.url || ''}
                 onChange={(e) => setSourceFormData(prev => ({ ...prev, url: e.target.value }))}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+                className="w-full p-3 border border-border rounded-lg bg-background"
                 placeholder={`Enter ${sourceFormData.type === 'youtube' ? 'YouTube' : 'website'} URL`}
               />
             </div>
@@ -164,13 +164,13 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
-                  className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400"
+                  className="p-3 border border-border rounded-lg hover:border-border/80"
                 >
                   📝 Google Docs
                 </button>
                 <button
                   type="button"
-                  className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400"
+                  className="p-3 border border-border rounded-lg hover:border-border/80"
                 >
                   📊 Google Slides
                 </button>
@@ -189,7 +189,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           </div>
           <div className="mt-2 w-full rounded-full h-2">
             <div
-              className="bg-blue-500 h-2 rounded-full transition-all"
+              className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${Math.min(((note.sources?.length || 0) / 300) * 100, 100)}%` }}
             />
           </div>
@@ -200,7 +200,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           <button
             type="button"
             onClick={() => setShowAddSourceModal(false)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            className="px-4 py-2 text-muted-foreground hover:text-foreground"
           >
             Cancel
           </button>
@@ -208,7 +208,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             type="button"
             onClick={() => addSource(sourceFormData as NoteSource)}
             disabled={!sourceFormData.title}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
           >
             Add Source
           </button>
@@ -218,13 +218,13 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   );
 
   const LinkNoteModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className=" rounded-lg p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Link Note</h3>
           <button
             onClick={() => setShowLinkNoteModal(false)}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-muted-foreground hover:text-foreground"
           >
             ✕
           </button>
@@ -236,7 +236,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             <select
               value={relationFormData.relationType}
               onChange={(e) => setRelationFormData(prev => ({ ...prev, relationType: e.target.value as NoteRelation['relationType'] }))}
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+              className="w-full p-3 border border-border rounded-lg bg-background"
             >
               <option value="related">Related</option>
               <option value="references">References</option>
@@ -257,7 +257,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               onChange={(e) => setRelationFormData(prev => ({ ...prev, strength: parseFloat(e.target.value) }))}
               className="w-full"
             />
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="text-sm text-muted-foreground mt-1">
               {relationFormData.strength}
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             <input
               type="text"
               placeholder="Enter note ID to link"
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+              className="w-full p-3 border border-border rounded-lg bg-background"
             />
           </div>
         </div>
@@ -276,14 +276,14 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           <button
             type="button"
             onClick={() => setShowLinkNoteModal(false)}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+            className="px-4 py-2 text-muted-foreground hover:text-foreground"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={() => addRelation('temp-id')}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
           >
             Link Note
           </button>
@@ -295,25 +295,25 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
               onClick={onBack}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              className="text-muted-foreground hover:text-foreground"
             >
               ← Back
             </button>
             <h1 className="text-xl font-bold">{note.description || 'Untitled Notebook'}</h1>
           </div>
           <div className="flex items-center space-x-2">
-            <button className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
               📊 Analytics
             </button>
-            <button className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
               📤 Share
             </button>
-            <button className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
               ⚙️ Settings
             </button>
           </div>
@@ -322,12 +322,12 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
       <div className="flex flex-1">
         {/* Left Sidebar - Sources */}
-        <div className="w-80 border-r border-gray-200 dark:border-gray-700 p-4">
+        <div className="w-80 border-r border-border p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Sources</h2>
             <button
               onClick={() => setShowAddSourceModal(true)}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
             >
               + Add
             </button>
@@ -335,7 +335,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
           <div className="space-y-2">
             {note.noteSources?.map((source, index) => (
-              <div key={index} className="p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <div key={index} className="p-3 border border-border rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="text-lg">
                     {source.type === 'text' && '📄'}
@@ -347,12 +347,12 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                   </span>
                   <span className="font-medium text-sm">{source.title}</span>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                <div className="text-xs text-muted-foreground mb-2">
                   {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
                 </div>
                 <button
                   onClick={() => removeSource(index)}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs text-destructive hover:text-destructive/80"
                 >
                   Remove
                 </button>
@@ -364,14 +364,14 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Tabs */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-border">
             <div className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab('discussion')}
                 className={`py-3 border-b-2 font-medium ${
                   activeTab === 'discussion'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Discussion
@@ -380,8 +380,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 onClick={() => setActiveTab('studio')}
                 className={`py-3 border-b-2 font-medium ${
                   activeTab === 'studio'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Studio
@@ -390,8 +390,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                 onClick={() => setActiveTab('sources')}
                 className={`py-3 border-b-2 font-medium ${
                   activeTab === 'sources'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Sources
@@ -403,21 +403,21 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           <div className="flex-1 p-6">
             {activeTab === 'discussion' && (
               <div className="space-y-4">
-                <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <div className="border border-border rounded-lg p-4">
                   <textarea
                     placeholder="Ask a question about your sources..."
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 h-32 resize-none"
+                    className="w-full p-3 border border-border rounded-lg bg-background h-32 resize-none"
                   />
                   <div className="flex justify-between items-center mt-4">
                     <div className="flex space-x-2">
-                      <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                      <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
                         Generate
                       </button>
-                      <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                      <button className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80">
                         Add Note
                       </button>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       AI can make mistakes. Please verify its answers.
                     </div>
                   </div>
@@ -428,11 +428,11 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             {activeTab === 'studio' && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <button className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:border-gray-300">
+                  <button className="p-4 border border-border rounded-lg text-left hover:border-border/80">
                     <div className="text-lg mb-2">📋</div>
                     <div className="font-medium">Briefing Document</div>
                   </button>
-                  <button className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:border-gray-300">
+                  <button className="p-4 border border-border rounded-lg text-left hover:border-border/80">
                     <div className="text-lg mb-2">📅</div>
                     <div className="font-medium">Timeline</div>
                   </button>
@@ -446,7 +446,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                   <h3 className="text-lg font-semibold">Linked Notes</h3>
                   <button
                     onClick={() => setShowLinkNoteModal(true)}
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                   >
                     + Link Note
                   </button>
@@ -454,17 +454,17 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
                 <div className="space-y-2">
                   {note.relations?.map((relation, index) => (
-                    <div key={index} className="p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
+                    <div key={index} className="p-3 border border-border rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">Note {relation.targetNoteId}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-muted-foreground">
                             {relation.relationType} • Strength: {relation.strength}
                           </div>
                         </div>
                         <button
                           onClick={() => removeRelation(index)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-destructive hover:text-destructive/80"
                         >
                           ✕
                         </button>
