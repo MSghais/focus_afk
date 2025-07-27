@@ -217,7 +217,7 @@ export default function NotesOverview() {
             You need to be logged in to view and create notes
           </div>
           <p className="text-sm text-muted-foreground mb-6">
-            Please log in to access your notes and use the AI-powered source suggestions.
+            Please log in to access your notes and use the AI-powered sources with suggestions and more.
           </p>
           <button
             onClick={() => window.location.href = '/profile'}
