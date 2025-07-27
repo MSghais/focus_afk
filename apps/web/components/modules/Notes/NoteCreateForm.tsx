@@ -7,6 +7,7 @@ import WebsiteScraper from './WebsiteScraper';
 import SourceSuggestions from './SourceSuggestions';
 import SearchTypeSelector from './SearchTypeSelector';
 import { ButtonPrimary } from '../../small/buttons';
+import { logClickedEvent } from '../../../lib/analytics';
 
 interface NoteCreateFormProps {
   onSubmit: (note: Partial<Note>) => void;
@@ -248,40 +249,10 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
           </label>
         </div>
 
-        <div className="flex justify-between items-center mb-4 overflow-x-auto">
-          {/* <label className="block text-sm font-medium text-muted-foreground">
-            Sources
-          </label> */}
-          <div className="flex space-x-2">
-            <ButtonPrimary
-              type="button"
-              onClick={() => setShowSourceModal(true)}
-              className="text-sm px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
-            >
-              + Add Source
-            </ButtonPrimary>
-            <button
-              type="button"
-              onClick={() => setShowSourceSuggestions(!showSourceSuggestions)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-            >
-              💡 Suggestions
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowWebsiteScraper(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-            >
-              🌐 Scrape Website
-            </button>
-
-          </div>
-        </div>
-
         {/* Main Text */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-2">
-            Note Content *
+            Note title *
           </label>
           <textarea
             value={formData.text || ''}
@@ -291,6 +262,55 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
             required
           />
         </div>
+
+
+
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            Sources
+          </p>
+          <ButtonPrimary
+            type="button"
+            onClick={() => setShowSourceModal(true)}
+            className="text-sm px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
+          >
+            + Add Source
+          </ButtonPrimary>
+
+        </div>
+
+
+        <div className="flex justify-between items-center mb-4 overflow-x-auto">
+          {/* <label className="block text-sm font-medium text-muted-foreground">
+            Sources
+          </label> */}
+          <div className="flex space-x-2">
+
+            <button
+              type="button"
+              onClick={() => {
+                logClickedEvent("note_create_form_source_suggestions")
+                setShowSourceSuggestions(!showSourceSuggestions)
+                setShowSourceModal(false)
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+            >
+              💡 Suggestions
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                logClickedEvent("note_create_form_scrape_website")
+                setShowWebsiteScraper(true)
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+            >
+              🌐 Scrape Website
+            </button>
+
+          </div>
+        </div>
+
 
         {/* AI Source Suggestions */}
         {showSourceSuggestions && (

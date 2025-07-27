@@ -176,9 +176,9 @@ export default function NotesList({
         </div> */}
 
         {/* Results Count */}
-        <div className="text-sm text-muted-foreground">
+        {/* <div className="text-sm text-muted-foreground">
           Showing {filteredNotes.length} of {notes.length} notes
-        </div>
+        </div> */}
       </div>
 
       {/* Notes Grid */}
@@ -197,7 +197,7 @@ export default function NotesList({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-1 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-1 w-full overflow-y-auto max-h-[350px] md:max-h-[500px] lg:max-h-[600px]">
           {filteredNotes.map((note) => (
             <div
               key={note.id}

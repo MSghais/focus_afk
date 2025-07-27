@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { NoteSource } from '../../../types';
 import api from '../../../lib/api';
+import { logClickedEvent } from '../../../lib/analytics';
 
 interface SourceSuggestionsProps {
   text: string;
@@ -48,6 +49,8 @@ export default function SourceSuggestions({
       setState(prev => ({ ...prev, error: `Please enter at least ${minTextLength} characters to search` }));
       return;
     }
+
+    logClickedEvent("suggestions_search_sources_note_create_form")
 
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
