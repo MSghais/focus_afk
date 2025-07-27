@@ -88,7 +88,7 @@ export default function NotesList({
       case 3: return { label: 'Advanced', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' };
       case 4: return { label: 'Expert', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' };
       case 5: return { label: 'Master', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' };
-      default: return { label: 'Unknown', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
+      default: return { label: 'Unknown', color: 'bg-muted text-muted-foreground' };
     }
   };
 
@@ -111,7 +111,7 @@ export default function NotesList({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -120,10 +120,10 @@ export default function NotesList({
     <div className="space-y-6">
       {/* Header with Create Button */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notes</h1>
+        <h1 className="text-3xl font-bold">Notes</h1>
         <button
           onClick={onCreateNote}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
         >
           + Create Note
         </button>
@@ -139,7 +139,7 @@ export default function NotesList({
               placeholder="Search notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
             />
           </div>
 
@@ -148,7 +148,7 @@ export default function NotesList({
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as 'all' | 'user' | 'ai')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
             >
               <option value="all">All Types</option>
               <option value="user">User Notes</option>
@@ -165,7 +165,7 @@ export default function NotesList({
                 setSortBy(field as any);
                 setSortOrder(order as 'asc' | 'desc');
               }}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-background"
             >
               <option value="createdAt-desc">Newest First</option>
               <option value="createdAt-asc">Oldest First</option>
@@ -178,7 +178,7 @@ export default function NotesList({
         </div>
 
         {/* Results Count */}
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-muted-foreground">
           Showing {filteredNotes.length} of {notes.length} notes
         </div>
       </div>
@@ -186,13 +186,13 @@ export default function NotesList({
       {/* Notes Grid */}
       {filteredNotes.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-500 dark:text-gray-400 text-lg">
+          <div className="text-muted-foreground text-lg">
             {searchTerm || typeFilter !== 'all' ? 'No notes match your filters.' : 'No notes yet.'}
           </div>
           {!searchTerm && typeFilter === 'all' && (
             <button
               onClick={onCreateNote}
-              className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               Create your first note
             </button>
@@ -213,7 +213,7 @@ export default function NotesList({
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       note.type === 'ai' 
                         ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        : 'bg-primary/10 text-primary'
                     }`}>
                       {note.type === 'ai' ? 'AI' : 'User'}
                     </span>
@@ -229,7 +229,7 @@ export default function NotesList({
                         e.stopPropagation();
                         onEditNote(note);
                       }}
-                      className="p-1 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                      className="p-1 text-muted-foreground hover:text-primary"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -240,7 +240,7 @@ export default function NotesList({
                         e.stopPropagation();
                         if (note.id) onDeleteNote(note.id);
                       }}
-                      className="p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                      className="p-1 text-muted-foreground hover:text-destructive"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -256,7 +256,7 @@ export default function NotesList({
                       {note.text ? truncateText(note.text, 100) : 'Untitled Note'}
                     </h3>
                     {note.isNotebook && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary/10 text-primary">
                         📓 Notebook
                       </span>
                     )}
@@ -269,7 +269,7 @@ export default function NotesList({
                   )}
 
                   {note.summary && (
-                    <div className="dark:bg-gray-700 p-3 rounded-md">
+                    <div className="bg-muted p-3 rounded-md">
                       <p className="text-sm line-clamp-2">
                         <strong>Summary:</strong> {note.summary}
                       </p>
@@ -282,13 +282,13 @@ export default function NotesList({
                       {note.topics.slice(0, 3).map((topic, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs border border-blue-500 text-blue-500"
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs border border-primary text-primary"
                         >
                           {topic}
                         </span>
                       ))}
                       {note.topics.length > 3 && (
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-500 text-gray-500">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs border border-muted-foreground text-muted-foreground">
                           +{note.topics.length - 3}
                         </span>
                       )}
