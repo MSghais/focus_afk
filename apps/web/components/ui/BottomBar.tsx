@@ -10,7 +10,8 @@ const BottomBar = () => {
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'tasks', label: 'Tasks', icon: '📋' },
+    { id: 'journal', label: 'Journal', icon: '📝' },
+    // { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     // { id: 'goals', label: 'Goals', icon: '🎯' },

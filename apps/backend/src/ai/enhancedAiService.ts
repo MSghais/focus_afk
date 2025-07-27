@@ -1,8 +1,8 @@
 import { generateText } from 'ai';
 import { createOpenRouter, openrouter } from '@openrouter/ai-sdk-provider';
-import { MemoryManager, MemoryContext } from '../memory/memoryManager';
+import { MemoryManager, MemoryContext } from './memory/memoryManager';
 import { PrismaClient } from '@prisma/client';
-import { buildContextString } from '../helpers/contextHelper';
+import { buildContextString } from '../services/helpers/contextHelper';
 
 interface EnhancedLlmInputs {
   model: string;

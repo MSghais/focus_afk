@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import dotenv from 'dotenv';
-import { AiService } from '../../services/ai/ai';
-import { DEFAULT_MODEL, LLM_EXPENSIVE_MODELS_NAME, LLM_FREE_MODELS_NAME, LLM_LOW_COST_MODELS_NAME } from '../../config/models';
+import { AiService } from '../../ai/ai';
+import { LLM_EXPENSIVE_MODELS_NAME } from '../../config/models';
 dotenv.config();
 
 const GoalSchema = z.object({
@@ -204,11 +204,15 @@ async function goalsRoutes(fastify: FastifyInstance) {
 
       // Convert relatedTaskIds to strings if they're numbers
       const relatedTaskIds = updateData.relatedTaskIds?.map(id => id.toString()) || [];
+      console.log("relatedTaskIds", relatedTaskIds);
+      
+      // Filter out fields that don't exist in the Prisma schema
+      const { relatedTaskIds: _, ...prismaUpdateData } = updateData;
       
       const updatedGoal = await fastify.prisma.goal.update({
         where: { id },
         data: {
-          ...updateData,
+          ...prismaUpdateData,
           relatedTaskIds,
           targetDate: updateData.targetDate ? new Date(updateData.targetDate) : undefined,
           updatedAt: new Date(),

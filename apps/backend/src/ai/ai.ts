@@ -1,4 +1,3 @@
-import ApifyService from "../apify/apifiy";
 import { generateObject, generateText } from 'ai';
 import { object, z, ZodSchema } from 'zod';
 import { createOpenRouter, openrouter } from '@openrouter/ai-sdk-provider';
@@ -27,18 +26,10 @@ export class AiService {
     });;
 
 
-    private apifyService: ApifyService;
-    public actorsApify: {
-        [key: string]: string;
-    } = {
-            "twitter": "apidojo/tweet-scraper",
-            "reddit-scraper": "afk-agent/reddit-scraper",
-            "youtube-scraper": "afk-agent/youtube-scraper",
-            "x-kaito": "kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest"
-        }
+
 
     constructor() {
-        this.apifyService = new ApifyService();
+        // this.apifyService = new ApifyService();
     }
 
     private initLocalLLM = (model?: string) => {

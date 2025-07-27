@@ -267,3 +267,54 @@ export interface Quest {
     isTaskPublic?: boolean;
     user?: User;
 }
+
+export interface NoteSource {
+    id?: string;
+    type: 'link' | 'text' | 'file' | 'google_drive' | 'youtube' | 'website';
+    title: string;
+    content?: string;
+    url?: string;
+    fileType?: string;
+    fileSize?: number;
+    metadata?: any;
+    createdAt?: string;
+}
+
+export interface NoteRelation {
+    id?: string;
+    sourceNoteId: string;
+    targetNoteId: string;
+    relationType: 'references' | 'extends' | 'contradicts' | 'supports' | 'related';
+    strength: number; // 0-1 scale
+    createdAt?: string;
+}
+
+export interface Note {
+    id?: string;
+    userId: string;
+    text?: string;
+    description?: string;
+    summary?: string;
+    topics: string[];
+    sources: NoteSource[]; // Keep for backward compatibility
+    noteSources?: NoteSource[]; // New structured sources
+    aiSources: string[];
+    aiTopics: string[];
+    metadata?: any;
+    aiSummary?: string;
+    type?: 'user' | 'ai' | 'notebook';
+    difficulty?: number;
+    requirements: string[];
+    parentNoteId?: string; // For hierarchical notes
+    childNoteIds?: string[]; // For hierarchical notes
+    relations?: NoteRelation[]; // For note-to-note relationships
+    isNotebook?: boolean; // Flag for notebook projects
+    notebookSettings?: {
+        allowCollaboration?: boolean;
+        defaultView?: 'list' | 'grid' | 'timeline';
+        tags?: string[];
+    };
+    createdAt?: string;
+    updatedAt?: string;
+    user?: User;
+}

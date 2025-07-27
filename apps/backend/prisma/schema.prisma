@@ -56,6 +56,8 @@ model User {
   badges Badge[]
   quests Quests[]
 
+  notes Notes[]
+
   @@map("users")
 }
 
@@ -375,4 +377,99 @@ model Quests {
 
   @@index([userId, type], map: "quests_userId_type_idx")
   @@map("quests")
+}
+
+
+model Notes {
+  id          String   @id @default(cuid())
+  requirements String[]
+
+  title String?
+  text String?
+  description String?
+  summary String?
+  topics String[]
+  sources String[] // Keep for backward compatibility
+  aiSources String[]
+  aiTopics String[]
+  metadata  Json?
+
+  externalLink String?
+  externalLinks String[]
+
+  isRoot Boolean @default(false)
+
+  platform String?
+
+  aiSummary String?
+
+  type        String?  
+  
+  difficulty Int?
+  
+  // New fields for notebook functionality
+  isNotebook Boolean @default(false)
+  notebookSettings Json? // For notebook-specific settings
+  
+  // Hierarchical note support
+  parentNoteId String?
+  childNoteIds String[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId      String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // New relation to structured sources
+  noteSources NoteSources[]
+  
+  // New relation to note relations
+  sourceRelations NoteRelations[] @relation("SourceNote")
+  targetRelations NoteRelations[] @relation("TargetNote")
+
+  @@map("notes")
+}
+
+// New model for structured note sources
+model NoteSources {
+  id          String   @id @default(cuid())
+  noteId      String
+  type        String   // 'text', 'link', 'youtube', 'google_drive', 'file', 'website'
+  title       String
+  content     String?  // For text sources
+  url         String?  // For link/youtube/website sources
+  fileType    String?  // For file sources
+  fileSize    Int?     // For file sources
+  metadata    Json?    // Additional metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+
+  ai_metadata Json?
+  ai_summary String?
+  ai_questions String[]
+
+  // Relations
+  note Notes @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@map("noteSources")
+}
+
+// New model for note-to-note relationships
+model NoteRelations {
+  id            String   @id @default(cuid())
+  sourceNoteId  String
+  targetNoteId  String
+  relationType  String   // 'references', 'extends', 'contradicts', 'supports', 'related'
+  strength      Float    @default(0.5) // 0-1 scale
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  sourceNote Notes @relation("SourceNote", fields: [sourceNoteId], references: [id], onDelete: Cascade)
+  targetNote Notes @relation("TargetNote", fields: [targetNoteId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceNoteId, targetNoteId])
+  @@map("noteRelations")
 }

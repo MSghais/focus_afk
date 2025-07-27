@@ -22,7 +22,7 @@ interface TimerState {
 
 // UI state interface
 interface UIState {
-  currentModule: 'dashboard' | 'tasks' | 'timer' | 'focus' | 'goals' | 'mentor' | 'settings' | 'learning';
+  currentModule: 'dashboard' | 'tasks' | 'timer' | 'focus' | 'goals' | 'mentor' | 'settings' | 'learning' | 'journal';
   sidebarOpen: boolean;
   theme: 'light' | 'dark' | 'auto';
   notifications: boolean;
@@ -64,9 +64,9 @@ interface FocusAFKStore {
 
   // Actions - Goals
   addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateGoal: (id: number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>) => Promise<void>;
+  updateGoal: (id: string | number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>) => Promise<void>;
   deleteGoal: (id: number) => Promise<void>;
-  updateGoalProgress: (id: number, progress: number) => Promise<void>;
+  updateGoalProgress: (id: string | number, progress: number) => Promise<void>;
   loadGoals: () => Promise<void>;
   syncGoalsToBackend: () => Promise<any>;
   setSelectedGoal: (goal: Goal | null) => void;
@@ -428,8 +428,22 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }));
     },
 
-    updateGoal: async (id, updates) => {
-      await dbUtils.updateGoal(id, updates);
+    updateGoal: async (id: string | number, updates) => {
+      // Try to update in local storage (may fail for backend-only goals)
+      try {
+        await dbUtils.updateGoal(id, updates);
+      } catch (error) {
+        console.log('Local storage update failed (expected for backend-only goals):', error);
+      }
+
+      // Always update the store state
+      set((state) => ({
+        goals: state.goals.map((goal) =>
+          goal.id?.toString() === id.toString() ? { ...goal, ...updates, updatedAt: new Date() } : goal
+        ),
+      }));
+
+      // Sync to backend if authenticated
       if (isUserAuthenticated()) {
         try {
           const token = getJwtToken();
@@ -440,12 +454,6 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           console.error('❌ Failed to sync goal update to backend:', err);
         }
       }
-
-      set((state) => ({
-        goals: state.goals.map((goal) =>
-          goal.id?.toString() === id.toString() ? { ...goal, ...updates, updatedAt: new Date() } : goal
-        ),
-      }));
     },
 
     deleteGoal: async (id) => {
@@ -466,7 +474,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       }
     },
 
-    updateGoalProgress: async (id, progress) => {
+    updateGoalProgress: async (id: string | number, progress) => {
       const goal = get().goals.find((g) => g.id?.toString() === id.toString());
       if (goal) {
         const completed = progress >= 100;

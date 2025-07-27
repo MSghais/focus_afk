@@ -10,8 +10,8 @@ export default function Console() {
         defaultBreakDuration: settings?.defaultBreakDuration || 5,
         autoStartBreaks: settings?.autoStartBreaks || false,
         autoStartSessions: settings?.autoStartSessions || false,
-        notifications: settings?.notifications || true,
-        theme: settings?.theme || 'auto'
+        notifications: settings?.notifications ?? true,
+        theme: (settings?.theme || 'auto') as 'light' | 'dark' | 'auto'
     });
 
     const handleSaveSettings = async () => {
@@ -46,7 +46,7 @@ export default function Console() {
 
             <div className="max-w-2xl space-y-8">
                 {/* Timer Settings */}
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Timer Settings</h2>
                     <div className="space-y-4">
                         <div>
@@ -118,7 +118,7 @@ export default function Console() {
                 </div>
 
                 {/* Notifications */}
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Notifications</h2>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
@@ -148,7 +148,7 @@ export default function Console() {
                 </div>
 
                 {/* Theme Settings */}
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Appearance</h2>
                     <div className="space-y-4">
                         <div>
@@ -157,7 +157,7 @@ export default function Console() {
                                 value={localSettings.theme}
                                 onChange={(e) => setLocalSettings({
                                     ...localSettings,
-                                    theme: e.target.value
+                                    theme: e.target.value as 'light' | 'dark' | 'auto'
                                 })}
                                 className="w-full p-2 border rounded-md"
                             >
@@ -170,7 +170,7 @@ export default function Console() {
                 </div>
 
                 {/* Data Management */}
-                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border shadow-sm">
                     <h2 className="text-xl font-semibold mb-4">Data Management</h2>
                     <div className="space-y-4">
                         <div className="p-3 bg-yellow-50 rounded-lg">

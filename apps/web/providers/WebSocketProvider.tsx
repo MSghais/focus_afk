@@ -88,7 +88,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       authedSocket.on('quest_of_the_day', (quest: Quest) => {
         console.log('Quest of the day:', quest);
-        showModal(<QuestItem quest={quest} />)
+        showModal(<QuestItem quest={quest} isExpanded={true} />)
         setQuestOfTheDay(quest);
       });
       // authedSocket.on('disconnect', () => setIsAuthedConnected(false));

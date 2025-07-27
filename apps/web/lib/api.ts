@@ -1,4 +1,4 @@
-import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User } from '../types';
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note, NoteRelation, NoteSource } from '../types';
 import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
@@ -454,6 +454,199 @@ class ApiService {
       body: JSON.stringify({
         taskIds: [],
       }),
+    });
+  }
+
+  async getNotes(filters?: {
+    type?: string;
+    source?: string;
+    topic?: string;
+  }): Promise<ApiResponse<Note[]>> {
+    const params = new URLSearchParams();
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.source) params.append('source', filters.source);
+    if (filters?.topic) params.append('topic', filters.topic);
+
+    return this.request<Note[]>(`/notes?${params.toString()}`);
+  }
+
+  async createNote(noteData: Note): Promise<ApiResponse<Note>> {
+    return this.request<Note>('/notes', {
+      method: 'POST',
+      body: JSON.stringify(noteData),
+    });
+  }
+
+  async getNote(id: string): Promise<ApiResponse<Note>> {
+    return this.request<Note>(`/notes/${id}`);
+  }
+
+  async updateNote(id: string, noteData: Partial<Note>): Promise<ApiResponse<Note>> {
+    return this.request<Note>(`/notes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(noteData),
+    });
+  }
+
+  async deleteNote(id: string): Promise<ApiResponse> {
+    return this.request(`/notes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getNoteSources(): Promise<ApiResponse<{
+    sources: NoteSource[];
+    sourcesByType: Record<string, NoteSource[]>;
+    totalSources: number;
+  }>> {
+    return this.request<{
+      sources: NoteSource[];
+      sourcesByType: Record<string, NoteSource[]>;
+      totalSources: number;
+    }>('/notes/sources');
+  }
+
+  async getNoteSourcesByType(type: string): Promise<ApiResponse<{
+    sources: NoteSource[];
+    type: string;
+    count: number;
+  }>> {
+    return this.request<{
+      sources: NoteSource[];
+      type: string;
+      count: number;
+    }>(`/notes/sources/${type}`);
+  }
+
+    async getNoteRelations(id: string): Promise<ApiResponse<NoteRelation[]>> {
+    return this.request<NoteRelation[]>(`/notes/${id}/relations`);
+  }
+
+  // Source Agent methods
+  async scrapeWebsite(data: {
+    url: string;
+    noteId?: string;
+    maxCharacters?: number;
+    highlightQuery?: string;
+    numSentences?: number;
+  }): Promise<ApiResponse<{
+    source: NoteSource;
+    scrapedContent: any;
+  }>> {
+    return this.request(`/notes/source-agent/scrape-website`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async analyzeSource(data: {
+    sourceId: string;
+    analysisType: 'summary' | 'key_points' | 'questions' | 'insights';
+  }): Promise<ApiResponse<{
+    sourceId: string;
+    analysisType: string;
+    analysis: string;
+    source: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/analyze-source`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getSourceInsights(sourceId: string): Promise<ApiResponse<{
+    sourceId: string;
+    insights: string;
+    source: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/source-insights/${sourceId}`);
+  }
+
+  async getSimilarSources(sourceId: string): Promise<ApiResponse<{
+    sourceId: string;
+    similarSources: any[];
+    originalSource: NoteSource;
+  }>> {
+    return this.request(`/notes/source-agent/similar-sources/${sourceId}`);
+  }
+
+  async suggestSources(data: {
+    text: string;
+    maxResults?: number;
+    includeContent?: boolean;
+    searchType?: 'articles' | 'research' | 'tutorials' | 'documentation' | 'all';
+  }): Promise<ApiResponse<{
+    suggestions: NoteSource[];
+    query: string;
+    topics: string[];
+    totalFound: number;
+    searchType: string;
+  }>> {
+    return this.request(`/notes/source-agent/suggest-sources`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Note chat methods
+  async getNoteChat(noteId: string, filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<{
+    messages: Message[];
+    chat: Chat | null;
+    note: {
+      id: string;
+      title: string;
+    };
+  }>> {
+    const queryParams = new URLSearchParams();
+    if (filters?.limit) queryParams.append('limit', filters.limit.toString());
+    if (filters?.offset) queryParams.append('offset', filters.offset.toString());
+    
+    const endpoint = `/notes/${noteId}/chat${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    return this.request<{
+      messages: Message[];
+      chat: Chat | null;
+      note: {
+        id: string;
+        title: string;
+      };
+    }>(endpoint);
+  }
+
+  async chatAboutNote(data: {
+    noteId: string;
+    prompt: string;
+    mentorId?: string;
+  }): Promise<ApiResponse<{
+    response: string;
+    chatId: string;
+    messageId: string;
+    note: {
+      id: string;
+      title: string;
+      type: string;
+      sourcesCount: number;
+    };
+    memory: any;
+    usage: any;
+  }>> {
+    return this.request<{
+      response: string;
+      chatId: string;
+      messageId: string;
+      note: {
+        id: string;
+        title: string;
+        type: string;
+        sourcesCount: number;
+      };
+      memory: any;
+      usage: any;
+    }>('/notes/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   }
 }

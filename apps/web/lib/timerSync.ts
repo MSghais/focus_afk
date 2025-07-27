@@ -144,8 +144,8 @@ export async function syncTimerSessionsToBackend(): Promise<TimerSyncResult> {
     for (const session of unsyncedSessions) {
       try {
         const sessionData = {
-          taskId: session.taskId,
-          goalId: session.goalId,
+          taskId: String(session.taskId),
+          goalId: String(session.goalId),
           type: session.type as 'focus' | 'break' | 'deep',
           startTime: session.startTime,
           endTime: session.endTime,

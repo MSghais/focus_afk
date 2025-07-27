@@ -78,6 +78,7 @@ async function timerRoutes(fastify: FastifyInstance) {
       }
 
       const body = TimerSessionSchema.safeParse(request.body);
+      console.log("body error", body?.error);
       if (!body.success) {
         return reply.code(400).send({ error: 'Invalid session data' });
       }

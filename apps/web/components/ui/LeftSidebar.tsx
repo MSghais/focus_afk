@@ -18,13 +18,12 @@ const LeftSidebar = () => {
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
+    { id: 'journal', label: 'Journal', icon: '📝' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'goals', label: 'Goals', icon: '🎯' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     { id: 'profile', label: 'Profile', icon: '👤' },
-
     // { id: 'learning', label: 'Learning', icon: '🎓' },
- 
     // { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 

@@ -83,11 +83,28 @@ export const dbUtils = {
     });
   },
 
-  async updateGoal(id: number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>): Promise<void> {
-    await db.goals.update(id, {
-      ...updates,
-      updatedAt: new Date()
-    });
+  async updateGoal(id: string | number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>): Promise<void> {
+    // Handle both string and number IDs
+    if (typeof id === 'string') {
+      // If it's a string ID (CUID from backend), try to parse it as a number
+      const parsedId = parseInt(id);
+      if (isNaN(parsedId)) {
+        // If it's a CUID (not a number), we can't update it in local storage
+        // This is expected for backend-only goals
+        console.log('Cannot update backend goal in local storage:', id);
+        return;
+      }
+      await db.goals.update(parsedId, {
+        ...updates,
+        updatedAt: new Date()
+      });
+    } else {
+      // It's already a number, update directly
+      await db.goals.update(id, {
+        ...updates,
+        updatedAt: new Date()
+      });
+    }
   },
 
   async deleteGoal(id: number): Promise<void> {
