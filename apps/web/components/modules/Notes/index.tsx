@@ -48,7 +48,14 @@ export default function NotesOverview() {
       if (!noteData.userId) {
         throw new Error('User ID is required to create a note');
       }
-      const response = await api.createNote(noteData as Note);
+      
+      // Ensure metadata is always an object to satisfy backend validation
+      const createData = {
+        ...noteData,
+        metadata: noteData.metadata || {}
+      };
+      
+      const response = await api.createNote(createData as Note);
 
       if (!response.success) {
         throw new Error('Failed to create note');
@@ -80,7 +87,13 @@ export default function NotesOverview() {
       console.log('📝 Update data:', noteData);
       console.log('📋 Selected note:', selectedNote);
       
-      const response = await api.updateNote(selectedNote.id, noteData as Note);
+      // Ensure metadata is always an object to satisfy backend validation
+      const updateData = {
+        ...noteData,
+        metadata: noteData.metadata || selectedNote.metadata || {}
+      };
+      
+      const response = await api.updateNote(selectedNote.id, updateData);
       if (!response.success) {
         throw new Error('Failed to update note');
       }

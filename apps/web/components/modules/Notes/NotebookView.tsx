@@ -51,14 +51,20 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
   const addSource = (source: NoteSource) => {
     const updatedSources = [...(note.noteSources || []), source];
-    onUpdate({ noteSources: updatedSources });
+    onUpdate({ 
+      noteSources: updatedSources,
+      metadata: note.metadata || {}
+    });
     setShowAddSourceModal(false);
     setSourceFormData({ type: 'text', title: '', content: '', url: '' });
   };
 
   const removeSource = (index: number) => {
     const updatedSources = (note.noteSources || []).filter((_, i) => i !== index);
-    onUpdate({ noteSources: updatedSources });
+    onUpdate({ 
+      noteSources: updatedSources,
+      metadata: note.metadata || {}
+    });
   };
 
   const addRelation = async (targetNoteId: string) => {
@@ -70,14 +76,20 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
     };
 
     const updatedRelations = [...(note.relations || []), newRelation];
-    onUpdate({ relations: updatedRelations });
+    onUpdate({ 
+      relations: updatedRelations,
+      metadata: note.metadata || {}
+    });
     setShowLinkNoteModal(false);
     setRelationFormData({ relationType: 'related', strength: 0.5 });
   };
 
   const removeRelation = (index: number) => {
     const updatedRelations = (note.relations || []).filter((_, i) => i !== index);
-    onUpdate({ relations: updatedRelations });
+    onUpdate({ 
+      relations: updatedRelations,
+      metadata: note.metadata || {}
+    });
   };
 
   const SourceModal = () => (
@@ -184,13 +196,13 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           <div className="flex justify-between items-center">   
             <span className="text-sm font-medium">Source Limit</span>
             <span className="text-sm">
-              {(note.sources?.length || 0)}/300
+              {(note.noteSources?.length || 0)}/300
             </span>
           </div>
           <div className="mt-2 w-full rounded-full h-2">
             <div
               className="bg-primary h-2 rounded-full transition-all"
-              style={{ width: `${Math.min(((note.sources?.length || 0) / 300) * 100, 100)}%` }}
+              style={{ width: `${Math.min(((note.noteSources?.length || 0) / 300) * 100, 100)}%` }}
             />
           </div>
         </div>

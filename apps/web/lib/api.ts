@@ -481,7 +481,7 @@ class ApiService {
     return this.request<Note>(`/notes/${id}`);
   }
 
-  async updateNote(id: string, noteData: Note): Promise<ApiResponse<Note>> {
+  async updateNote(id: string, noteData: Partial<Note>): Promise<ApiResponse<Note>> {
     return this.request<Note>(`/notes/${id}`, {
       method: 'PUT',
       body: JSON.stringify(noteData),

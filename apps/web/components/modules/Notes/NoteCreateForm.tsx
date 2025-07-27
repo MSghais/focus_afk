@@ -29,6 +29,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
       defaultView: 'list',
       tags: []
     },
+    metadata: note?.metadata || {},
     ...note,
   });
 
@@ -87,7 +88,9 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
       ...formData,
       // Ensure we send both old and new format for backward compatibility
       sources: formData.sources || [],
-      noteSources: formData.noteSources || []
+      noteSources: formData.noteSources || [],
+      // Ensure metadata is always an object
+      metadata: formData.metadata || {}
     };
     
     onSubmit(submitData);
