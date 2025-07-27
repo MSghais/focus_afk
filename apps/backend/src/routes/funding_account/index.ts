@@ -3,7 +3,6 @@ import fastifyMultipart from '@fastify/multipart';
 import dotenv from 'dotenv';
 import { pinata } from '../../services/pinata';
 import { DEFAULT_MODEL, LLM_FREE_MODELS_NAME, LLM_MODELS_NAME } from '../../config/models';
-import { AiService } from '../../services/ai/ai';
 import { mentorSchema } from '../../validations/mentor.validation';
 import type { CreateMentorInput, UpdateMentorInput, CreateMessageInput, GetMessagesInput, CreateFundingAccountInput, UpdateFundingAccountInput } from '../../validations/mentor.validation';
 import { z } from 'zod';
@@ -11,8 +10,7 @@ import { MentorService } from '../../services/mentor/mentor.service';
 dotenv.config();
 
 async function fundingAccountRoutes(fastify: FastifyInstance) {
-  const aiService = new AiService();
-  const mentorService = new MentorService(fastify.prisma);
+
 
   // Check if the plugin is already registered
   if (!fastify.hasContentTypeParser('multipart/form-data')) {
