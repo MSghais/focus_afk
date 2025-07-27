@@ -31,7 +31,7 @@ export default function SourceSuggestions({
   includeContent = false,
   searchType = 'all',
   className = '',
-  minTextLength = 20,
+  minTextLength = 10,
   autoSuggest = false,
 }: SourceSuggestionsProps) {
   const [state, setState] = useState<SuggestionState>({

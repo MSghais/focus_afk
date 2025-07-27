@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Note, NoteSource } from '../../../types';
+import { Modal } from '../../small/Modal/Modal';
 import WebsiteScraper from './WebsiteScraper';
 import SourceSuggestions from './SourceSuggestions';
 import SearchTypeSelector from './SearchTypeSelector';
@@ -36,6 +37,8 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
     metadata: note?.metadata || {},
     ...note,
   });
+
+  const [askedSuggestions, setAskedSuggestions] = useState(formData.text || '');
 
   const [newTopic, setNewTopic] = useState('');
   const [newSource, setNewSource] = useState('');
@@ -89,7 +92,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.text?.trim()) return;
-    
+
     // Prepare the data for submission
     const submitData = {
       ...formData,
@@ -99,26 +102,27 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
       // Ensure metadata is always an object
       metadata: formData.metadata || {}
     };
-    
+
     onSubmit(submitData);
   };
 
   const SourceModal = () => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6 ">
+    <Modal
+      isOpen={showSourceModal}
+      onClose={() => setShowSourceModal(false)}
+      size="lg"
+      height="auto"
+      closeOnOverlayClick={true}
+      showCloseButton={true}
+    >
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
           <h3 className="text-xl font-bold">Add Source</h3>
-          <button
-            onClick={() => setShowSourceModal(false)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            ✕
-          </button>
         </div>
 
         {/* Source Type Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Source Type</label>
+        <div>
+          <label className="block text-sm font-medium mb-3">Source Type</label>
           <div className="grid grid-cols-2 gap-4">
             {[
               { type: 'text', label: 'Paste Text', icon: '📄' },
@@ -132,9 +136,9 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
                 key={type}
                 type="button"
                 onClick={() => setSourceFormData(prev => ({ ...prev, type: type as NoteSource['type'] }))}
-                className={`p-4 border rounded-lg text-left transition-colors ${sourceFormData.type === type
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border hover:border-border/80'
+                className={`p-4 border rounded-lg text-left transition-all duration-200 hover:scale-[1.02] ${sourceFormData.type === type
+                  ? 'border-primary bg-primary/10 shadow-md'
+                  : 'border-border hover:border-border/80 hover:bg-muted/50'
                   }`}
               >
                 <div className="text-2xl mb-2">{icon}</div>
@@ -152,7 +156,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
               type="text"
               value={sourceFormData.title || ''}
               onChange={(e) => setSourceFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full p-3 border border-border rounded-lg bg-background"
+              className="w-full p-3 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               placeholder="Enter source title"
             />
           </div>
@@ -163,7 +167,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
               <textarea
                 value={sourceFormData.content || ''}
                 onChange={(e) => setSourceFormData(prev => ({ ...prev, content: e.target.value }))}
-                className="w-full p-3 border border-border rounded-lg bg-background h-32"
+                className="w-full p-3 border border-border rounded-lg bg-background h-32 resize-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                 placeholder="Paste your text content here..."
               />
             </div>
@@ -176,7 +180,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
                 type="url"
                 value={sourceFormData.url || ''}
                 onChange={(e) => setSourceFormData(prev => ({ ...prev, url: e.target.value }))}
-                className="w-full p-3 border border-border rounded-lg bg-background"
+                className="w-full p-3 border border-border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
                 placeholder={`Enter ${sourceFormData.type === 'youtube' ? 'YouTube' : sourceFormData.type === 'website' ? 'website' : 'link'} URL`}
               />
             </div>
@@ -188,49 +192,27 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
-                  className="p-3 border border-border rounded-lg hover:border-border/80"
+                  className="p-3 border border-border rounded-lg hover:border-border/80 hover:bg-muted/50 transition-colors"
                 >
                   📝 Google Docs
                 </button>
                 <button
                   type="button"
-                  className="p-3 border border-border rounded-lg hover:border-border/80"
+                  className="p-3 border border-border rounded-lg hover:border-border/80 hover:bg-muted/50 transition-colors"
                 >
                   📊 Google Slides
                 </button>
               </div>
             </div>
           )}
-
-          {sourceFormData.type === 'file' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">File Information</label>
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  value={sourceFormData.fileType || ''}
-                  onChange={(e) => setSourceFormData(prev => ({ ...prev, fileType: e.target.value }))}
-                  className="w-full p-3 border border-border rounded-lg bg-background"
-                  placeholder="File type (e.g., PDF, DOC, etc.)"
-                />
-                <input
-                  type="number"
-                  value={sourceFormData.fileSize || ''}
-                  onChange={(e) => setSourceFormData(prev => ({ ...prev, fileSize: parseInt(e.target.value) || undefined }))}
-                  className="w-full p-3 border border-border rounded-lg bg-background"
-                  placeholder="File size in bytes"
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end space-x-3 mt-6">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-border">
           <button
             type="button"
             onClick={() => setShowSourceModal(false)}
-            className="px-4 py-2 text-muted-foreground hover:text-foreground"
+            className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             Cancel
           </button>
@@ -238,13 +220,13 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
             type="button"
             onClick={() => addSource(sourceFormData as NoteSource)}
             disabled={!sourceFormData.title}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Add Source
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 
   return (
@@ -266,17 +248,24 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
           </label>
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <label className="block text-sm font-medium text-muted-foreground">
+        <div className="flex justify-between items-center mb-4 overflow-x-auto">
+          {/* <label className="block text-sm font-medium text-muted-foreground">
             Sources
-          </label>
+          </label> */}
           <div className="flex space-x-2">
+            <ButtonPrimary
+              type="button"
+              onClick={() => setShowSourceModal(true)}
+              className="text-sm px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
+            >
+              + Add Source
+            </ButtonPrimary>
             <button
               type="button"
               onClick={() => setShowSourceSuggestions(!showSourceSuggestions)}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
             >
-              💡 AI Suggestions
+              💡 Suggestions
             </button>
             <button
               type="button"
@@ -285,13 +274,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
             >
               🌐 Scrape Website
             </button>
-            <ButtonPrimary
-              type="button"
-              onClick={() => setShowSourceModal(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
-            >
-              + Add Source
-            </ButtonPrimary>
+
           </div>
         </div>
 
@@ -319,8 +302,16 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
                 onChange={setSearchType}
               />
             </div>
+
+            <textarea
+              value={askedSuggestions || ''}
+              onChange={(e) => setAskedSuggestions(e.target.value)}
+              className="w-full p-3 border border-border rounded-lg bg-background h-32"
+              placeholder="Ask for suggestions..."
+              required
+            />
             <SourceSuggestions
-              text={formData.text || ''}
+              text={askedSuggestions || ''}
               onSourcesAdded={(sources) => {
                 setFormData(prev => ({
                   ...prev,
@@ -330,7 +321,7 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
               maxResults={8}
               includeContent={true}
               searchType={searchType}
-              minTextLength={30}
+              minTextLength={10}
             />
           </div>
         )}
@@ -353,33 +344,51 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
         <div>
           {/* Sources List */}
           <div className="space-y-2">
-            {formData.noteSources?.map((source, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg">
-                    {source.type === 'text' && '📄'}
-                    {source.type === 'link' && '🔗'}
-                    {source.type === 'youtube' && '📺'}
-                    {source.type === 'google_drive' && '☁️'}
-                    {source.type === 'file' && '📁'}
-                    {source.type === 'website' && '🌐'}
-                  </span>
-                  <div>
-                    <div className="font-medium">{source.title}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
+            {formData.noteSources?.map((source, index) => {
+              const isContentTooLong = source.content && source.content.length > 100;
+              const isExpanded = false;
+              return (
+
+                <div className="flex flex-col border border-border rounded-lg p-3">
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-lg">
+                        {source.type === 'text' && '📄'}
+                        {source.type === 'link' && '🔗'}
+                        {source.type === 'youtube' && '📺'}
+                        {source.type === 'google_drive' && '☁️'}
+                        {source.type === 'file' && '📁'}
+                        {source.type === 'website' && '🌐'}
+                      </span>
+                      <div className="flex flex-col text-left text-sm text-muted-foreground">
+                        <div className="font-medium">{source.title}</div>
+                        <div className="truncate text-ellipsis">
+                          {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
+                        </div>
+                      </div>
                     </div>
+
                   </div>
+                  {isContentTooLong && (
+                    <div className="flex flex-col p-3" onClick={() => {
+                      // setIsExpanded(!isExpanded);
+                    }}>
+                      <div className="text-sm text-muted-foreground text-left text-ellipsis">
+                        {source.content}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeSource(index)}
+                    className="text-destructive hover:text-destructive/80"
+                  >
+                    ✕ Remove
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeSource(index)}
-                  className="text-destructive hover:text-destructive/80"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+
+              )
+            })}
           </div>
         </div>
 
@@ -509,18 +518,23 @@ export default function NoteCreateForm({ onSubmit, onCancel, isLoading = false, 
       </form>
 
       {showSourceModal && <SourceModal />}
-      
+
       {/* Website Scraper Modal */}
       {showWebsiteScraper && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <WebsiteScraper
-              noteId={note?.id}
-              onSourceAdded={addSource}
-              onClose={() => setShowWebsiteScraper(false)}
-            />
-          </div>
-        </div>
+        <Modal
+          isOpen={showWebsiteScraper}
+          onClose={() => setShowWebsiteScraper(false)}
+          size="lg"
+          height="auto"
+          closeOnOverlayClick={true}
+          showCloseButton={true}
+        >
+          <WebsiteScraper
+            noteId={note?.id}
+            onSourceAdded={addSource}
+            onClose={() => setShowWebsiteScraper(false)}
+          />
+        </Modal>
       )}
     </div>
   );
