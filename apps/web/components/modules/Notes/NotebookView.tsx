@@ -16,6 +16,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   const [isLoading, setIsLoading] = useState(false);
   const [showAddSourceModal, setShowAddSourceModal] = useState(false);
   const [showLinkNoteModal, setShowLinkNoteModal] = useState(false);
+  const [showSourcesSidebar, setShowSourcesSidebar] = useState(false);
   const [sourceFormData, setSourceFormData] = useState<Partial<NoteSource>>({
     type: 'text',
     title: '',
@@ -93,8 +94,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   };
 
   const SourceModal = () => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg p-4 md:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Add Source</h3>
           <button
@@ -108,7 +109,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
         {/* Source Type Selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium mb-2">Source Type</label>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { type: 'text', label: 'Paste Text', icon: '📄' },
               { type: 'link', label: 'Website Link', icon: '🔗' },
@@ -230,8 +231,8 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   );
 
   const LinkNoteModal = () => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg p-4 md:p-6 max-w-md w-full">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold">Link Note</h3>
           <button
@@ -316,25 +317,37 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
             >
               ← Back
             </button>
-            <h1 className="text-xl font-bold">{note.description || 'Untitled Notebook'}</h1>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold truncate">{note.description || 'Untitled Notebook'}</h1>
+              <div className="text-sm text-muted-foreground">
+                {note.noteSources?.length || 0} sources
+              </div>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
-            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
+            {/* Mobile: Show sources toggle button */}
+            <button 
+              onClick={() => setShowSourcesSidebar(!showSourcesSidebar)}
+              className="md:hidden px-3 py-1 text-sm bg-muted rounded-lg"
+            >
+              📚
+            </button>
+            <button className="hidden md:block px-3 py-1 text-sm bg-muted rounded-lg">
               📊 Analytics
             </button>
-            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
+            <button className="hidden md:block px-3 py-1 text-sm bg-muted rounded-lg">
               📤 Share
             </button>
-            <button className="px-3 py-1 text-sm bg-muted rounded-lg">
+            <button className="hidden md:block px-3 py-1 text-sm bg-muted rounded-lg">
               ⚙️ Settings
             </button>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-1">
-        {/* Left Sidebar - Sources */}
-        <div className="w-80 border-r border-border p-4">
+      <div className="flex flex-1 relative">
+        {/* Left Sidebar - Sources (Desktop) */}
+        <div className="hidden md:block w-80 border-r border-border p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Sources</h2>
             <button
@@ -357,7 +370,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                     {source.type === 'file' && '📁'}
                     {source.type === 'website' && '🌐'}
                   </span>
-                  <span className="font-medium text-sm">{source.title}</span>
+                  <span className="font-medium text-sm  text-wrap text-ellipsis overflow-hidden">{source.title}</span>
                 </div>
                 <div className="text-xs text-muted-foreground mb-2">
                   {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
@@ -373,14 +386,71 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           </div>
         </div>
 
+        {/* Mobile Sources Sidebar Overlay */}
+        {showSourcesSidebar && (
+          <div className="md:hidden fixed inset-0 z-40">
+            <div 
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setShowSourcesSidebar(false)}
+            />
+            <div className="absolute left-0 top-0 h-full w-80 bg-background border-r border-border p-4 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Sources</h2>
+                <button
+                  onClick={() => setShowSourcesSidebar(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground">Add new source</span>
+                <button
+                  onClick={() => setShowAddSourceModal(true)}
+                  className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                >
+                  + Add
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {note.noteSources?.map((source, index) => (
+                  <div key={index} className="p-3 border border-border rounded-lg">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <span className="text-lg">
+                        {source.type === 'text' && '📄'}
+                        {source.type === 'link' && '🔗'}
+                        {source.type === 'youtube' && '📺'}
+                        {source.type === 'google_drive' && '☁️'}
+                        {source.type === 'file' && '📁'}
+                        {source.type === 'website' && '🌐'}
+                      </span>
+                      <span className="font-medium text-sm  text-wrap text-ellipsis overflow-hidden">{source.title}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-2 text-wrap text-ellipsis overflow-hidden">
+                      {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
+                    </div>
+                    <button
+                      onClick={() => removeSource(index)}
+                      className="text-xs text-destructive hover:text-destructive/80"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Tabs */}
           <div className="border-b border-border">
-            <div className="flex space-x-8 px-6">
+            <div className="flex space-x-4 md:space-x-8 px-4 md:px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('discussion')}
-                className={`py-3 border-b-2 font-medium ${
+                className={`py-3 border-b-2 font-medium whitespace-nowrap ${
                   activeTab === 'discussion'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -390,7 +460,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               </button>
               <button
                 onClick={() => setActiveTab('studio')}
-                className={`py-3 border-b-2 font-medium ${
+                className={`py-3 border-b-2 font-medium whitespace-nowrap ${
                   activeTab === 'studio'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -400,7 +470,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
               </button>
               <button
                 onClick={() => setActiveTab('sources')}
-                className={`py-3 border-b-2 font-medium ${
+                className={`py-3 border-b-2 font-medium whitespace-nowrap ${
                   activeTab === 'sources'
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -412,7 +482,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-4 md:p-6">
             {activeTab === 'discussion' && (
               <div className="space-y-4">
                 <div className="border border-border rounded-lg p-4">
@@ -420,7 +490,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                     placeholder="Ask a question about your sources..."
                     className="w-full p-3 border border-border rounded-lg bg-background h-32 resize-none"
                   />
-                  <div className="flex justify-between items-center mt-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 space-y-3 sm:space-y-0">
                     <div className="flex space-x-2">
                       <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
                         Generate
@@ -429,7 +499,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                         Add Note
                       </button>
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground text-center sm:text-right">
                       AI can make mistakes. Please verify its answers.
                     </div>
                   </div>
@@ -439,7 +509,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
             {activeTab === 'studio' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button className="p-4 border border-border rounded-lg text-left hover:border-border/80">
                     <div className="text-lg mb-2">📋</div>
                     <div className="font-medium">Briefing Document</div>
@@ -454,7 +524,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
             {activeTab === 'sources' && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
                   <h3 className="text-lg font-semibold">Linked Notes</h3>
                   <button
                     onClick={() => setShowLinkNoteModal(true)}
@@ -468,15 +538,15 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                   {note.relations?.map((relation, index) => (
                     <div key={index} className="p-3 border border-border rounded-lg">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">Note {relation.targetNoteId}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">Note {relation.targetNoteId}</div>
                           <div className="text-sm text-muted-foreground">
                             {relation.relationType} • Strength: {relation.strength}
                           </div>
                         </div>
                         <button
                           onClick={() => removeRelation(index)}
-                          className="text-destructive hover:text-destructive/80"
+                          className="text-destructive hover:text-destructive/80 ml-2 flex-shrink-0"
                         >
                           ✕
                         </button>
