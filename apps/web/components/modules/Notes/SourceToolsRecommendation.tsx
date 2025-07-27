@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { NoteSource } from '../../../types';
 import api from '../../../lib/api';
 
-interface SourceAgentProps {
+      interface SourceToolsRecommendationProps {
   source: NoteSource;
   noteId?: string;
   onSourceUpdated?: (updatedSource: NoteSource) => void;
@@ -16,7 +16,7 @@ interface AnalysisResult {
   isLoading: boolean;
 }
 
-export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceAgentProps) {
+export default function SourceToolsRecommendation({ source, noteId, onSourceUpdated }: SourceToolsRecommendationProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<Record<string, AnalysisResult>>({});
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -152,26 +152,6 @@ export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceA
 
   return (
     <div className="space-y-4 border border-border rounded-lg p-4">
-      {/* Source Header */}
-      <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-        <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getSourceIcon(source.type)}</span>
-          <div>
-            <h3 className="font-medium">{source.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {source.type} • {source.url ? 'Has URL' : 'Text content'}
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setShowAnalysis(!showAnalysis)}
-            className="px-3 py-1 text-sm bg-[var(--background)] text-white rounded-md hover:bg-[var(--background)]/90"
-          >
-            {showAnalysis ? 'Hide' : 'Show'} AI Tools
-          </button>
-        </div>
-      </div>
 
       {/* Error Display */}
       {error && (
@@ -262,42 +242,6 @@ export default function SourceAgent({ source, noteId, onSourceUpdated }: SourceA
         </div>
       )}
 
-      {/* Source Content Preview */}
-
-      <div className="flex items-center justify-between"> 
-        <button
-          onClick={() => setIsShowPreview(!isShowPreview)}
-          className="px-4 py-2 text-sm border border-border rounded-md hover:bg-muted transition-colors disabled:opacity-50"
-        >
-          {isShowPreview ? 'Hide Preview' : 'Show Preview'}
-        </button>
-      </div>
-      { isShowPreview && source.content && (
-        <div className="p-4 border border-border rounded-lg">
-          <h4 className="font-medium mb-2">Content Preview</h4>
-          <div className="text-sm text-muted-foreground max-h-32 overflow-y-auto">
-            {source.content.length > 300 
-              ? `${source.content.substring(0, 300)}...` 
-              : source.content
-            }
-          </div>
-        </div>
-      )}
-
-      {/* Source URL */}
-      {source.url && (
-        <div className="p-4 border border-border rounded-lg">
-          <h4 className="font-medium mb-2">URL</h4>
-          <a 
-            href={source.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline break-all"
-          >
-            {source.url}
-          </a>
-        </div>
-      )}
     </div>
   );
 } 

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Note, NoteSource, NoteRelation } from '../../../types';
 import { Modal } from '../../small/Modal/Modal';
 import api from '../../../lib/api';
+import { useNotesStore } from '../../../store/notes';
+import SourceToolsRecommendation from './SourceToolsRecommendation';
 
 interface NotebookViewProps {
   note: Note;
@@ -12,6 +14,9 @@ interface NotebookViewProps {
 }
 
 export default function NotebookView({ note, onUpdate, onBack }: NotebookViewProps) {
+
+
+  const { notes, setNotes, noteSources, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
   const [activeTab, setActiveTab] = useState<'discussion' | 'studio' | 'sources'>('discussion');
   const [relatedNotes, setRelatedNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -206,6 +211,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                     {source.url && (
                       <div className="text-sm text-muted-foreground truncate">{source.url}</div>
                     )}
+                    <SourceToolsRecommendation source={source} noteId={note.id} onSourceUpdated={() => {}} />
                   </div>
                   <button
                     onClick={() => removeSource(index)}
@@ -443,7 +449,9 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
 
               <div className="space-y-2">
                 {note.noteSources?.map((source, index) => (
-                  <div key={index} className="p-3 border border-border rounded-lg hover:border-border/80 transition-colors">
+                  <div key={index} className="p-3 border border-border rounded-lg hover:border-border/80 transition-colors"
+                    onClick={() => setSelectedNoteSource(source)}
+                  >
                     <div className="flex items-center space-x-2 mb-2">
                       <span className="text-lg">
                         {source.type === 'text' && '📄'}

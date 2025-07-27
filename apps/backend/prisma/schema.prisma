@@ -445,6 +445,11 @@ model NoteSources {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+
+  ai_metadata Json?
+  ai_summary String?
+  ai_questions String[]
+
   // Relations
   note Notes @relation(fields: [noteId], references: [id], onDelete: Cascade)
 
