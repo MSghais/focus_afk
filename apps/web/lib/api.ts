@@ -1,4 +1,4 @@
-import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note, NoteRelation } from '../types';
+import { ApiResponse, TimerSession, UserSettings, Task, Goal, Mentor, Message, Chat, FundingAccount, AuthResponse, User, Note, NoteRelation, NoteSource } from '../types';
 import { getJwtToken, isUserAuthenticated } from './auth';
 
 class ApiService {
@@ -494,8 +494,28 @@ class ApiService {
     });
   }
 
-  async getNoteSources(): Promise<ApiResponse<string[]>> {
-    return this.request<string[]>('/notes/sources');
+  async getNoteSources(): Promise<ApiResponse<{
+    sources: NoteSource[];
+    sourcesByType: Record<string, NoteSource[]>;
+    totalSources: number;
+  }>> {
+    return this.request<{
+      sources: NoteSource[];
+      sourcesByType: Record<string, NoteSource[]>;
+      totalSources: number;
+    }>('/notes/sources');
+  }
+
+  async getNoteSourcesByType(type: string): Promise<ApiResponse<{
+    sources: NoteSource[];
+    type: string;
+    count: number;
+  }>> {
+    return this.request<{
+      sources: NoteSource[];
+      type: string;
+      count: number;
+    }>(`/notes/sources/${type}`);
   }
 
   async getNoteRelations(id: string): Promise<ApiResponse<NoteRelation[]>> {

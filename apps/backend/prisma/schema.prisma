@@ -384,6 +384,7 @@ model Notes {
   id          String   @id @default(cuid())
   requirements String[]
 
+  title String?
   text String?
   description String?
   summary String?
