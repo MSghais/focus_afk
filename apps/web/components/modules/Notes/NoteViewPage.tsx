@@ -3,14 +3,21 @@ import api from "../../../lib/api";
 import { Note } from "../../../types";
 import NotebookView from "./NotebookView";
 import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 
 interface NoteViewPageProps {
-    noteId: string;
+    noteIdProp?: string;
 }
 
-export function NoteViewPageComponent({ noteId }: NoteViewPageProps) {
+export function NoteViewPageComponent({ noteIdProp }: NoteViewPageProps) {
+    const params = useParams();
+    const id = params.id as string;
 
+    if (!id && !noteIdProp) {
+        return <div>Note not found</div>;
+    }
     const router = useRouter();
+    const noteId = noteIdProp || id;
     const [note, setNote] = useState<Note | null>(null);
     useEffect(() => {
         const fetchNote = async () => {
