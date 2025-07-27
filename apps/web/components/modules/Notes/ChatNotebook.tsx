@@ -318,7 +318,7 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
         {activeTab === 'chat' && (
           <div className="flex flex-col h-full">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[350px] sm:max-h-[450px] overflow-y-auto scrollbar-hide">
               {isLoadingMessages ? (
                 <div className="flex items-center justify-center h-32">
                   <div className="text-muted-foreground">Loading conversation...</div>
@@ -335,17 +335,17 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
                 messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${message.role === 'user' ? 'justify-start' : 'justify-end'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted border border-border'
+                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user' 
+                          ? 'bg-primary text-primary-foreground text-left'
+                          : 'bg-muted border border-border text-right'
                         }`}
                     >
                       {message.role === 'assistant' ? (
                         <div
-                          className="prose prose-sm max-w-none"
+                          className="prose prose-sm max-w-none text-right"
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(message.content) }}
                         />
                       ) : (

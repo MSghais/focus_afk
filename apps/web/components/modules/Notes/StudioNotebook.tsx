@@ -1,6 +1,8 @@
+"use client"
+
 import { useNotesStore } from "../../../store/notes";
 import { Note, NoteSource } from "../../../types";
-    import SourceCard from "./SourceCard";
+import SourceCard from "./SourceCard";
 import { useUIStore } from "../../../store/uiStore";
 
 interface StudioNotebookProps {
@@ -16,13 +18,46 @@ export default function StudioNotebook({
 
     const { showToast } = useUIStore();
 
-    const handleGenerateSummaryAudio = () => {
-        showToast({
-            message: 'Generating summary audio',
-            description: 'Please wait while we generate the summary audio',
-            type: 'info',
-            duration: 10000
-        });
+
+    
+
+
+    const handleGenerateSummaryAudio = async () => {
+        const result = await handleInitAudioContext();
+        console.log(result);
+        // if (result) {
+        //     const audioContext = result.audioContext;
+        //     const source = result.source;
+        //     const processor = result.processor;
+        //     source.connect(processor);
+        //     processor.connect(audioContext.destination);
+        // }
+
+        // showToast({
+        //     message: 'Generating summary audio',
+        //     description: 'Please wait while we generate the summary audio',
+        //     type: 'info',
+        //     duration: 10000
+        // });
+    }
+
+
+    const handleInitAudioContext = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(1024, 1, 1);
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+
+        return { audioContext, source, processor };
+
+        // showToast({
+        //     message: 'Generating summary audio',
+        //     description: 'Please wait while we generate the summary audio',
+        //     type: 'info',
+        //     duration: 10000
+        // });
     }
     return (
         <div>

@@ -14,6 +14,7 @@ import tasksRoutes from './routes/tasks';
 import questsRoutes from './routes/quests';
 import notesRoutes from './routes/notes';
 import sourceAgentRoutes from './routes/notes/source-agent';
+import audioRoutes from './routes/audio';
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -32,6 +33,7 @@ function declareRoutes(
   fastify.register(questsRoutes, { prefix: '/quests' });
   fastify.register(notesRoutes, { prefix: '/notes' });
   fastify.register(sourceAgentRoutes, { prefix: '/notes/source-agent' });
+  fastify.register(audioRoutes, { prefix: '/audio' });
 }
 
 export default declareRoutes;

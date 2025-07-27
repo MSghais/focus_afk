@@ -605,6 +605,7 @@ Please respond to the user's question about this note and its sources.`;
       return reply.code(500).send({ message: 'Internal Server Error' });
     }
   });
+ 
 }
 
 export default notesRoutes;
