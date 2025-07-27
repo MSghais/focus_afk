@@ -41,7 +41,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
       const notes = await Promise.all(
         relatedIds.map(id => api.getNote(id))
       );
-      setRelatedNotes(notes.filter(n => n.success && n.data).map(n => n.data));
+      setRelatedNotes(notes.filter(n => n.success && n.data).map(n => n.data!).filter(Boolean));
     } catch (error) {
       console.error('Error fetching related notes:', error);
     } finally {
@@ -50,15 +50,15 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
   };
 
   const addSource = (source: NoteSource) => {
-    const updatedSources = [...(note.sources || []), source];
-    onUpdate({ sources: updatedSources });
+    const updatedSources = [...(note.noteSources || []), source];
+    onUpdate({ noteSources: updatedSources });
     setShowAddSourceModal(false);
     setSourceFormData({ type: 'text', title: '', content: '', url: '' });
   };
 
   const removeSource = (index: number) => {
-    const updatedSources = (note.sources || []).filter((_, i) => i !== index);
-    onUpdate({ sources: updatedSources });
+    const updatedSources = (note.noteSources || []).filter((_, i) => i !== index);
+    onUpdate({ noteSources: updatedSources });
   };
 
   const addRelation = async (targetNoteId: string) => {
@@ -334,7 +334,7 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
           </div>
 
           <div className="space-y-2">
-            {note.sources?.map((source, index) => (
+            {note.noteSources?.map((source, index) => (
               <div key={index} className="p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="text-lg">
@@ -342,11 +342,13 @@ export default function NotebookView({ note, onUpdate, onBack }: NotebookViewPro
                     {source.type === 'link' && '🔗'}
                     {source.type === 'youtube' && '📺'}
                     {source.type === 'google_drive' && '☁️'}
+                    {source.type === 'file' && '📁'}
+                    {source.type === 'website' && '🌐'}
                   </span>
                   <span className="font-medium text-sm">{source.title}</span>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {source.type} • {source.url || 'No URL'}
+                  {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
                 </div>
                 <button
                   onClick={() => removeSource(index)}

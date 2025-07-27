@@ -296,7 +296,8 @@ export interface Note {
     description?: string;
     summary?: string;
     topics: string[];
-    sources: NoteSource[];
+    sources: NoteSource[]; // Keep for backward compatibility
+    noteSources?: NoteSource[]; // New structured sources
     aiSources: string[];
     aiTopics: string[];
     metadata?: any;

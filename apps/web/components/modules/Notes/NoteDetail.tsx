@@ -212,30 +212,58 @@ export default function NoteDetail({ note, onEdit, onDelete, onBack, onShare, on
         )}
 
         {/* Sources */}
-        {note.sources && note.sources.length > 0 && (
+        {(note.sources && note.sources.length > 0) || (note.noteSources && note.noteSources.length > 0) && (
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Sources</h3>
             <div className="space-y-2">
-              {note.sources.map((source, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              {/* Display new structured sources */}
+              {note.noteSources?.map((source, index) => (
+                <div key={`new-${index}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">
                       {source.type === 'text' && '📄'}
                       {source.type === 'link' && '🔗'}
                       {source.type === 'youtube' && '📺'}
                       {source.type === 'google_drive' && '☁️'}
+                      {source.type === 'file' && '📁'}
+                      {source.type === 'website' && '🌐'}
                     </span>
                     <div>
                       <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                         {source.title}
                       </div>
                       <div className="text-gray-500 dark:text-gray-400 text-xs">
-                        {source.type} • {source.url || 'No URL'}
+                        {source.type} • {source.url || source.content?.substring(0, 50) || 'No content'}
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => copyToClipboard(source.url || source.content || source.title)}
+                    className="ml-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              
+              {/* Display legacy sources for backward compatibility */}
+              {note.sources?.map((source: any, index) => (
+                <div key={`legacy-${index}`} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-yellow-400">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-lg">📄</span>
+                    <div>
+                      <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                        Legacy Source {index + 1}
+                      </div>
+                      <div className="text-gray-500 dark:text-gray-400 text-xs">
+                        text • {typeof source === 'string' ? source.substring(0, 50) : (source as any)?.title || 'Legacy source'}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(typeof source === 'string' ? source : source.url || source.content || source.title)}
                     className="ml-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
