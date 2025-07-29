@@ -42,8 +42,8 @@ const Navbar = () => {
           onClick={() => showModal(
 
           <div className="w-full h-full">
-            <QuestList quests={[]} />
             <Badges isEnabledRefreshButton={false} />
+            <QuestList quests={[]} />
           </div>
 
 
