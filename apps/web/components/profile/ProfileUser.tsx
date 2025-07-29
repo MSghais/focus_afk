@@ -5,7 +5,7 @@ import Onboarding from "../onboarding/Onboarding";
 import LoginBackend from "./LoginBackend";
 import { useAuthStore } from "../../store/auth";
 
-export default function ProfileUser({isLoggoutViewActive = true}: {isLoggoutViewActive?: boolean}) {
+export default function ProfileUser({ isLoggoutViewActive = true }: { isLoggoutViewActive?: boolean }) {
 
     const { user } = usePrivy();
 
@@ -21,17 +21,29 @@ export default function ProfileUser({isLoggoutViewActive = true}: {isLoggoutView
                 <div className="flex flex-col gap-4 my-4">
 
                     {userConnected && (
-                        <div className="flex flex-col gap-4">
-                            <h3>User session</h3>
-                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Evm: {userConnected?.evmAddress}</p>
-                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Starknet: {userConnected?.starknetAddress}</p>
-                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Login Type: {userConnected?.loginType}</p>
+                        <div className="flex flex-col gap-4 text-left">
+                            <p className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">User session: {userConnected?.loginType}</p>
+                            <p
+                                onClick={() => {
+                                    navigator.clipboard.writeText(userConnected?.evmAddress || '');
+                                }}
+                                className="text-sm text-ellipsis overflow-hidden whitespace-nowrap cursor-pointer">EVM: {userConnected?.evmAddress}</p>
+
+                            {userConnected?.starknetAddress && (
+                                <p
+                                    onClick={() => {
+                                        if (userConnected?.starknetAddress) {
+                                            navigator.clipboard.writeText(userConnected?.starknetAddress || '');
+                                        }
+                                    }}
+                                    className="text-sm text-ellipsis overflow-hidden whitespace-nowrap">Starknet: {userConnected?.starknetAddress}</p>
+                            )}
                         </div>
                     )}
 
                     <PrivyUser isLoggoutViewActive={isLoggoutViewActive} />
 
-{/* 
+                    {/* 
                     {!userConnected && (
                     )} */}
 

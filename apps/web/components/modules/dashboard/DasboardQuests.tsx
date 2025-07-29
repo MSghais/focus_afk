@@ -123,7 +123,7 @@ export default function DashboardQuests() {
         Bet. Focus. Prove. Earn.
       </div> */}
 
-      <div className={styles.dashboardContent} style={{  width: '100%' }}>
+      <div className={styles.dashboardContent} style={{ width: '100%' }}>
         <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>Proof of Focus</div>
         {/* <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 12 }}>AI-Verified Proof of Focus</div> */}
         <div style={{ display: 'flex', gap: 16, width: '100%', justifyContent: 'center', marginBottom: 16 }}>
@@ -151,10 +151,10 @@ export default function DashboardQuests() {
 
 
       </div>
-      <QuestList quests={[]} isEnabledRefreshButton={false} />
 
       <Badges isEnabledRefreshButton={false} />
 
+      <QuestList quests={[]} isEnabledRefreshButton={false} />
 
       <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
         <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>

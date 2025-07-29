@@ -88,7 +88,7 @@ export default function Onboarding({ onNext, isWelcomeStep = true }: { onNext?: 
     return <StepComponent onNext={() => setStep(step + 1)} isWelcomeStep={isWelcomeStep} />;
   }
   // Last step does not need onNext
-  return <div className="flex flex-col items-center justify-center h-screen">
+  return <div className="flex flex-col items-center justify-center">
     <AllSetStep onNext={onNext} />
   </div>;
 } 
