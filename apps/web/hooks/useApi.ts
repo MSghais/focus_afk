@@ -160,6 +160,14 @@ export function useApi() {
       getFocusStats: apiService.getFocusStats,
       isAuthenticated: () => !!jwtToken,
       getAccessToken: () => jwtToken,
+      // Enhanced Chat methods
+      getEnhancedChatUseCases: apiService.getEnhancedChatUseCases,
+      enhancedChatGeneral: apiService.enhancedChatGeneral,
+      enhancedChatUseCase: apiService.enhancedChatUseCase,
+      enhancedChatTaskPlanning: apiService.enhancedChatTaskPlanning,
+      enhancedChatDeepAnalysis: apiService.enhancedChatDeepAnalysis,
+      enhancedChatSearch: apiService.enhancedChatSearch,
+      getEnhancedChatContextStats: apiService.getEnhancedChatContextStats,
     };
   }, [jwtToken]);
 

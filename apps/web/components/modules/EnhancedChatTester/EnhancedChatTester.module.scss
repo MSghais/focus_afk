@@ -1,0 +1,435 @@
+.enhancedChatTester {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 80vh;
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+  }
+
+  .configuration {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+
+    .configSection {
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+      }
+
+      .select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-color);
+          box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+        }
+      }
+
+      .checkboxGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+
+        .checkbox {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: var(--text-primary);
+          cursor: pointer;
+
+          input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-color);
+          }
+        }
+      }
+
+      .vectorSettings {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .checkbox {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: var(--text-primary);
+          cursor: pointer;
+
+          input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent-color);
+          }
+        }
+
+        .inputGroup {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          label {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+          }
+
+          .numberInput {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            text-align: center;
+
+            &:focus {
+              outline: none;
+              border-color: var(--accent-color);
+            }
+          }
+        }
+      }
+
+      .textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 80px;
+        transition: border-color 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-color);
+          box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.1);
+        }
+
+        &::placeholder {
+          color: var(--text-tertiary);
+        }
+      }
+    }
+  }
+
+  .chatSection {
+    .inputArea {
+      margin-bottom: 1.5rem;
+
+      .promptInput {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 100px;
+        transition: border-color 0.2s ease;
+        margin-bottom: 1rem;
+
+        &:focus {
+          outline: none;
+          border-color: var(--accent-color);
+          box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.1);
+        }
+
+        &::placeholder {
+          color: var(--text-tertiary);
+        }
+      }
+
+      .inputActions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+
+        .sendButton {
+          padding: 0.75rem 1.5rem;
+          background: var(--accent-color);
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          min-width: 140px;
+
+          &:hover:not(:disabled) {
+            background: var(--accent-color-hover);
+            transform: translateY(-1px);
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+          }
+        }
+
+        .clearButton {
+          padding: 0.75rem 1.5rem;
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          font-size: 1rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-secondary);
+          }
+        }
+      }
+    }
+
+    .responses {
+      .emptyState {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-secondary);
+        font-style: italic;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 2px dashed var(--border-color);
+      }
+
+      .responseItem {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+
+        .userPrompt {
+          margin-bottom: 1rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid var(--border-color);
+
+          strong {
+            color: var(--accent-color);
+            font-size: 1rem;
+          }
+
+          .promptText {
+            margin: 0.5rem 0;
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.5;
+          }
+
+          small {
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+          }
+        }
+
+        .aiResponse {
+          strong {
+            color: var(--text-primary);
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+          }
+
+          .responseText {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.6;
+
+            // Markdown styling
+            h1, h2, h3, h4, h5, h6 {
+              margin: 1rem 0 0.5rem 0;
+              color: var(--text-primary);
+            }
+
+            p {
+              margin: 0.5rem 0;
+            }
+
+            code {
+              background: var(--bg-tertiary);
+              padding: 0.2rem 0.4rem;
+              border-radius: 4px;
+              font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+              font-size: 0.9rem;
+            }
+
+            pre {
+              background: var(--bg-tertiary);
+              padding: 1rem;
+              border-radius: 6px;
+              overflow-x: auto;
+              margin: 1rem 0;
+
+              code {
+                background: none;
+                padding: 0;
+              }
+            }
+
+            ul, ol {
+              margin: 0.5rem 0;
+              padding-left: 1.5rem;
+            }
+
+            blockquote {
+              border-left: 4px solid var(--accent-color);
+              padding-left: 1rem;
+              margin: 1rem 0;
+              color: var(--text-secondary);
+              font-style: italic;
+            }
+          }
+
+          .responseMetadata {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+
+            .metadataGrid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 0.75rem;
+              margin-bottom: 1rem;
+
+              .metadataItem {
+                font-size: 0.9rem;
+                color: var(--text-secondary);
+
+                strong {
+                  color: var(--text-primary);
+                  margin-right: 0.5rem;
+                }
+              }
+            }
+
+            .contextSources {
+              strong {
+                color: var(--text-primary);
+                font-size: 0.9rem;
+                display: block;
+                margin-bottom: 0.5rem;
+              }
+
+              .sourceTags {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+
+                .sourceTag {
+                  background: var(--accent-color);
+                  color: white;
+                  padding: 0.25rem 0.5rem;
+                  border-radius: 12px;
+                  font-size: 0.8rem;
+                  font-weight: 500;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .enhancedChatTester {
+    padding: 1rem;
+    margin: 0;
+
+    .configuration {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      padding: 1rem;
+
+      .configSection {
+        .checkboxGrid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    }
+
+    .chatSection {
+      .inputArea {
+        .inputActions {
+          flex-direction: column;
+          align-items: stretch;
+
+          .sendButton,
+          .clearButton {
+            width: 100%;
+          }
+        }
+      }
+
+      .responses {
+        .responseItem {
+          padding: 1rem;
+
+          .aiResponse {
+            .responseMetadata {
+              .metadataGrid {
+                grid-template-columns: 1fr;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 
