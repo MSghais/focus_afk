@@ -10,6 +10,7 @@ export interface GoalCreateProps {
   tasks: Task[];
   onCreate?: (goal: GoalFormData) => void;
   onCancel?: () => void;
+  onNext?: () => void;
 }
 
 export interface GoalFormData {
@@ -22,7 +23,7 @@ export interface GoalFormData {
 
 const GOAL_TYPES = ["Goal", "KPI", "Aim"];
 
-export default function GoalCreate({ tasks = [], onCreate, onCancel }: GoalCreateProps) {
+export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext }: GoalCreateProps) {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>(GOAL_TYPES[0] || "");
   const [description, setDescription] = useState<string>("");
@@ -42,6 +43,7 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel }: GoalCreat
     if (!name.trim()) return;
     logClickedEvent('goal_create');
     onCreate && onCreate({ name, type, description, targetDate, linkedTaskIds });
+    onNext && onNext();
   };
 
   return (

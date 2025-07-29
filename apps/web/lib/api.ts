@@ -649,6 +649,110 @@ class ApiService {
       body: JSON.stringify(data),
     });
   }
+
+  // Enhanced Chat API methods
+  async getEnhancedChatUseCases(): Promise<ApiResponse<{
+    useCases: Array<{
+      value: string;
+      label: string;
+      description: string;
+    }>;
+  }>> {
+    return this.request('/enhanced-chat/use-cases');
+  }
+
+  async enhancedChatGeneral(data: {
+    prompt: string;
+    mentorId?: string;
+    sessionId?: string;
+    model?: string;
+    extraData?: any;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatUseCase(data: {
+    prompt: string;
+    useCase: string;
+    mentorId?: string;
+    sessionId?: string;
+    model?: string;
+    customSystemPrompt?: string;
+    extraData?: any;
+    enableVectorSearch?: boolean;
+    contextSources?: string[];
+    maxVectorResults?: number;
+    saveToChat?: boolean;
+    chatId?: string;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/chat/use-case', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatTaskPlanning(data: {
+    prompt: string;
+    mentorId?: string;
+    sessionId?: string;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/assist/task-planning', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatDeepAnalysis(data: {
+    prompt: string;
+    mentorId?: string;
+    sessionId?: string;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/deep-analysis', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatSearch(data: {
+    query: string;
+    types?: string[];
+    limit?: number;
+  }): Promise<ApiResponse<{
+    results: any[];
+  }>> {
+    return this.request('/enhanced-chat/search', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getEnhancedChatContextStats(): Promise<ApiResponse<{
+    totalContexts: number;
+    vectorSearchEnabled: boolean;
+    averageResponseTime: number;
+    contextSources: Record<string, number>;
+  }>> {
+    return this.request('/enhanced-chat/context-stats');
+  }
 }
 
 export const api = new ApiService();

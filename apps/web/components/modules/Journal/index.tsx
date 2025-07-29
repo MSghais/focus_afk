@@ -21,7 +21,7 @@ export default function JournalMainComponent() {
                     onClick={() => setActiveTab('tasks')}>➕ Tasks</button>
                 <button
                     className={`cursor-pointer rounded-md p-2 ${activeTab === 'notes' ? 'border border-gray-300' : ''}`}
-                    onClick={() => setActiveTab('notes')}>Notes 📝</button>
+                    onClick={() => setActiveTab('notes')}>Notes 📚</button>
             </div>
             {activeTab === 'notes' && <NotesOverview />}
             {activeTab === 'goals' && <Goals />}

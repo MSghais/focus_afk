@@ -153,7 +153,9 @@ export default function Badges({ isEnabledRefreshButton = true, isDailyBadgeEnab
                         <div key={badge.id} className="flex flex-col items-center border rounded-lg p-3 bg-gray-900/50 shadow">
                             <div className="text-xl mb-2">{badge.icon || '🏅'}</div>
                             <div className="font-semibold text-base mb-1">{badge.name}</div>
-                            <div className="text-xs mb-1">{badge.description}</div>
+                            {badge?.name != "Daily Connection" &&
+                                <div className="text-xs mb-1">{badge.description}</div>
+                            }
                             <div className="text-xs ">{new Date(badge.dateAwarded).toLocaleDateString()}</div>
                         </div>
                     ))}

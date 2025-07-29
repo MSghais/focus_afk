@@ -29,10 +29,10 @@ export default function LoginBackend() {
 
     return (
         <div className="flex flex-col gap-4">
-            <h3>Backend Login</h3>
+            <h3>Sign to your account</h3>
             <ButtonPrimary onClick={handleLogin}>
                 <Icon name="login" />
-                Login with Wallet
+                Sign with Wallet
             </ButtonPrimary>
         </div>
     );

@@ -262,13 +262,14 @@ export default function TimerDeepFocus({
                             {selectedTaskId && (
                                 <div className="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg mb-3">
                                     <p className="text-sm text-blue-300">
-                                        <span className="text-gray-400">Current Quest:</span> <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong>
+                                        <span className="text-gray-400">Task:</span> <strong>{tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}</strong>
                                     </p>
                                 </div>
                             )}
 
                             <select
-                                value={selectedTaskId || ''}
+                                // value={selectedTaskId || ''}
+                            
                                 onChange={(e) => {
                                     setSelectedTaskId(e.target.value ? e.target.value : undefined);
                                     logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
@@ -310,6 +311,32 @@ export default function TimerDeepFocus({
             >
                 ⚙️ Configure Quest Settings
             </button>
+
+            {/* Selected Task/Goal Info */}
+            {(selectedTaskId || selectedGoalId) && (
+                <div className="w-full max-w-md bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
+                    <h4 className="text-blue-400 font-semibold mb-2">📋 Current Quest Details</h4>
+                    <div className="space-y-2 text-sm">
+                        {selectedTaskId && (
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Task:</span>
+                                <span className="text-blue-300 font-medium">
+                                    {tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}
+                                </span>
+                            </div>
+                        )}
+                        {selectedGoalId && (
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Goal:</span>
+                                <span className="text-blue-300 font-medium">
+                                    {goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
 
             {/* Quest Progress Bar */}
             <div className="w-full max-w-md">
@@ -390,30 +417,6 @@ export default function TimerDeepFocus({
                 </div>
             )}
 
-            {/* Selected Task/Goal Info */}
-            {(selectedTaskId || selectedGoalId) && (
-                <div className="w-full max-w-md bg-blue-900/20 border border-blue-500/30 rounded-xl p-4">
-                    <h4 className="text-blue-400 font-semibold mb-2">📋 Current Quest Details</h4>
-                    <div className="space-y-2 text-sm">
-                        {selectedTaskId && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-400">Task:</span>
-                                <span className="text-blue-300 font-medium">
-                                    {tasks.find(t => t.id?.toString() === selectedTaskId?.toString())?.title}
-                                </span>
-                            </div>
-                        )}
-                        {selectedGoalId && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-400">Goal:</span>
-                                <span className="text-blue-300 font-medium">
-                                    {goals.find(g => g.id?.toString() === selectedGoalId?.toString())?.title}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
 
         </div>
     );

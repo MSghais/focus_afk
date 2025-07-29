@@ -32,7 +32,7 @@ export default function SourceCard({
   });
   const { showToast } = useUIStore();
   const [inputMessage, setInputMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'video' | 'audio' | 'chat'  >('chat');
+  const [activeTab, setActiveTab] = useState<'video' | 'audio' | 'chat'>('chat');
 
   const { userConnected } = useAuthStore();
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
@@ -236,7 +236,7 @@ export default function SourceCard({
         <div
           className="py-2"
         >
-          <ButtonSimple 
+          <ButtonSimple
             onClick={() => handleRemoveSource(source)}
             disabled={analyzingSource === source.id}
             className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -307,6 +307,7 @@ export default function SourceCard({
                     <div className="text-muted-foreground line-clamp-2">
                       {content as string}
                     </div>
+                    <ExpandAnalysis content={content as string} type={type} />
                   </div>
                 ))}
               </div>
@@ -319,4 +320,44 @@ export default function SourceCard({
 
     </div>
   );
-} 
+}
+
+
+export const ExpandAnalysis = ({ content, type }: { content: string, type: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  }
+
+  return (
+    <div>
+
+      <div className="p-2 bg-muted/30 rounded text-xs">
+        <div className="font-medium capitalize mb-1">
+          {type === 'key_points' ? 'Key Points' : type === 'summary' ? 'Summary' : 'Insights'}:
+        </div>
+        <div
+
+        // className="text-muted-foreground ellipsis w-full no-wrap"
+        >
+          <p className="text-xs ellipsis w-full whitespace-pre-wrap text-wrap">{isExpanded ? content : content.substring(0, 150)}...</p>
+        </div>
+
+      </div>
+
+      {content?.length > 150 && (
+        <button
+          className="text-xs px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={toggleExpand}>
+          {isExpanded ? 'Collapse' : 'VIew more'}
+        </button>
+      )}
+
+
+      {/* <button onClick={toggleExpand}>
+        {isExpanded ? 'Collapse' : 'Expand'}
+      </button> */}
+    </div>
+  )
+}

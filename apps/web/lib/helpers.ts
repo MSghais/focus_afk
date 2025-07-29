@@ -3,6 +3,7 @@ import MarkdownIt from 'markdown-it';
 
 export const tryMarkdownToHtml = (text: string) => {
     try {
+        console.log("text", text);
         let textRendered = markdownToHtml(text);
         // console.log("textRendered", textRendered);
         if (!textRendered) {
@@ -15,7 +16,7 @@ export const tryMarkdownToHtml = (text: string) => {
         return textRendered;
     } catch (error) {
         console.error("Error rendering markdown", error);
-        return '';
+        return undefined;
     }
 }
 
@@ -29,7 +30,7 @@ export const markdownToHtml = (text: string) => {
         return rendered;
     } catch (error) {
         console.error("Error rendering markdown", error);
-        return '';
+        return undefined;
     }
 };
 
