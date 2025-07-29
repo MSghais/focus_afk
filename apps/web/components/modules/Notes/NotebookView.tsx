@@ -427,7 +427,7 @@ export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete,
           </div> */}
           <div className="flex items-center space-x-2">
             {/* Mobile: Show sources toggle button */}
-            <button
+            {/* <button
               onClick={() => setShowSourcesSidebar(!showSourcesSidebar)}
               className="md:hidden px-3 py-1 text-sm bg-muted rounded-lg"
             >
@@ -441,12 +441,12 @@ export default function NotebookView({ note, onUpdate, onBack, onEdit, onDelete,
             </button>
             <button className="hidden md:block px-3 py-1 text-sm bg-muted rounded-lg">
               ⚙️ Settings
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-3 my-2">
 
 
         <button
