@@ -250,7 +250,7 @@ export default function TimerBreak({
             </div>
 
             {/* Healing Progress Bar */}
-            <div className="w-full max-w-md">
+            {/* <div className="w-full max-w-md">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                     <span>Healing Progress</span>
                     <span>{Math.round(healingProgress)}%</span>
@@ -261,9 +261,7 @@ export default function TimerBreak({
                         style={{ width: `${healingProgress}%` }}
                     ></div>
                 </div>
-            </div>
-
-
+            </div> */}
 
 
             {/* Session Complete Message */}

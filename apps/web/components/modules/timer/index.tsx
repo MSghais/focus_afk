@@ -211,7 +211,7 @@ export default function TimerMain({
             </div>
 
             {/* RPG Status Bar */}
-            <div className="w-full max-w-3xl bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+            {/* <div className="w-full max-w-3xl bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                 <div className="flex justify-between items-center text-sm">
                     <div className="flex items-center space-x-4">
                         <div className="md:flex items-center space-x-2">
@@ -232,7 +232,7 @@ export default function TimerMain({
                         <span className="text-gray-300">{totalSessions} Sessions</span>
                     </div>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }

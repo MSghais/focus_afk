@@ -380,7 +380,7 @@ export default function TimerGoal({
             </div>
 
             {/* Training Progress Bar */}
-            <div className="w-full max-w-md  justify-center items-center">
+            {/* <div className="w-full max-w-md  justify-center items-center">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                     <span>Mission Progress</span>
                     <span>{Math.round(trainingProgress)}%</span>
@@ -391,10 +391,10 @@ export default function TimerGoal({
                         style={{ width: `${trainingProgress}%` }}
                     ></div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Training Rewards */}
-            <div className="w-full bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+            {/* <div className="w-full bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                         <div className="text-2xl mb-1">⚡</div>
@@ -407,7 +407,7 @@ export default function TimerGoal({
                         <div className="text-xs text-gray-400">Focus Points</div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
 
             {/* Session Complete Message */}
