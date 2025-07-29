@@ -8,6 +8,7 @@ interface UserEmbedding {
   type: 'task' | 'goal' | 'session' | 'note' | 'message' | 'profile';
   metadata: Record<string, any>;
   timestamp: Date;
+  score?: number;
 }
 
 export class PineconeService {

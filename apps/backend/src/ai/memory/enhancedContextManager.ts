@@ -30,7 +30,7 @@ export interface EnhancedContextOptions {
 export interface EnhancedContextResult {
   enhancedPrompt: string;
   vectorContext: any[];
-  traditionalContext: MemoryContext | null;
+  traditionalContext: MemoryContext | undefined;
   useCase: ContextUseCase;
   metadata: {
     vectorSearchUsed: boolean;
@@ -164,7 +164,7 @@ export class EnhancedContextManager {
     };
 
     let vectorContext: any[] = [];
-    let traditionalContext: MemoryContext | null = null;
+    let traditionalContext: MemoryContext | undefined = undefined;
 
     // Get vector-based context if enabled
     if (finalUseCase.vectorSearchEnabled) {
@@ -219,7 +219,7 @@ export class EnhancedContextManager {
     userMessage: string,
     useCase: ContextUseCase,
     vectorContext: any[],
-    traditionalContext: MemoryContext | null,
+    traditionalContext: MemoryContext | undefined,
     extraData?: Record<string, any>
   ): Promise<string> {
     let prompt = `${useCase.systemPrompt}\n\n`;
@@ -333,7 +333,7 @@ export class EnhancedContextManager {
       id: result.metadata.id || result.metadata.taskId || result.metadata.goalId || result.metadata.noteId,
       type: result.type,
       content: result.content,
-      score: result.score,
+      score: result?.score || 0,
       metadata: result.metadata,
       timestamp: result.timestamp
     }));

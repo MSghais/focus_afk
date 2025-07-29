@@ -157,6 +157,26 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
+      if(response?.text ) {
+        try {
+          const message = await fastify.prisma.message.create({
+            data: {
+              content: response.text,
+              userId,
+              mentorId,
+              chatId,
+              // sessionId: sessionId || '',
+              // type: 'message',
+              role: 'assistant',
+              createdAt: new Date(),
+            }
+          })  
+        } catch (error) {
+          console.error("Error saving message to database", error);
+          
+        }
+      }
+
       return reply.send({
         text: response.text,
         metadata: response.metadata,
@@ -202,6 +222,21 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
 
       if (!response) {
         return reply.code(500).send({ message: 'Failed to generate response' });
+      }
+
+      try {
+        const message = await fastify.prisma.message.create({
+          data: {
+            content: response.text,
+            userId,
+            mentorId,
+            chatId: sessionId,
+            role: 'assistant',
+            createdAt: new Date(),
+          }
+        })
+      } catch (error) {
+        console.error("Error saving message to database", error);
       }
 
       return reply.send({

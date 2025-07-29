@@ -189,7 +189,7 @@ export class MemoryManager {
     userId: string,
     mentorId?: string,
     sessionId?: string
-  ): Promise<MemoryContext | null | undefined> {
+  ): Promise<MemoryContext  | undefined> {
 
     try {
       const sessionKey = sessionId || `${userId}_${mentorId || 'default'}`;
@@ -206,7 +206,7 @@ export class MemoryManager {
       
     } catch (error) {
       console.error('Error getting or creating memory:', error);
-      return null;
+      return undefined  ;
     }
 
   }
