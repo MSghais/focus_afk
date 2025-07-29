@@ -367,10 +367,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* Focus Sessions */}
-                <div className={styles.contentCard}>
+                {/* <div className={styles.contentCard}>
 
                     <ListFocusSession/>
-                </div>
+                </div> */}
 
                 {/* Weekly Focus Chart */}
 
