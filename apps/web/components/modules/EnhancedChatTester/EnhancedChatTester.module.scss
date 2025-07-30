@@ -26,6 +26,36 @@
     }
   }
 
+  .tabNavigation {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+
+    .tabButton {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+
+      &:hover {
+        color: var(--text-primary);
+        background: var(--bg-secondary);
+      }
+
+      &.activeTab {
+        color: var(--primary-color);
+        border-bottom-color: var(--primary-color);
+        background: var(--bg-secondary);
+      }
+    }
+  }
+
   .configuration {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -428,6 +458,270 @@
               }
             }
           }
+        }
+      }
+    }
+  }
+}
+
+// Message Manager Styles
+.messageManager {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid var(--border-color);
+
+  .messageManagerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h3 {
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .messageManagerActions {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .statsSection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+
+    h4 {
+      margin: 0 0 15px 0;
+      color: var(--text-primary);
+    }
+
+    .statsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .statItem {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+
+      .statLabel {
+        font-weight: 500;
+        color: var(--text-secondary);
+      }
+
+      .statValue {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+    }
+
+    .useCaseStats {
+      h5 {
+        margin: 0 0 10px 0;
+        color: var(--text-primary);
+      }
+
+      .useCaseStatsGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+
+      .useCaseStatItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background: var(--card-bg);
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+
+        .useCaseLabel {
+          font-size: 0.9em;
+          color: var(--text-secondary);
+        }
+
+        .useCaseCount {
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+      }
+    }
+  }
+
+  .filtersSection {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+
+    h4 {
+      margin: 0 0 15px 0;
+      color: var(--text-primary);
+    }
+
+    .filtersGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .filterItem {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+
+      label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+      }
+
+      .select {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--card-bg);
+        color: var(--text-primary);
+        font-size: 0.9em;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+      }
+    }
+  }
+
+  .messagesSection {
+    h4 {
+      margin: 0 0 15px 0;
+      color: var(--text-primary);
+    }
+
+    .loading, .noMessages {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .messagesList {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .messageItem {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .messageHeader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+
+        .messageRole {
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 0.8em;
+          font-weight: 600;
+          text-transform: uppercase;
+
+          &.roleuser {
+            background: var(--primary-color);
+            color: white;
+          }
+
+          &.roleassistant {
+            background: var(--secondary-color);
+            color: white;
+          }
+
+          &.rolesystem {
+            background: var(--accent-color);
+            color: white;
+          }
+        }
+
+        .messageDate {
+          font-size: 0.8em;
+          color: var(--text-secondary);
+        }
+
+        .messageUseCase {
+          font-size: 0.8em;
+          color: var(--text-secondary);
+          background: var(--bg-secondary);
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+
+        .messageActions {
+          margin-left: auto;
+          display: flex;
+          gap: 5px;
+        }
+      }
+
+      .messageContent {
+        color: var(--text-primary);
+        line-height: 1.5;
+        margin-bottom: 10px;
+      }
+
+      .messageMetadata {
+        font-size: 0.8em;
+        color: var(--text-secondary);
+        border-top: 1px solid var(--border-color);
+        padding-top: 10px;
+      }
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+
+      .loadMoreButton {
+        padding: 10px 20px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+          background: var(--primary-hover);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
       }
     }

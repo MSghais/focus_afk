@@ -130,14 +130,20 @@ export default function MentorPageComponent({ isSetupEnabled = false, isEnhanced
 
         <div className='flex flex-row gap-2'>
           <ButtonSecondary
-            onClick={() => setIsViewEnhancedChat(!isViewEnhancedChat)}
+            onClick={() => {
+              setIsViewEnhancedChat(!isViewEnhancedChat)
+              setIsViewChatAi(false)
+            }}
             className={styles.simpleToggleButton}
           >
             {isViewEnhancedChat ? "Hide Enhanced Chat" : "Show Enhanced Chat"}
           </ButtonSecondary>
 
           <ButtonSecondary
-            onClick={() => setIsViewChatAi(!isViewChatAi)}
+            onClick={() => {
+              setIsViewChatAi(!isViewChatAi)
+              setIsViewEnhancedChat(false)
+            }}
             className={styles.simpleToggleButton}
           >
             {isViewChatAi ? "Hide Chat" : "Show Chat"}
@@ -145,15 +151,15 @@ export default function MentorPageComponent({ isSetupEnabled = false, isEnhanced
         </div>
 
       )}
-
-      {activeTab === "list" && <MentorList />}
-
-
       {isViewEnhancedChat && (
         <div className={styles.simpleChatWrapper}>
           <EnhancedChatTester />
         </div>
       )}
+      {activeTab === "list" && <MentorList />}
+
+
+
 
 
       {isViewChatAi && (

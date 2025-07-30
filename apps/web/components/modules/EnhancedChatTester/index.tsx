@@ -6,6 +6,7 @@ import { useApi } from '../../../hooks/useApi';
 import { useAuthStore } from '../../../store/auth';
 import { useMentorsStore } from '../../../store/mentors';
 import { enhancedMarkdownRenderer, tryMarkdownToHtml } from '../../../lib/helpers';
+import MessageManager from './MessageManager';
 import styles from './EnhancedChatTester.module.scss';
 
 interface EnhancedChatResponse {
@@ -74,6 +75,7 @@ export default function EnhancedChatTester() {
     response: EnhancedChatResponse;
     timestamp: Date;
   }>>([]);
+  const [activeTab, setActiveTab] = useState<'chat' | 'messages'>('chat');
 
   // Auto-scroll to bottom when responses change
   const scrollToBottom = () => {
@@ -83,6 +85,8 @@ export default function EnhancedChatTester() {
   useEffect(() => {
     scrollToBottom();
   }, [responses]);
+
+
 
   const handleSendMessage = async () => {
     if (!prompt.trim() || isLoading || !userConnected) {
@@ -159,11 +163,31 @@ export default function EnhancedChatTester() {
   return (
     <div className={styles.enhancedChatTester}>
       <div className={styles.header}>
-        <h2>Enhanced Chat Tester</h2>
+        <h2>Focus Chat</h2>
         <p>Test the enhanced chat endpoints with different use cases and configurations</p>
       </div>
 
-      <div className={styles.configuration}>
+      {/* Tab Navigation */}
+      <div className={styles.tabNavigation}>
+        <button
+          className={`${styles.tabButton} ${activeTab === 'chat' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('chat')}
+        >
+          Chat Interface
+        </button>
+        <button
+          className={`${styles.tabButton} ${activeTab === 'messages' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('messages')}
+        >
+          Message Management
+        </button>
+      </div>
+
+      {activeTab === 'messages' ? (
+        <MessageManager />
+      ) : (
+        <>
+          <div className={styles.configuration}>
         <div className={styles.configSection}>
           <h3>Use Case</h3>
           <select 
@@ -343,6 +367,8 @@ export default function EnhancedChatTester() {
           <div ref={messagesEndRef} />
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 } 

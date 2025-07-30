@@ -184,15 +184,19 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         }
       }
 
-      return reply.send({
-        text: response.text,
-        metadata: response.metadata,
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data:{
+          text: response.text,
+          metadata: response.metadata,
         context: {
           vectorSearchUsed: response.context.metadata.vectorSearchUsed,
           contextSources: response.context.metadata.contextSources,
           vectorResultsCount: response.context.metadata.vectorResultsCount,
           totalContextSize: response.context.metadata.totalContextSize
         }
+      }
       });
 
     } catch (error) {
@@ -246,7 +250,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         console.error("Error saving message to database", error);
       }
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         text: response.text,
         metadata: response.metadata,
         context: {
@@ -254,7 +261,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           contextSources: response.context.metadata.contextSources,
           vectorResultsCount: response.context.metadata.vectorResultsCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -292,7 +299,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         text: response.text,
         metadata: response.metadata,
         context: {
@@ -300,7 +310,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           contextSources: response.context.metadata.contextSources,
           vectorResultsCount: response.context.metadata.vectorResultsCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -336,7 +346,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         text: response.text,
         metadata: response.metadata,
         context: {
@@ -344,7 +357,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           contextSources: response.context.metadata.contextSources,
           vectorResultsCount: response.context.metadata.vectorResultsCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -380,7 +393,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         text: response.text,
         metadata: response.metadata,
         context: {
@@ -388,7 +404,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           contextSources: response.context.metadata.contextSources,
           vectorResultsCount: response.context.metadata.vectorResultsCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -414,7 +430,11 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         limit
       );
 
-      return reply.send({ results });
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: { results }
+      });
 
     } catch (error) {
       fastify.log.error(error);
@@ -429,7 +449,11 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
     try {
       const userId = request.user.id;
       const stats = await enhancedAiService.getContextStats(userId);
-      return reply.send({ stats });
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: { stats }
+      });
 
     } catch (error) {
       fastify.log.error(error);
@@ -461,7 +485,11 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
 
       await enhancedAiService.updateUserEmbeddings(userId, dataTypes);
 
-      return reply.send({ message: 'Embeddings updated successfully' });
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: { message: 'Embeddings updated successfully' }
+      });
 
     } catch (error) {
       fastify.log.error(error);
@@ -492,9 +520,13 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      return reply.send({
-        text: response.text,
-        metadata: response.metadata
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
+          text: response.text,
+          metadata: response.metadata
+        }
       });
 
     } catch (error) {
@@ -533,7 +565,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         text: response.text,
         metadata: response.metadata,
         context: {
@@ -542,7 +577,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           vectorResultsCount: response.context.metadata.vectorResultsCount,
           totalContextSize: response.context.metadata.totalContextSize
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -641,7 +676,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         where: whereClause
       });
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         messages,
         pagination: {
           total: totalCount,
@@ -649,7 +687,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           offset,
           hasMore: offset + limit < totalCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -711,7 +749,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         where: { chatId, userId }
       });
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         chat,
         messages,
         pagination: {
@@ -720,7 +761,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
           offset,
           hasMore: offset + limit < totalCount
         }
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -786,7 +827,10 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         return acc;
       }, {});
 
-      return reply.send({
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         totalMessages,
         userMessages,
         assistantMessages,
@@ -794,7 +838,7 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         useCaseStats,
         recentActivity,
         averageMessagesPerChat: totalChats > 0 ? Math.round(totalMessages / totalChats) : 0
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
@@ -832,7 +876,11 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         where: { id: messageId }
       });
 
-      return reply.send({ message: 'Message deleted successfully' });
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: { message: 'Message deleted successfully' }
+      });
 
     } catch (error) {
       fastify.log.error(error);
@@ -887,10 +935,13 @@ async function enhancedChatRoutes(fastify: FastifyInstance) {
         where: whereClause
       });
 
-      return reply.send({ 
+      return reply.status(200).send({
+        success: true,
+        status: 200,
+        data: {
         message: 'Messages deleted successfully',
         deletedCount: deletedCount.count
-      });
+      }});
 
     } catch (error) {
       fastify.log.error(error);
