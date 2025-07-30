@@ -9,7 +9,7 @@ import { useApi } from '../../../hooks/useApi';
 import type { Message, Mentor } from '../../../types';
 import MentorList from './MentorList';
 import ProgressMentor from './Progress';
-import { ButtonPrimary, ButtonSecondary } from '../../small/buttons';
+import { ButtonPrimary, ButtonSecondary, ButtonSimple } from '../../small/buttons';
 import { useMentorsStore } from '../../../store/mentors';
 import EnhancedChatTester from '../EnhancedChatTester';
 
@@ -26,10 +26,12 @@ interface MentorProps {
   isEnhancedChatEnabled?: boolean;
 }
 
-export default function Mentor({ isSetupEnabled = false, isEnhancedChatEnabled = true }: MentorProps) {
+export default function MentorPageComponent({ isSetupEnabled = false, isEnhancedChatEnabled = true }: MentorProps) {
   const { timerSessions, tasks, goals } = useFocusAFKStore();
   const { showToast } = useUIStore();
   const apiService = useApi();
+
+  const [activeTab, setActiveTab] = useState<"list" | "chat" | "mentor">('list');
   const [messages, setMessages] = useState<Message[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -43,6 +45,7 @@ export default function Mentor({ isSetupEnabled = false, isEnhancedChatEnabled =
   const [isViewChatAi, setIsViewChatAi] = useState(false);
   const [isViewEnhancedChat, setIsViewEnhancedChat] = useState(false);
 
+  console.log("isEnhancedChatEnabled", isEnhancedChatEnabled);
   useEffect(() => {
     loadMentors();
 
@@ -105,57 +108,69 @@ export default function Mentor({ isSetupEnabled = false, isEnhancedChatEnabled =
 
   return (
     <div className={styles.simpleMentorContainer}>
+
+
+      <div className='flex flex-row gap-2 border-b border-gray-500 pb-2'>
+
+        <button
+          className={`p-2 rounded-md ${activeTab === "list" ? "border-b border-gray-500" : ""}`}
+          onClick={() => setActiveTab("list")}>Mentor List</button>
+        <button
+          className={`p-2 rounded-md ${activeTab === "chat" ? "border-b border-gray-500" : ""}`}
+          onClick={() => setActiveTab("chat")}>Chat</button>
+        {/* <button
+          className={`border-gray-500 p-2 rounded-md ${activeTab === "mentor" ? "bg-gray-600" : ""}`}
+          onClick={() => setActiveTab("mentor")}>Mentor</button> */}
+
+      </div>
       {/* Mentor List */}
-      <MentorList />
+      {isEnhancedChatEnabled && (
 
-      {/* Chat Section - Simple toggle */}
-      {selectedMentor && (
-        <div className={styles.simpleChatSection}>
-
-
-          <div
-            className='flex flex-row gap-2'
-
+        <div className='flex flex-row gap-2'>
+          <ButtonSimple
+            onClick={() => {
+              setIsViewEnhancedChat(!isViewEnhancedChat)
+              setIsViewChatAi(false)
+            }}
+            className={styles.simpleToggleButton}
           >
+            {isViewEnhancedChat ? "Hide Enhanced Chat" : "Show Enhanced Chat"}
+          </ButtonSimple>
 
-            <ButtonSecondary
-              onClick={() => setIsViewChatAi(!isViewChatAi)}
-              className={styles.simpleToggleButton}
-            >
-              {isViewChatAi ? "Hide Chat" : "Show Chat"}
-            </ButtonSecondary>
+          <ButtonSimple
+            onClick={() => {
+              setIsViewChatAi(!isViewChatAi)
+              setIsViewEnhancedChat(false)
+            }}
+            className={styles.simpleToggleButton}
+          >
+            {isViewChatAi ? "Hide Chat" : "Show Chat"}
+          </ButtonSimple>
+        </div>
 
-
-            {isEnhancedChatEnabled && (
-
-              <>
-                <ButtonSecondary
-                  onClick={() => setIsViewEnhancedChat(!isViewEnhancedChat)}
-                  className={styles.simpleToggleButton}
-                >
-                  {isViewEnhancedChat ? "Hide Enhanced Chat" : "Show Enhanced Chat"}
-                </ButtonSecondary>
-
-
-              </>
-
-            )}
-
-          </div>
-
-          {isViewChatAi && (
-            <div className={styles.simpleChatWrapper}>
-              <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id} />
-            </div>
-          )}
-
-          {isViewEnhancedChat && (
-            <div className={styles.simpleChatWrapper}>
-              <EnhancedChatTester />
-            </div>
-          )}
+      )}
+      {isViewEnhancedChat && (
+        <div className={styles.simpleChatWrapper}>
+          <EnhancedChatTester />
         </div>
       )}
+      {activeTab === "list" && <MentorList />}
+
+
+      {isViewChatAi && (
+        <div className={styles.simpleChatWrapper}>
+          <ChatAi taskId={tasks[0]?.id} mentorId={selectedMentor?.id}
+            isSelectMentorViewEnabled={true}
+          />
+        </div>
+      )}
+
+      {/* Chat Section - Simple toggle */}
+      {/* {selectedMentor && (
+        <div className={styles.simpleChatSection}>
+
+        </div>
+      )} */}
     </div>
   );
 } 

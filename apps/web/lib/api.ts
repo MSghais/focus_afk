@@ -751,7 +751,159 @@ class ApiService {
     averageResponseTime: number;
     contextSources: Record<string, number>;
   }>> {
-    return this.request('/enhanced-chat/context-stats');
+    return this.request('/enhanced-chat/context/stats');
+  }
+
+  // Enhanced Chat Message Management
+  async getEnhancedChatMessages(filters?: {
+    limit?: number;
+    offset?: number;
+    chatId?: string;
+    mentorId?: string;
+    useCase?: string;
+    role?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ApiResponse<{
+    messages: Message[];
+    pagination: {
+      total: number;
+      limit: number;
+      offset: number;
+      hasMore: boolean;
+    };
+  }>> {
+    const params = new URLSearchParams();
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    if (filters?.chatId) params.append('chatId', filters.chatId);
+    if (filters?.mentorId) params.append('mentorId', filters.mentorId);
+    if (filters?.useCase) params.append('useCase', filters.useCase);
+    if (filters?.role) params.append('role', filters.role);
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    
+    return this.request(`/enhanced-chat/messages?${params.toString()}`);
+  }
+
+  async getEnhancedChatMessagesByChat(chatId: string, filters?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<ApiResponse<{
+    chat: Chat;
+    messages: Message[];
+    pagination: {
+      total: number;
+      limit: number;
+      offset: number;
+      hasMore: boolean;
+    };
+  }>> {
+    const params = new URLSearchParams();
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    
+    return this.request(`/enhanced-chat/messages/chat/${chatId}?${params.toString()}`);
+  }
+
+  async getEnhancedChatMessageStats(): Promise<ApiResponse<{
+    totalMessages: number;
+    userMessages: number;
+    assistantMessages: number;
+    totalChats: number;
+    useCaseStats: Record<string, number>;
+    recentActivity: number;
+    averageMessagesPerChat: number;
+  }>> {
+    return this.request('/enhanced-chat/messages/stats');
+  }
+
+  async deleteEnhancedChatMessage(messageId: string): Promise<ApiResponse<{
+    message: string;
+  }>> {
+    return this.request(`/enhanced-chat/messages/${messageId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteEnhancedChatMessages(filters?: {
+    chatId?: string;
+    mentorId?: string;
+    useCase?: string;
+    beforeDate?: string;
+  }): Promise<ApiResponse<{
+    message: string;
+    deletedCount: number;
+  }>> {
+    return this.request('/enhanced-chat/messages', {
+      method: 'DELETE',
+      body: JSON.stringify(filters || {}),
+    });
+  }
+
+  async updateEnhancedChatEmbeddings(dataTypes?: string[]): Promise<ApiResponse<{
+    message: string;
+  }>> {
+    return this.request('/enhanced-chat/context/update-embeddings', {
+      method: 'POST',
+      body: JSON.stringify({ dataTypes }),
+    });
+  }
+
+  // Enhanced Chat Specialized Endpoints
+  async enhancedChatGoalTracking(data: {
+    prompt: string;
+    mentorId?: string;
+    sessionId?: string;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/assist/goal-tracking', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatFocusSessions(data: {
+    prompt: string;
+    sessionData?: any;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/assist/focus-sessions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatNoteAnalysis(data: {
+    prompt: string;
+    noteContext?: any;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+    context: any;
+  }>> {
+    return this.request('/enhanced-chat/assist/note-analysis', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async enhancedChatQuickQuestion(data: {
+    prompt: string;
+  }): Promise<ApiResponse<{
+    text: string;
+    metadata: any;
+  }>> {
+    return this.request('/enhanced-chat/quick-question', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 }
 

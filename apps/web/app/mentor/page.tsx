@@ -1,4 +1,4 @@
-import Mentor from "../../components/modules/mentor";
+import MentorPageComponent from "../../components/modules/mentor/MentorPage";
 
 import { Metadata } from "next";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function MentorPage() {
     return (
         <div className="w-full h-full flex flex-col bg-[var(--background)]">
-            <Mentor />
+            <MentorPageComponent isEnhancedChatEnabled={true} />
         </div>
     )
 }

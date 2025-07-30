@@ -13,7 +13,15 @@ const TimerSessionSchema = z.object({
   goalId: z.string().optional(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  duration: z.number().positive().optional(),
+  duration: z.number().min(0).optional(), // Allow 0 for sessions that haven't started yet
+  activities: z.array(z.string()).optional(),
+  persons: z.array(z.string()).optional(),
+  location: z.string().optional(),
+  weather: z.string().optional(),
+  mood: z.string().optional(),
+  energyLevel: z.string().optional(),
+  productivityLevel: z.string().optional(),
+  metadata: z.any().optional(),
 }).partial();
 
 async function timerRoutes(fastify: FastifyInstance) {
@@ -78,24 +86,74 @@ async function timerRoutes(fastify: FastifyInstance) {
       }
 
       const body = TimerSessionSchema.safeParse(request.body);
-      console.log("body error", body?.error);
       if (!body.success) {
-        return reply.code(400).send({ error: 'Invalid session data' });
+        console.log("Validation error:", body.error);
+        return reply.code(400).send({ 
+          error: 'Invalid session data', 
+          details: body.error.issues 
+        });
       }
 
       const sessionData = request.body as z.infer<typeof TimerSessionSchema>;
 
+      // Log the received data for debugging
+      console.log("Received timer session data:", JSON.stringify(sessionData, null, 2));
+
+      // Clean up "undefined" string values and empty strings
+      const cleanSessionData = {
+        ...sessionData,
+        taskId: (sessionData.taskId === "undefined" || sessionData.taskId === "") ? undefined : sessionData.taskId,
+        goalId: (sessionData.goalId === "undefined" || sessionData.goalId === "") ? undefined : sessionData.goalId,
+        location: (sessionData.location === "undefined" || sessionData.location === "") ? undefined : sessionData.location,
+        weather: (sessionData.weather === "undefined" || sessionData.weather === "") ? undefined : sessionData.weather,
+        mood: (sessionData.mood === "undefined" || sessionData.mood === "") ? undefined : sessionData.mood,
+        energyLevel: (sessionData.energyLevel === "undefined" || sessionData.energyLevel === "") ? undefined : sessionData.energyLevel,
+        productivityLevel: (sessionData.productivityLevel === "undefined" || sessionData.productivityLevel === "") ? undefined : sessionData.productivityLevel,
+      };
+
+      // Log the cleaned data for debugging
+      console.log("Cleaned timer session data:", JSON.stringify(cleanSessionData, null, 2));
+
+      // Validate taskId exists if provided
+      if (cleanSessionData.taskId) {
+        const task = await fastify.prisma.task.findFirst({
+          where: { id: cleanSessionData.taskId, userId }
+        });
+        if (!task) {
+          return reply.code(400).send({ error: 'Task not found or does not belong to user' });
+        }
+      }
+
+      // Validate goalId exists if provided
+      if (cleanSessionData.goalId) {
+        const goal = await fastify.prisma.goal.findFirst({
+          where: { id: cleanSessionData.goalId, userId }
+        });
+        if (!goal) {
+          return reply.code(400).send({ error: 'Goal not found or does not belong to user' });
+        }
+      }
+
       const data: any = {
         userId,
-        type: sessionData.type || 'focus', // Default to 'focus' if not provided
-        startTime: sessionData?.startTime ? new Date(sessionData.startTime) : new Date(),
-        endTime: sessionData.endTime ? new Date(sessionData.endTime) : null,
-        duration: sessionData.duration || 0,
-        note: sessionData.notes, // Map notes to note field in database
-        completed: sessionData.completed !== undefined ? sessionData.completed : false,
-        // Only add these if they are defined
-        ...(sessionData.taskId ? { taskId: sessionData.taskId } : {}),
-        ...(sessionData.goalId ? { goalId: sessionData.goalId } : {}),
+        type: cleanSessionData.type || 'focus', // Default to 'focus' if not provided
+        startTime: cleanSessionData?.startTime ? new Date(cleanSessionData.startTime) : new Date(),
+        endTime: cleanSessionData.endTime ? new Date(cleanSessionData.endTime) : null,
+        duration: cleanSessionData.duration || 0,
+        note: cleanSessionData.notes, // Map notes to note field in database
+        completed: cleanSessionData.completed !== undefined ? cleanSessionData.completed : false,
+        // Only add these if they are defined and validated
+        ...(cleanSessionData.taskId ? { taskId: cleanSessionData.taskId } : {}),
+        ...(cleanSessionData.goalId ? { goalId: cleanSessionData.goalId } : {}),
+        // Add optional fields if provided
+        activities: cleanSessionData.activities || [],
+        persons: cleanSessionData.persons || [],
+        ...(cleanSessionData.location ? { location: cleanSessionData.location } : {}),
+        ...(cleanSessionData.weather ? { weather: cleanSessionData.weather } : {}),
+        ...(cleanSessionData.mood ? { mood: cleanSessionData.mood } : {}),
+        ...(cleanSessionData.energyLevel ? { energyLevel: cleanSessionData.energyLevel } : {}),
+        ...(cleanSessionData.productivityLevel ? { productivityLevel: cleanSessionData.productivityLevel } : {}),
+        ...(cleanSessionData.metadata ? { metadata: cleanSessionData.metadata } : {}),
       };
 
       const session = await fastify.prisma.timerSession.create({ data });
@@ -103,6 +161,15 @@ async function timerRoutes(fastify: FastifyInstance) {
       return reply.code(201).send({ success: true, data: session });
     } catch (error) {
       request.log.error(error);
+      
+      // Handle Prisma foreign key constraint errors
+      if (error.code === 'P2003') {
+        return reply.code(400).send({ 
+          error: 'Foreign key constraint violation',
+          message: 'The referenced task or goal does not exist'
+        });
+      }
+      
       return reply.code(500).send({ error: 'Internal server error' });
     }
   });

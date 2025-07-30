@@ -187,6 +187,77 @@ export async function syncTimerSessionsToBackend(): Promise<TimerSyncResult> {
   }
 }
 
+
+export async function syncTimerSessionToBackend(session: TimerSession | null): Promise<TimerSyncResult> {
+  const result: TimerSyncResult = {
+    success: false,
+    syncedSessions: 0,
+    errors: [],
+  };
+
+  if (!isUserAuthenticated()) {
+    result.errors.push('User not authenticated');
+    return result;
+  }
+
+  try {
+    const token = getJwtToken();
+    if (!token) {
+      result.errors.push('No authentication token available');
+      return result;
+    }
+
+    if (!session) {
+      result.errors.push('No session provided');
+      return result;
+    }
+
+    console.log(`🔄 Syncing timer session ${session.id} to backend`);
+
+    try {
+        const sessionData = {
+          taskId: String(session.taskId),
+          goalId: String(session.goalId),
+          type: session.type as 'focus' | 'break' | 'deep',
+          startTime: session.startTime,
+          endTime: session.endTime,
+          duration: session.duration,
+          completed: session.completed,
+          notes: session.notes,
+        };
+
+        const response = await api.createTimerSession(sessionData);
+        
+        if (response.success && response.data) {
+          // Mark as synced in local DB
+          const sessionId = typeof session.id === 'string' ? parseInt(session.id) : session.id;
+          await dbUtils.updateSession(sessionId!, {
+            syncedToBackend: true,
+            backendId: response.data.id,
+          });
+          result.syncedSessions++;
+          console.log(`✅ Synced timer session ${session.id} to backend`);
+        } else {
+          result.errors.push(`Failed to sync session ${session.id}: ${response.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        result.errors.push(`Error syncing session ${session.id}: ${errorMessage}`);
+        console.error(`❌ Failed to sync timer session ${session.id}:`, error);
+    }
+
+    result.success = result.errors.length === 0;
+    console.log(`🔄 Timer sync completed: ${result.syncedSessions} session synced, ${result.errors.length} errors`);
+    
+    return result;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    result.errors.push(`Sync failed: ${errorMessage}`);
+    console.error('❌ Timer sync failed:', error);
+    return result;
+  }
+}
+
 /**
  * Load timer sessions from backend and merge with local data
  */

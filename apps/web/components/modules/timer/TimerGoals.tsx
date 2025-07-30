@@ -5,7 +5,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { useGamificationStore } from '../../../store/gamification';
 import { logClickedEvent } from "../../../lib/analytics";
 import { Task, Goal } from "../../../types";
-import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
+import { syncTimerSessionsToBackend, syncTimerSessionToBackend } from "../../../lib/timerSync";
 import { useUIStore } from "../../../store/uiStore";
 
 function formatTime(seconds: number) {
@@ -110,6 +110,7 @@ export default function TimerGoal({
         // Consume energy for focus training
         consumeEnergy(5);
 
+        console.log('TimerGoals - Starting timer with:', { selectedTaskId, selectedGoalId, duration });
         await startTimer(duration, selectedTaskId, selectedGoalId);
     };
 
@@ -175,19 +176,19 @@ export default function TimerGoal({
     const renderSessionComplete = () => {
         return (
             <div className="w-full bg-gradient-to-r from-green-900/50 to-emerald-900/50 border border-green-500/30 rounded-xl p-6 text-center animate-pulse">
-            <div className="text-4xl mb-2">🎉</div>
-            <div className="text-green-400 font-bold text-lg mb-2">
-                {timer.isBreak ? 'Break Complete!' : 'Training Session Complete!'}
+                <div className="text-4xl mb-2">🎉</div>
+                <div className="text-green-400 font-bold text-lg mb-2">
+                    {timer.isBreak ? 'Break Complete!' : 'Training Session Complete!'}
+                </div>
+                <div className="text-gray-300 text-sm">
+                    You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> and <span className="text-blue-400 font-bold">{focusPointsEarned} Focus Points</span>
+                </div>
             </div>
-            <div className="text-gray-300 text-sm">
-                You've earned <span className="text-yellow-400 font-bold">{xpEarned} XP</span> and <span className="text-blue-400 font-bold">{focusPointsEarned} Focus Points</span>
-            </div>
-        </div>
         )
     }
 
     useEffect(() => {
-        if(timer?.secondsLeft === 0){
+        if (timer?.secondsLeft === 0) {
             showModal(renderSessionComplete())
         }
     }, [timer?.secondsLeft])
@@ -218,25 +219,7 @@ export default function TimerGoal({
             </div>
 
             {/* Timer Controls */}
-            <div className="flex gap-4 w-full  justify-center items-center">
-                {!timer.isRunning && timer.secondsLeft > 0 && (
-                    <button
-                        className="min-w-fit w-auto px-3 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
-                        onClick={handleStart}
-                    >
-                        🚀 Start
-                    </button>
-                )}
-
-                {timer.isRunning && (
-                    <button
-                        className="flex-1 py-4 px-6 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl hover:from-yellow-700 hover:to-orange-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-yellow-500/25 transform hover:scale-105"
-                        onClick={handlePause}
-                    >
-                        ⏸️ Pause
-                    </button>
-                )}
-
+            <div className="grid grid-cols-2 gap-4 w-full  justify-center items-center">
                 {!timer.isRunning && timer.secondsLeft < timer.totalSeconds && timer.secondsLeft > 0 && (
                     <button
                         className="flex-1 py-4 px-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-green-500/25 transform hover:scale-105"
@@ -245,6 +228,26 @@ export default function TimerGoal({
                         ▶️ Resume
                     </button>
                 )}
+
+                {!timer.isRunning && timer.secondsLeft > 0 && (
+                    <button
+                        className="flex-1 w-auto px-3 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-blue-500/25 transform hover:scale-105"
+                        onClick={handleStart}
+                    >
+                        🚀 Start
+                    </button>
+                )}
+
+                {timer.isRunning && (
+                    <button
+                        className="flex py-4 px-6 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl hover:from-yellow-700 hover:to-orange-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-yellow-500/25 transform hover:scale-105"
+                        onClick={handlePause}
+                    >
+                        ⏸️ Pause
+                    </button>
+                )}
+
+
 
                 <button
                     className="py-4 px-2 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all duration-300 font-bold text-lg"
@@ -258,7 +261,7 @@ export default function TimerGoal({
                         className="flex-1 py-4 px-4 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-700 hover:to-pink-700 transition-all duration-300 font-bold text-lg shadow-lg hover:shadow-red-500/25 transform hover:scale-105"
                         onClick={handleStop}
                     >
-                        🏁 End Training
+                        🏁 End
                     </button>
                 )}
             </div>
@@ -294,7 +297,12 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2 text-gray-300">Select Task (Optional)</label>
                         <select
                             value={selectedTaskId || ''}
-                            onChange={(e) => setSelectedTaskId(e.target.value ? e.target.value : undefined)}
+                            onChange={(e) => {
+                                const value = e.target.value ? e.target.value : undefined;
+                                console.log('TimerGoals - Task selected:', value);
+                                setSelectedTaskId(value);
+                                logClickedEvent('timer_goals_select_task', 'task', e.target.value);
+                            }}
                             className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                             <option value="">No specific task</option>
@@ -310,7 +318,12 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2 text-gray-300">Select Goal (Optional)</label>
                         <select
                             value={selectedGoalId || ''}
-                            onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
+                            onChange={(e) => {
+                                const value = e.target.value ? e.target.value : undefined;
+                                console.log('TimerGoals - Goal selected:', value);
+                                setSelectedGoalId(value);
+                                logClickedEvent('timer_goals_select_goal', 'goal', e.target.value);
+                            }}
                             className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                             <option value="">No specific goal</option>

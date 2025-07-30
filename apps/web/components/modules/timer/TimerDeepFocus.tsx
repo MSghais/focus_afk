@@ -117,7 +117,9 @@ export default function TimerDeepFocus({
         // Consume energy for deep work
         consumeEnergy(10);
 
-        startTimerFocus(taskId, Number(goalId));
+        // Use selected task/goal IDs instead of props
+        console.log('TimerDeepFocus - Starting timer with:', { selectedTaskId, selectedGoalId });
+        startTimerFocus(selectedTaskId, selectedGoalId ? Number(selectedGoalId) : undefined);
         if (intervalRef.current) clearInterval(intervalRef.current);
         intervalRef.current = setInterval(() => {
             setElapsedSeconds(prev => prev + 1);
@@ -142,7 +144,9 @@ export default function TimerDeepFocus({
         updateFocusStreak(true);
         if (intervalRef.current) clearInterval(intervalRef.current);
 
-        await stopTimeFocus(true, taskId, Number(goalId), elapsedSeconds);
+        // Use selected task/goal IDs instead of props
+        console.log('TimerDeepFocus - Stopping timer with:', { selectedTaskId, selectedGoalId, elapsedSeconds });
+        await stopTimeFocus(true, selectedTaskId, selectedGoalId ? Number(selectedGoalId) : undefined, elapsedSeconds);
 
         // // Sync to backend
         // try {
@@ -268,10 +272,11 @@ export default function TimerDeepFocus({
                             )}
 
                             <select
-                                // value={selectedTaskId || ''}
-                            
+                                value={selectedTaskId || ''}
                                 onChange={(e) => {
-                                    setSelectedTaskId(e.target.value ? e.target.value : undefined);
+                                    const value = e.target.value ? e.target.value : undefined;
+                                    console.log('TimerDeepFocus - Task selected:', value);
+                                    setSelectedTaskId(value);
                                     logClickedEvent('timer_deep_focus_select_task', 'task', e.target.value);
                                 }}
                                 className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -289,7 +294,12 @@ export default function TimerDeepFocus({
                             <label className="block text-sm font-medium mb-2 text-gray-300">Select Goal (Optional)</label>
                             <select
                                 value={selectedGoalId || ''}
-                                onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
+                                onChange={(e) => {
+                                    const value = e.target.value ? e.target.value : undefined;
+                                    console.log('TimerDeepFocus - Goal selected:', value);
+                                    setSelectedGoalId(value);
+                                    logClickedEvent('timer_deep_focus_select_goal', 'goal', e.target.value);
+                                }}
                                 className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                             >
                                 <option value="">No specific goal</option>
@@ -339,6 +349,8 @@ export default function TimerDeepFocus({
 
 
             {/* Quest Progress Bar */}
+            {/* XP and Level Progress */}
+
             <div className="w-full max-w-md">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                     <span>Quest Progress</span>
@@ -351,8 +363,7 @@ export default function TimerDeepFocus({
                     ></div>
                 </div>
             </div>
-
-            {/* XP and Level Progress */}
+{/* 
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center space-x-2">
@@ -372,7 +383,6 @@ export default function TimerDeepFocus({
                 </div>
             </div>
 
-            {/* Energy Status */}
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center space-x-2">
@@ -387,7 +397,7 @@ export default function TimerDeepFocus({
                         style={{ width: `${(energy / maxEnergy) * 100}%` }}
                     ></div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Achievements */}
             {achievements.length > 0 && (

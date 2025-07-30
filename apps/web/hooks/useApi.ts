@@ -165,9 +165,19 @@ export function useApi() {
       enhancedChatGeneral: apiService.enhancedChatGeneral,
       enhancedChatUseCase: apiService.enhancedChatUseCase,
       enhancedChatTaskPlanning: apiService.enhancedChatTaskPlanning,
+      enhancedChatGoalTracking: apiService.enhancedChatGoalTracking,
+      enhancedChatFocusSessions: apiService.enhancedChatFocusSessions,
+      enhancedChatNoteAnalysis: apiService.enhancedChatNoteAnalysis,
+      enhancedChatQuickQuestion: apiService.enhancedChatQuickQuestion,
       enhancedChatDeepAnalysis: apiService.enhancedChatDeepAnalysis,
       enhancedChatSearch: apiService.enhancedChatSearch,
       getEnhancedChatContextStats: apiService.getEnhancedChatContextStats,
+      getEnhancedChatMessages: apiService.getEnhancedChatMessages,
+      getEnhancedChatMessagesByChat: apiService.getEnhancedChatMessagesByChat,
+      getEnhancedChatMessageStats: apiService.getEnhancedChatMessageStats,
+      deleteEnhancedChatMessage: apiService.deleteEnhancedChatMessage,
+      deleteEnhancedChatMessages: apiService.deleteEnhancedChatMessages,
+      updateEnhancedChatEmbeddings: apiService.updateEnhancedChatEmbeddings,
     };
   }, [jwtToken]);
 
