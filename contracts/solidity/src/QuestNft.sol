@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
@@ -14,9 +15,12 @@ import "@openzeppelin/contracts/utils/Base64.sol";
  * - AI mentor feedback integration
  * - Difficulty levels and XP rewards
  * - Quest categories and rarity
+ * - AccessControl for quest admin
  */
-contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
+contract QuestNFT is ERC721, ERC721URIStorage, Ownable, AccessControl {
     using Base64 for bytes;
+    
+    bytes32 public constant QUEST_ADMIN_ROLE = keccak256("QUEST_ADMIN_ROLE");
     
     // Structs
     struct Quest {
@@ -91,10 +95,12 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
         rarityMultipliers[QuestRarity.Rare] = 5;
         rarityMultipliers[QuestRarity.Epic] = 10;
         rarityMultipliers[QuestRarity.Legendary] = 25;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(QUEST_ADMIN_ROLE, msg.sender);
     }
     
     /**
-     * @dev Mint a new quest NFT
+     * @dev Mint a new quest NFT (only QUEST_ADMIN_ROLE)
      * @param to Address to mint the quest to
      * @param name Quest name
      * @param description Quest description
@@ -113,7 +119,7 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
         QuestCategory category,
         QuestRarity rarity,
         uint256 timeLimit
-    ) external onlyOwner returns (uint256) {
+    ) external onlyRole(QUEST_ADMIN_ROLE) returns (uint256) {
         require(to != address(0), "Invalid recipient address");
         require(difficulty >= 1 && difficulty <= 10, "Invalid difficulty");
         require(userQuestCount[to] < MAX_QUESTS_PER_USER, "Too many quests");
@@ -149,14 +155,14 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
     }
     
     /**
-     * @dev Complete a quest
+     * @dev Complete a quest (only QUEST_ADMIN_ROLE)
      * @param tokenId Quest token ID
      * @param aiFeedback AI mentor feedback
      */
     function completeQuest(
         uint256 tokenId,
         string memory aiFeedback
-    ) external onlyOwner {
+    ) external onlyRole(QUEST_ADMIN_ROLE) {
         require(_exists(tokenId), "Quest does not exist");
         require(!quests[tokenId].isCompleted, "Quest already completed");
         require(!_isQuestExpired(tokenId), "Quest has expired");
@@ -225,7 +231,7 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
         
         return string(abi.encodePacked(
             "data:application/json;base64,",
-            json.encode()
+            Base64.encode(bytes(json))
         ));
     }
     
@@ -349,8 +355,15 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
     /**
      * @dev Override tokenURI to use our custom metadata
      */
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override(ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
+    }
+    
+    /**
+     * @dev Override supportsInterface for AccessControl compatibility
+     */
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
     
     /**
@@ -362,9 +375,15 @@ contract QuestNFT is ERC721, ERC721URIStorage, Ownable {
     }
     
     /**
-     * @dev Override supportsInterface
+     * @dev Grant QUEST_ADMIN_ROLE (only owner)
      */
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
-        return super.supportsInterface(interfaceId);
+    function grantQuestAdmin(address account) external onlyOwner {
+        _grantRole(QUEST_ADMIN_ROLE, account);
+    }
+    /**
+     * @dev Revoke QUEST_ADMIN_ROLE (only owner)
+     */
+    function revokeQuestAdmin(address account) external onlyOwner {
+        _revokeRole(QUEST_ADMIN_ROLE, account);
     }
 }

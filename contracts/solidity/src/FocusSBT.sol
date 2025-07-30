@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
  * @title FocusSBT
@@ -223,7 +224,7 @@ contract FocusSBT is ERC721, ERC721URIStorage, Ownable {
         
         return string(abi.encodePacked(
             "data:application/json;base64,",
-            json.encode()
+            Base64.encode(bytes(json))
         ));
     }
     
@@ -281,7 +282,7 @@ contract FocusSBT is ERC721, ERC721URIStorage, Ownable {
         address to,
         uint256 firstTokenId,
         uint256 batchSize
-    ) internal virtual override(ERC721, ERC721URIStorage) {
+    ) internal virtual override(ERC721URIStorage) {
         require(from == address(0) || to == address(0), "Soulbound: transfer not allowed");
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
@@ -289,8 +290,15 @@ contract FocusSBT is ERC721, ERC721URIStorage, Ownable {
     /**
      * @dev Override tokenURI to use our custom metadata
      */
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    function tokenURI(uint256 tokenId) public view override(ERC721URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
+    }
+    
+    /**
+     * @dev Override supportsInterface for AccessControl compatibility
+     */
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
     
     /**
@@ -316,7 +324,7 @@ contract FocusSBT is ERC721, ERC721URIStorage, Ownable {
     /**
      * @dev Override supportsInterface
      */
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721URIStorage, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }

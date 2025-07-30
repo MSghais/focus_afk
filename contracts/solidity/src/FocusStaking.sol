@@ -4,15 +4,20 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
  * @title FocusStaking
  * @dev Staking contract for FOCUS tokens with focus-based rewards
+ * - Only OPERATOR_ROLE can record focus sessions
+ * - Owner can grant/revoke operator role
  */
-contract FocusStaking is Ownable, ReentrancyGuard {
+contract FocusStaking is Ownable, AccessControl, ReentrancyGuard {
     using SafeERC20 for IERC20;
+    
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     
     // Structs
     struct Staker {
@@ -65,6 +70,8 @@ contract FocusStaking is Ownable, ReentrancyGuard {
         focusToken = IERC20(_focusToken);
         stakingPool.rewardRate = REWARD_PER_MINUTE;
         stakingPool.lastUpdateTime = block.timestamp;
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(OPERATOR_ROLE, msg.sender);
     }
     
     /**
@@ -121,11 +128,11 @@ contract FocusStaking is Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Record focus session and calculate rewards (only authorized operators)
+     * @dev Record focus session and calculate rewards (only OPERATOR_ROLE)
      * @param user Address of the user
      * @param sessionMinutes Duration of focus session in minutes
      */
-    function recordFocusSession(address user, uint256 sessionMinutes) external onlyAuthorized updateRewards(user) {
+    function recordFocusSession(address user, uint256 sessionMinutes) external onlyRole(OPERATOR_ROLE) updateRewards(user) {
         require(sessionMinutes > 0 && sessionMinutes <= MAX_FOCUS_SESSION, "Invalid session duration");
         require(user != address(0), "Invalid user address");
         
@@ -153,6 +160,19 @@ contract FocusStaking is Ownable, ReentrancyGuard {
     function setOperator(address operator, bool authorized) external onlyOwner {
         authorizedOperators[operator] = authorized;
         emit OperatorAuthorized(operator, authorized);
+    }
+    
+    /**
+     * @dev Grant OPERATOR_ROLE (only owner)
+     */
+    function grantOperator(address account) external onlyOwner {
+        _grantRole(OPERATOR_ROLE, account);
+    }
+    /**
+     * @dev Revoke OPERATOR_ROLE (only owner)
+     */
+    function revokeOperator(address account) external onlyOwner {
+        _revokeRole(OPERATOR_ROLE, account);
     }
     
     /**
