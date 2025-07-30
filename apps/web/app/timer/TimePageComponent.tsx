@@ -27,13 +27,13 @@ export default function TimePageComponent() {
             {isViewChatAi && <ChatAi isSelectMentorViewEnabled={true}></ChatAi>}
             
             {/* Achievement Notifications */}
-            {notifications.map((achievementId) => (
+            {/* {notifications.map((achievementId) => (
                 <AchievementToast
                     key={achievementId}
                     achievementId={achievementId}
                     onClose={() => removeNotification(achievementId)}
                 />
-            ))}
+            ))} */}
         </div>
     )
 }
