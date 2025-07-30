@@ -4,25 +4,15 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 /**
- * @title FocusToken
+ * @title FocusToken (MVP)
  * @dev ERC20 token for the Focus AFK platform
- * Features:
- * - Mintable by MINTER_ROLE
- * - Burnable by token holders
- * - Permit functionality for gasless approvals
- * - Used for rewards, staking, and platform governance
  */
-contract FocusToken is ERC20, ERC20Burnable, Ownable, AccessControl, ERC20Permit {
+contract FocusToken is ERC20, ERC20Burnable, Ownable {
     
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
     // Events
     event TokensMinted(address indexed to, uint256 amount, string reason);
-    event TokensBurned(address indexed from, uint256 amount, string reason);
     
     // Constants
     uint256 public constant INITIAL_SUPPLY = 1_000_000 * 10**18; // 1 million tokens
@@ -31,20 +21,14 @@ contract FocusToken is ERC20, ERC20Burnable, Ownable, AccessControl, ERC20Permit
     constructor() 
         ERC20("Focus AFK Token", "FOCUS") 
         Ownable(msg.sender)
-        ERC20Permit("Focus AFK Token")
     {
         _mint(msg.sender, INITIAL_SUPPLY);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
     }
     
     /**
-     * @dev Mint new tokens (only MINTER_ROLE)
-     * @param to Address to mint tokens to
-     * @param amount Amount of tokens to mint
-     * @param reason Reason for minting (for tracking)
+     * @dev Mint new tokens (only owner)
      */
-    function mint(address to, uint256 amount, string memory reason) external onlyRole(MINTER_ROLE) {
+    function mint(address to, uint256 amount, string memory reason) external onlyOwner {
         require(totalSupply() + amount <= MAX_SUPPLY, "Exceeds max supply");
         require(to != address(0), "Cannot mint to zero address");
         
@@ -53,12 +37,9 @@ contract FocusToken is ERC20, ERC20Burnable, Ownable, AccessControl, ERC20Permit
     }
     
     /**
-     * @dev Mint tokens for focus session completion (only MINTER_ROLE)
-     * @param user Address of the user
-     * @param sessionMinutes Focus session duration in minutes
-     * @param streak Current streak days
+     * @dev Mint tokens for focus session completion (only owner)
      */
-    function mintFocusReward(address user, uint256 sessionMinutes, uint256 streak) external onlyRole(MINTER_ROLE) {
+    function mintFocusReward(address user, uint256 sessionMinutes, uint256 streak) external onlyOwner {
         require(user != address(0), "Invalid user address");
         
         // Calculate reward based on session duration and streak
@@ -70,46 +51,5 @@ contract FocusToken is ERC20, ERC20Burnable, Ownable, AccessControl, ERC20Permit
         
         _mint(user, totalReward);
         emit TokensMinted(user, totalReward, "Focus Session Reward");
-    }
-    
-    /**
-     * @dev Burn tokens with reason
-     * @param amount Amount of tokens to burn
-     * @param reason Reason for burning
-     */
-    function burnWithReason(uint256 amount, string memory reason) external {
-        _burn(msg.sender, amount);
-        emit TokensBurned(msg.sender, amount, reason);
-    }
-    
-    /**
-     * @dev Grant MINTER_ROLE (only owner)
-     */
-    function grantMinter(address account) external onlyOwner {
-        _grantRole(MINTER_ROLE, account);
-    }
-    /**
-     * @dev Revoke MINTER_ROLE (only owner)
-     */
-    function revokeMinter(address account) external onlyOwner {
-        _revokeRole(MINTER_ROLE, account);
-    }
-    /**
-     * @dev Get token info
-     */
-    function getTokenInfo() external view returns (
-        string memory name,
-        string memory symbol,
-        uint256 totalSupply_,
-        uint256 maxSupply,
-        uint256 decimals_
-    ) {
-        return (
-            name(),
-            symbol(),
-            totalSupply(),
-            MAX_SUPPLY,
-            decimals()
-        );
     }
 } 
