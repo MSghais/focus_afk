@@ -339,6 +339,8 @@ export default function TimerDeepFocus({
 
 
             {/* Quest Progress Bar */}
+            {/* XP and Level Progress */}
+
             <div className="w-full max-w-md">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                     <span>Quest Progress</span>
@@ -351,8 +353,7 @@ export default function TimerDeepFocus({
                     ></div>
                 </div>
             </div>
-
-            {/* XP and Level Progress */}
+{/* 
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center space-x-2">
@@ -372,7 +373,6 @@ export default function TimerDeepFocus({
                 </div>
             </div>
 
-            {/* Energy Status */}
             <div className="w-full max-w-md bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center space-x-2">
@@ -387,7 +387,7 @@ export default function TimerDeepFocus({
                         style={{ width: `${(energy / maxEnergy) * 100}%` }}
                     ></div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Achievements */}
             {achievements.length > 0 && (
