@@ -5,7 +5,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { useGamificationStore } from '../../../store/gamification';
 import { logClickedEvent } from "../../../lib/analytics";
 import { Task, Goal } from "../../../types";
-import { syncTimerSessionsToBackend } from "../../../lib/timerSync";
+import { syncTimerSessionsToBackend, syncTimerSessionToBackend } from "../../../lib/timerSync";
 import { useUIStore } from "../../../store/uiStore";
 
 function formatTime(seconds: number) {
@@ -110,6 +110,7 @@ export default function TimerGoal({
         // Consume energy for focus training
         consumeEnergy(5);
 
+        console.log('TimerGoals - Starting timer with:', { selectedTaskId, selectedGoalId, duration });
         await startTimer(duration, selectedTaskId, selectedGoalId);
     };
 
@@ -296,7 +297,12 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2 text-gray-300">Select Task (Optional)</label>
                         <select
                             value={selectedTaskId || ''}
-                            onChange={(e) => setSelectedTaskId(e.target.value ? e.target.value : undefined)}
+                            onChange={(e) => {
+                                const value = e.target.value ? e.target.value : undefined;
+                                console.log('TimerGoals - Task selected:', value);
+                                setSelectedTaskId(value);
+                                logClickedEvent('timer_goals_select_task', 'task', e.target.value);
+                            }}
                             className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                             <option value="">No specific task</option>
@@ -312,7 +318,12 @@ export default function TimerGoal({
                         <label className="block text-sm font-medium mb-2 text-gray-300">Select Goal (Optional)</label>
                         <select
                             value={selectedGoalId || ''}
-                            onChange={(e) => setSelectedGoalId(e.target.value ? e.target.value : undefined)}
+                            onChange={(e) => {
+                                const value = e.target.value ? e.target.value : undefined;
+                                console.log('TimerGoals - Goal selected:', value);
+                                setSelectedGoalId(value);
+                                logClickedEvent('timer_goals_select_goal', 'goal', e.target.value);
+                            }}
                             className="w-full p-3 border border-gray-600 rounded-lg bg-gray-800 text-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         >
                             <option value="">No specific goal</option>
