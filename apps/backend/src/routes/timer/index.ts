@@ -13,7 +13,15 @@ const TimerSessionSchema = z.object({
   goalId: z.string().optional(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  duration: z.number().positive().optional(),
+  duration: z.number().min(0).optional(), // Allow 0 for sessions that haven't started yet
+  activities: z.array(z.string()).optional(),
+  persons: z.array(z.string()).optional(),
+  location: z.string().optional(),
+  weather: z.string().optional(),
+  mood: z.string().optional(),
+  energyLevel: z.string().optional(),
+  productivityLevel: z.string().optional(),
+  metadata: z.any().optional(),
 }).partial();
 
 async function timerRoutes(fastify: FastifyInstance) {
@@ -78,12 +86,35 @@ async function timerRoutes(fastify: FastifyInstance) {
       }
 
       const body = TimerSessionSchema.safeParse(request.body);
-      console.log("body error", body?.error);
       if (!body.success) {
-        return reply.code(400).send({ error: 'Invalid session data' });
+        console.log("Validation error:", body.error);
+        return reply.code(400).send({ 
+          error: 'Invalid session data', 
+          details: body.error.issues 
+        });
       }
 
       const sessionData = request.body as z.infer<typeof TimerSessionSchema>;
+
+      // Validate taskId exists if provided
+      if (sessionData.taskId) {
+        const task = await fastify.prisma.task.findFirst({
+          where: { id: sessionData.taskId, userId }
+        });
+        if (!task) {
+          return reply.code(400).send({ error: 'Task not found or does not belong to user' });
+        }
+      }
+
+      // Validate goalId exists if provided
+      if (sessionData.goalId) {
+        const goal = await fastify.prisma.goal.findFirst({
+          where: { id: sessionData.goalId, userId }
+        });
+        if (!goal) {
+          return reply.code(400).send({ error: 'Goal not found or does not belong to user' });
+        }
+      }
 
       const data: any = {
         userId,
@@ -93,9 +124,18 @@ async function timerRoutes(fastify: FastifyInstance) {
         duration: sessionData.duration || 0,
         note: sessionData.notes, // Map notes to note field in database
         completed: sessionData.completed !== undefined ? sessionData.completed : false,
-        // Only add these if they are defined
+        // Only add these if they are defined and validated
         ...(sessionData.taskId ? { taskId: sessionData.taskId } : {}),
         ...(sessionData.goalId ? { goalId: sessionData.goalId } : {}),
+        // Add optional fields if provided
+        activities: sessionData.activities || [],
+        persons: sessionData.persons || [],
+        ...(sessionData.location ? { location: sessionData.location } : {}),
+        ...(sessionData.weather ? { weather: sessionData.weather } : {}),
+        ...(sessionData.mood ? { mood: sessionData.mood } : {}),
+        ...(sessionData.energyLevel ? { energyLevel: sessionData.energyLevel } : {}),
+        ...(sessionData.productivityLevel ? { productivityLevel: sessionData.productivityLevel } : {}),
+        ...(sessionData.metadata ? { metadata: sessionData.metadata } : {}),
       };
 
       const session = await fastify.prisma.timerSession.create({ data });
@@ -103,6 +143,15 @@ async function timerRoutes(fastify: FastifyInstance) {
       return reply.code(201).send({ success: true, data: session });
     } catch (error) {
       request.log.error(error);
+      
+      // Handle Prisma foreign key constraint errors
+      if (error.code === 'P2003') {
+        return reply.code(400).send({ 
+          error: 'Foreign key constraint violation',
+          message: 'The referenced task or goal does not exist'
+        });
+      }
+      
       return reply.code(500).send({ error: 'Internal server error' });
     }
   });
