@@ -10,6 +10,8 @@ The enhanced context system provides:
 2. **Use Case Optimization**: Predefined contexts for different scenarios
 3. **Hybrid Context**: Combines vector search with traditional database queries
 4. **Flexible Configuration**: Customizable context sources and search parameters
+5. **Message Persistence**: Automatic saving of conversations to database
+6. **Message Management**: Retrieve, filter, and manage conversation history
 
 ## Architecture
 
@@ -17,6 +19,8 @@ The enhanced context system provides:
 User Query → EnhancedContextManager → Vector Search (Pinecone) + Traditional Context (Database)
                                     ↓
                               Enhanced Prompt → AI Model → Response
+                                    ↓
+                              Message Persistence → Database (Chat + Messages)
 ```
 
 ## Use Cases
@@ -240,6 +244,43 @@ Content-Type: application/json
 }
 ```
 
+#### 13. Get All Messages
+```http
+GET /enhanced-chat/messages?limit=50&offset=0&chatId=chat-123&useCase=task_planning
+Authorization: Bearer <token>
+```
+
+#### 14. Get Messages for Specific Chat
+```http
+GET /enhanced-chat/messages/chat/chat-123?limit=50&offset=0
+Authorization: Bearer <token>
+```
+
+#### 15. Get Message Statistics
+```http
+GET /enhanced-chat/messages/stats
+Authorization: Bearer <token>
+```
+
+#### 16. Delete Specific Message
+```http
+DELETE /enhanced-chat/messages/message-123
+Authorization: Bearer <token>
+```
+
+#### 17. Delete Messages (with filters)
+```http
+DELETE /enhanced-chat/messages
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "chatId": "chat-123",
+  "useCase": "task_planning",
+  "beforeDate": "2024-01-01"
+}
+```
+
 ## Response Format
 
 All endpoints return responses in this format:
@@ -262,6 +303,52 @@ All endpoints return responses in this format:
   }
 }
 ```
+
+## Message Persistence
+
+### Automatic Message Saving
+
+All chat endpoints automatically save conversations to the database when `saveToChat` is enabled (default: true). Messages are saved with rich metadata including:
+
+- **Use Case**: The specific use case used for the conversation
+- **Vector Search Info**: Whether vector search was used and results count
+- **Context Sources**: Which data sources were included
+- **Model Information**: AI model used and token usage
+- **Session Data**: Session ID and additional context
+
+### Message Structure
+
+```json
+{
+  "id": "message-id",
+  "userId": "user-id",
+  "chatId": "chat-id",
+  "mentorId": "mentor-id",
+  "role": "user|assistant|system",
+  "content": "Message content",
+  "prompt": "Original user prompt",
+  "model": "openai/gpt-4o-mini",
+  "tokens": 150,
+  "metadata": {
+    "useCase": "task_planning",
+    "vectorSearchUsed": true,
+    "contextSources": ["tasks", "goals"],
+    "vectorResultsCount": 3,
+    "totalContextSize": 2048,
+    "extraData": { "currentTask": "Working on project" }
+  },
+  "createdAt": "2024-01-15T10:30:00Z"
+}
+```
+
+### Chat Organization
+
+Messages are automatically organized into chats based on:
+- **Mentor-specific chats**: When a mentorId is provided
+- **Use case chats**: When no mentor is specified
+- **Session-based chats**: When a sessionId is provided
+
+Each chat includes metadata about the conversation type and context used.
 
 ## Environment Variables
 
@@ -364,6 +451,72 @@ const response = await fetch('/enhanced-chat/chat/use-case', {
 
 const result = await response.json();
 console.log(result.text); // Comprehensive analysis and recommendations
+```
+
+### Example 4: Retrieve Messages
+```javascript
+// Get all messages for a user
+const messagesResponse = await fetch('/enhanced-chat/messages?limit=20&useCase=task_planning', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const messagesData = await messagesResponse.json();
+console.log(messagesData.messages); // Array of messages
+console.log(messagesData.pagination); // Pagination info
+
+// Get messages for a specific chat
+const chatMessagesResponse = await fetch('/enhanced-chat/messages/chat/chat-123?limit=50', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const chatData = await chatMessagesResponse.json();
+console.log(chatData.chat); // Chat information
+console.log(chatData.messages); // Messages in chronological order
+
+// Get message statistics
+const statsResponse = await fetch('/enhanced-chat/messages/stats', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+const statsData = await statsResponse.json();
+console.log(statsData.totalMessages); // Total message count
+console.log(statsData.useCaseStats); // Messages by use case
+```
+
+### Example 5: Message Management
+```javascript
+// Delete a specific message
+const deleteResponse = await fetch('/enhanced-chat/messages/message-123', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+
+// Delete messages with filters
+const deleteManyResponse = await fetch('/enhanced-chat/messages', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    useCase: 'quick_question',
+    beforeDate: '2024-01-01'
+  })
+});
+
+const deleteResult = await deleteManyResponse.json();
+console.log(deleteResult.deletedCount); // Number of deleted messages
 ```
 
 ## Best Practices
