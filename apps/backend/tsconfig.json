@@ -27,7 +27,6 @@
     "**/*.js",
   ],
   "paths": {
-    "indexer-prisma": ["packages/indexer-prisma/src"],
-    "common": ["packages/common/src"]
+    "common": ["packages/common/"]
   }
 }
