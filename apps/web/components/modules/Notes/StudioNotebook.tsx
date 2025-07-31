@@ -22,13 +22,15 @@ export default function StudioNotebook({
 
     const { showToast } = useUIStore();
 
-    const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-    const [audioData, setAudioData] = useState<Blob | null>(null);
+        const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+    const [audioData, setAudioData] = useState<Blob | null>(null);      
     const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
     const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [audioDuration, setAudioDuration] = useState<number>(0);
     const [audioProgress, setAudioProgress] = useState<number>(0);
+    const [audioLoadError, setAudioLoadError] = useState<string | null>(null);
+    const [hasAudioData, setHasAudioData] = useState<boolean>(false);
 
     const aiAudioRef = useRef<HTMLAudioElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -86,6 +88,9 @@ export default function StudioNotebook({
         logClickedEvent("studio_notebook_generate_summary_audio");
         
         setIsGeneratingAudio(true);
+        setAudioLoadError(null);
+        setHasAudioData(false);
+        
         showToast({
             message: 'Generating audio summary',
             description: 'Please wait while we generate the summary audio',
@@ -101,27 +106,70 @@ export default function StudioNotebook({
             console.log('Audio blob size:', audioBlob.size);
             console.log('Audio blob type:', audioBlob.type);
             
-            const audioUrl = URL.createObjectURL(audioBlob);
-            console.log('Audio URL created:', audioUrl);
+            // Validate the audio blob
+            if (!audioBlob || audioBlob.size === 0) {
+                throw new Error('Received empty audio data');
+            }
             
             // Clean up previous audio URL if it exists
             if (currentAudioUrl) {
                 URL.revokeObjectURL(currentAudioUrl);
             }
             
+            const audioUrl = URL.createObjectURL(audioBlob);
+            console.log('Audio URL created:', audioUrl);
+            
+            // Set audio data immediately so the player shows up
+            setAudioData(audioBlob);
+            setHasAudioData(true);
             setCurrentAudioUrl(audioUrl);
             
-            // Set the audio source and play it
+            // Set the audio source and load it
             if (aiAudioRef.current) {
+                console.log('Setting audio source:', audioUrl);
+                
+                // Reset audio element state
+                aiAudioRef.current.pause();
+                aiAudioRef.current.currentTime = 0;
                 aiAudioRef.current.src = audioUrl;
+                
+                // Verify the src was set
+                console.log('Audio src after setting:', aiAudioRef.current.src);
+                
+                // Load the audio
                 aiAudioRef.current.load();
-                aiAudioRef.current.play().catch(err => {
-                    console.error('Error playing audio:', err);
-                    showToast({
-                        message: 'Error playing audio',
-                        type: 'error'
-                    });
-                });
+                
+                // Add event listeners to track loading
+                const audio = aiAudioRef.current;
+                const handleLoadStart = () => console.log('Audio load started');
+                const handleCanPlay = () => console.log('Audio can play');
+                const handleLoadedData = () => console.log('Audio data loaded');
+                const handleLoadedMetadata = () => console.log('Audio metadata loaded');
+                
+                audio.addEventListener('loadstart', handleLoadStart);
+                audio.addEventListener('canplay', handleCanPlay);
+                audio.addEventListener('loadeddata', handleLoadedData);
+                audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+                
+                // Try to play the audio after a short delay to ensure it's loaded
+                setTimeout(async () => {
+                    try {
+                        console.log('Attempting to play audio, src:', audio.src);
+                        console.log('Audio ready state:', audio.readyState);
+                        if (aiAudioRef.current) {
+                            await aiAudioRef.current.play();
+                        }
+                    } catch (playError) {
+                        console.error('Error playing audio:', playError);
+                        // Don't throw error here, just log it - user can still click play button
+                    } finally {
+                        // Clean up event listeners
+                        audio.removeEventListener('loadstart', handleLoadStart);
+                        audio.removeEventListener('canplay', handleCanPlay);
+                        audio.removeEventListener('loadeddata', handleLoadedData);
+                        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                    }
+                }, 1000);
             }
 
             showToast({
@@ -130,6 +178,7 @@ export default function StudioNotebook({
             });
         } catch (error) {
             console.error('Error generating audio summary:', error);
+            setAudioLoadError(error instanceof Error ? error.message : 'Unknown error');
             showToast({
                 message: 'Failed to generate audio summary',
                 description: error instanceof Error ? error.message : 'Unknown error',
@@ -153,6 +202,7 @@ export default function StudioNotebook({
 
     const handleAudioPlay = () => {
         setIsAudioPlaying(true);
+        setAudioLoadError(null);
     };
 
     const handleAudioPause = () => {
@@ -168,11 +218,27 @@ export default function StudioNotebook({
 
     const handleAudioLoadedMetadata = () => {
         if (aiAudioRef.current) {
+            console.log('Audio metadata loaded in handler - duration:', aiAudioRef.current.duration);
             setAudioDuration(aiAudioRef.current.duration);
+            setAudioLoadError(null);
         }
     };
 
+    const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+        console.error('Audio error in handler:', e);
+        const target = e.target as HTMLAudioElement;
+        console.error('Audio error details:', {
+            error: target.error,
+            networkState: target.networkState,
+            readyState: target.readyState,
+            src: target.src
+        });
+        setAudioLoadError('Failed to load audio file');
+        setIsAudioPlaying(false);
+    };
+
     const formatTime = (time: number) => {
+        if (isNaN(time)) return '0:00';
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -188,6 +254,63 @@ export default function StudioNotebook({
             setAudioProgress(newTime);
         }
     };
+
+    const handlePlayPause = () => {
+        if (aiAudioRef.current) {
+            console.log('Play/Pause clicked. Current src:', aiAudioRef.current.src);
+            console.log('Current audio URL state:', currentAudioUrl);
+            
+            if (isAudioPlaying) {
+                aiAudioRef.current.pause();
+            } else {
+                // Ensure the audio element has the correct source
+                if (currentAudioUrl && aiAudioRef.current.src !== currentAudioUrl) {
+                    console.log('Fixing audio src from', aiAudioRef.current.src, 'to', currentAudioUrl);
+                    aiAudioRef.current.src = currentAudioUrl;
+                    aiAudioRef.current.load();
+                }
+                
+                // Check if audio is ready to play
+                if (aiAudioRef.current.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+                    aiAudioRef.current.play().catch(err => {
+                        console.error('Error playing audio:', err);
+                        setAudioLoadError('Failed to play audio');
+                        showToast({
+                            message: 'Error playing audio',
+                            type: 'error'
+                        });
+                    });
+                } else {
+                    // Audio not ready, try to load it first
+                    console.log('Audio not ready, loading first. Ready state:', aiAudioRef.current.readyState);
+                    aiAudioRef.current.load();
+                    aiAudioRef.current.play().catch(err => {
+                        console.error('Error playing audio after load:', err);
+                        setAudioLoadError('Audio not ready to play');
+                        showToast({
+                            message: 'Audio not ready to play',
+                            type: 'error'
+                        });
+                    });
+                }
+            }
+        }
+    };
+
+    const handleRetry = () => {
+        setAudioLoadError(null);
+        setHasAudioData(false);
+        handleGenerateSummaryAudio();
+    };
+
+    // Configure audio element when URL changes
+    useEffect(() => {
+        if (currentAudioUrl && aiAudioRef.current) {
+            console.log('useEffect: Setting audio src to:', currentAudioUrl);
+            aiAudioRef.current.src = currentAudioUrl;
+            aiAudioRef.current.load();
+        }
+    }, [currentAudioUrl]);
 
     // Cleanup audio URL on unmount
     useEffect(() => {
@@ -277,7 +400,7 @@ export default function StudioNotebook({
             </div>
 
             {/* Audio Player */}
-            {currentAudioUrl && (
+            {hasAudioData && (
                 <div className="rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center">
@@ -291,11 +414,41 @@ export default function StudioNotebook({
                         </div>
                     </div>
 
+                    {/* Error Display */}
+                    {audioLoadError && (
+                        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-4 h-4 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="text-sm text-red-700 dark:text-red-300">{audioLoadError}</span>
+                                </div>
+                                <button
+                                    onClick={handleRetry}
+                                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 underline"
+                                >
+                                    Retry
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Custom Audio Player */}
                     <div className="space-y-4">
+                        {/* Loading State */}
+                        {isGeneratingAudio && (
+                            <div className="flex items-center justify-center py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Loading audio...</span>
+                                </div>
+                            </div>
+                        )}
+                        
                         {/* Progress Bar */}
                         <div 
-                            className="w-full h-2  rounded-full cursor-pointer overflow-hidden"
+                            className="w-full h-2 rounded-full cursor-pointer overflow-hidden bg-gray-200 dark:bg-gray-700"
                             onClick={handleSeek}
                         >
                             <div 
@@ -308,25 +461,48 @@ export default function StudioNotebook({
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <button
-                                    onClick={() => aiAudioRef.current?.play()}
-                                    className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-all duration-200 shadow-lg"
+                                    onClick={handlePlayPause}
+                                    disabled={isGeneratingAudio}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-200 shadow-lg ${
+                                        isGeneratingAudio 
+                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                            : 'bg-blue-600 hover:bg-blue-700'
+                                    }`}
                                 >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9-15-9z" />
-                                    </svg>
-                                </button>
-                                <button
-                                    onClick={() => aiAudioRef.current?.pause()}
-                                    className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-200"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    {isGeneratingAudio ? (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : isAudioPlaying ? (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9-15-9z" />
+                                        </svg>
+                                    )}
                                 </button>
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {formatTime(audioProgress)} / {formatTime(audioDuration)}
                             </div>
+                            <button
+                                onClick={() => {
+                                    if (aiAudioRef.current) {
+                                        console.log('Audio element state:', {
+                                            src: aiAudioRef.current.src,
+                                            readyState: aiAudioRef.current.readyState,
+                                            networkState: aiAudioRef.current.networkState,
+                                            duration: aiAudioRef.current.duration,
+                                            currentTime: aiAudioRef.current.currentTime,
+                                            paused: aiAudioRef.current.paused,
+                                            ended: aiAudioRef.current.ended
+                                        });
+                                    }
+                                }}
+                                className="text-xs text-gray-400 hover:text-gray-600 underline"
+                            >
+                                Debug
+                            </button>
                         </div>
                     </div>
 
@@ -337,6 +513,7 @@ export default function StudioNotebook({
                         onPause={handleAudioPause}
                         onTimeUpdate={handleAudioTimeUpdate}
                         onLoadedMetadata={handleAudioLoadedMetadata}
+                        onError={handleAudioError}
                         className="hidden"
                     />
                 </div>

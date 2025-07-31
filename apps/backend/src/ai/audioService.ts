@@ -83,8 +83,15 @@ export class AudioService {
   }
 
 
-  async createAudioStreamFromText(text: string): Promise<Buffer | undefined> {
+  async createAudioStreamFromText(inputs: AudioServiceInputs  ): Promise<Buffer | undefined> {
     try {
+      const { model, systemPrompt, prompt, userId, mentorId, sessionId, enableMemory, contextSources, includeHistory } = inputs;
+
+      if (!prompt) {
+        return undefined;
+      }
+
+      const text = prompt;
       const audioStream = await elevenlabs.textToSpeech.stream('JBFqnCBsd6RMkjVDRZzb', {
         modelId: 'eleven_multilingual_v2',
         text,

@@ -1226,7 +1226,9 @@ class ApiService {
     // Check if response is audio content
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('audio/')) {
-      return await response.blob();
+      // Convert the response to a blob
+      const arrayBuffer = await response.arrayBuffer();
+      return new Blob([arrayBuffer], { type: 'audio/mpeg' });
     } else {
       // Handle JSON error response
       const errorData = await response.json();
@@ -1259,7 +1261,9 @@ class ApiService {
     // Check if response is audio content
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('audio/')) {
-      return await response.blob();
+      // Convert the response to a blob
+      const arrayBuffer = await response.arrayBuffer();
+      return new Blob([arrayBuffer], { type: 'audio/mpeg' });
     } else {
       // Handle JSON error response
       const errorData = await response.json();

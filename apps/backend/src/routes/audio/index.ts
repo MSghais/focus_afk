@@ -81,7 +81,7 @@ async function audioRoutes(fastify: FastifyInstance) {
       }        
 
       const audioService = new AudioService(fastify.prisma);
-      const audio = await audioService.generateAudio({
+        const audio = await audioService.createAudioStreamFromText({
         model: 'openai/tts',
         prompt: audioPrompt,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
@@ -186,7 +186,7 @@ async function audioRoutes(fastify: FastifyInstance) {
       }
 
       const audioService = new AudioService(fastify.prisma);
-      const audio = await audioService.generateAudio({
+      const audio = await audioService.createAudioStreamFromText({
         model: 'openai/tts',
         prompt: audioPrompt,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
