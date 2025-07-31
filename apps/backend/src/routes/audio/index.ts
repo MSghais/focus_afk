@@ -94,12 +94,16 @@ async function audioRoutes(fastify: FastifyInstance) {
         return reply.code(500).send({ message: 'Issue generating audio' });
       }
 
-      return reply.send({
-        data: audio,
-        message: 'Audio generated successfully',
-        status: 'success',
-        statusCode: 200,
-      });
+      // Set proper headers for audio streaming
+      reply.header('Content-Type', 'audio/mpeg');
+      reply.header('Content-Disposition', 'inline; filename="audio-summary.mp3"');
+      reply.header('Cache-Control', 'no-cache');
+      reply.header('Access-Control-Allow-Origin', '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Stream the audio data
+      return reply.send(audio);
 
     }
     catch (error) {
@@ -191,12 +195,20 @@ async function audioRoutes(fastify: FastifyInstance) {
 
       console.log("audio", audio);
 
-      return reply.send({
-        data: audio,
-        message: 'Audio generated successfully',
-        status: 'success',
-        statusCode: 200,
-      });
+      if(!audio) {
+        return reply.code(500).send({ message: 'Issue generating audio' });
+      }
+
+      // Set proper headers for audio streaming
+      reply.header('Content-Type', 'audio/mpeg');
+      reply.header('Content-Disposition', 'inline; filename="audio-summary.mp3"');
+      reply.header('Cache-Control', 'no-cache');
+      reply.header('Access-Control-Allow-Origin', '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Stream the audio data
+      return reply.send(audio);
 
     }
     catch (error) {

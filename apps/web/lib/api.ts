@@ -1219,10 +1219,19 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    return await response.blob();
+    // Check if response is audio content
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('audio/')) {
+      return await response.blob();
+    } else {
+      // Handle JSON error response
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to generate audio');
+    }
   }
 
   async generateTextAudioSummary(text: string): Promise<Blob> {
@@ -1243,10 +1252,19 @@ class ApiService {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    return await response.blob();
+    // Check if response is audio content
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('audio/')) {
+      return await response.blob();
+    } else {
+      // Handle JSON error response
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to generate audio');
+    }
   }
 }
 

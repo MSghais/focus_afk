@@ -95,8 +95,14 @@ export default function StudioNotebook({
 
         try {
             // Call the backend API to generate audio summary
+            console.log('Generating audio for note:', note.id);
             const audioBlob = await api.generateNoteAudioSummary(note.id);
+            console.log('Audio blob received:', audioBlob);
+            console.log('Audio blob size:', audioBlob.size);
+            console.log('Audio blob type:', audioBlob.type);
+            
             const audioUrl = URL.createObjectURL(audioBlob);
+            console.log('Audio URL created:', audioUrl);
             
             // Clean up previous audio URL if it exists
             if (currentAudioUrl) {
