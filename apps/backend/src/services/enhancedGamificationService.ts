@@ -39,7 +39,7 @@ export interface Achievement {
   icon: string;
   category: string;
   earnedAt: Date;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  rarity: string | 'common' | 'rare' | 'epic' | 'legendary';
   xpReward: number;
   tokenReward: number;
 }
@@ -135,11 +135,11 @@ export class EnhancedGamificationService {
    */
   private async handleQuestCompleted(event: GamificationEvent): Promise<void> {
     const { userId, userAddress, data } = event;
-    
+
     // Calculate rewards
     const baseXp = data.rewardXp || 0;
     const baseTokens = data.rewardTokens || 0;
-    
+
     const xpReward = Math.floor(baseXp * this.config.questRewardMultiplier);
     const tokenReward = Math.floor(baseTokens * this.config.questRewardMultiplier);
 
@@ -176,7 +176,7 @@ export class EnhancedGamificationService {
    */
   private async handleStreakUpdated(event: GamificationEvent): Promise<void> {
     const { userId, data } = event;
-    
+
     const newStreak = data.streak || 0;
     const previousStreak = data.previousStreak || 0;
 
@@ -203,7 +203,7 @@ export class EnhancedGamificationService {
    */
   private async handleLevelUp(event: GamificationEvent): Promise<void> {
     const { userId, userAddress, data } = event;
-    
+
     const newLevel = data.newLevel || 1;
     const previousLevel = data.previousLevel || 0;
 
@@ -237,7 +237,7 @@ export class EnhancedGamificationService {
    */
   private async handleBadgeEarned(event: GamificationEvent): Promise<void> {
     const { userId, userAddress, data } = event;
-    
+
     const badgeXp = (data.badgeXp || 0) * this.config.badgeRewardMultiplier;
     const badgeTokens = (data.badgeTokens || 0) * this.config.badgeRewardMultiplier;
 
@@ -263,7 +263,7 @@ export class EnhancedGamificationService {
    */
   private async handleFocusSession(event: GamificationEvent): Promise<void> {
     const { userId, userAddress, data } = event;
-    
+
     const sessionMinutes = data.duration || 0;
     const streak = data.streak || 0;
 
@@ -298,9 +298,9 @@ export class EnhancedGamificationService {
    */
   private async handleTaskCompleted(event: GamificationEvent): Promise<void> {
     const { userId, data } = event;
-    
+
     const taskXp = data.priority === 'high' ? 20 : data.priority === 'medium' ? 15 : 10;
-    
+
     await this.updateUserStats(userId, {
       totalXp: { increment: taskXp }
     });
@@ -314,7 +314,7 @@ export class EnhancedGamificationService {
    */
   private async handleGoalCompleted(event: GamificationEvent): Promise<void> {
     const { userId, userAddress, data } = event;
-    
+
     const goalXp = 100; // Base XP for goal completion
     const goalTokens = 20; // Base tokens for goal completion
 
@@ -398,10 +398,10 @@ export class EnhancedGamificationService {
     if (!user) return;
 
     const totalFocusMinutes = (user.totalFocusMinutes || 0) + sessionMinutes;
+    const previousMinutes = user.totalFocusMinutes || 0;
 
     // Check for focus milestones
     const milestones = [60, 300, 600, 1200, 2400]; // 1h, 5h, 10h, 20h, 40h
-    const previousMinutes = user.totalFocusMinutes || 0;
 
     for (const milestone of milestones) {
       if (totalFocusMinutes >= milestone && previousMinutes < milestone) {
@@ -492,7 +492,7 @@ export class EnhancedGamificationService {
     try {
       // This would integrate with your token contract
       console.log(`Minting ${amount} tokens to ${userAddress} for ${reason}`);
-      
+
       // For now, just log the minting
       // In production, this would call the actual smart contract
     } catch (error) {
@@ -573,16 +573,16 @@ export class EnhancedGamificationService {
       }
     });
 
-    if (!user) return null;
+    if (!user || !user.badges) return null;
 
-    const achievements: Achievement[] = user.badges.map(badge => ({
+    const achievements: Achievement[] = (user.badges as any[]).map(badge => ({
       id: badge.id,
       name: badge.name,
-      description: badge.description,
-      icon: badge.icon,
+      description: badge.description || '',
+      icon: badge.icon || '🏆',
       category: badge.type,
       earnedAt: badge.createdAt,
-      rarity: (badge.rarity as any) || 'common',
+      rarity: badge.rarity || 'common',
       xpReward: badge.xpReward || 0,
       tokenReward: badge.tokenReward || 0
     }));
@@ -606,9 +606,9 @@ export class EnhancedGamificationService {
       currentStreak: user.streak || 0,
       longestStreak: user.longestStreak || 0,
       totalFocusMinutes: user.totalFocusMinutes || 0,
-      completedQuests: user.quests.length,
-      earnedBadges: user.badges.length,
-      totalTokens: 0, // TODO: Get from token contract
+      completedQuests: user.completedQuests || 0,
+      earnedBadges: user.earnedBadges || 0,
+      totalTokens: user.totalTokens || 0,
       achievements,
       recentActivity
     };

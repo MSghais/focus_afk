@@ -439,7 +439,7 @@ export class EnhancedQuestService {
         where: {
           userId: userContext.userId,
           type: template.id,
-          createdAt: {
+          dateAwarded: {
             gte: today
           }
         }
@@ -455,11 +455,11 @@ export class EnhancedQuestService {
             type: template.id,
             isCompleted: 'true'
           },
-          orderBy: { updatedAt: 'desc' }
+          orderBy: { dateAwarded: 'desc' }
         });
 
         if (lastCompletion && 
-            Date.now() - lastCompletion.updatedAt!.getTime() < template.cooldown * 60 * 60 * 1000) {
+            Date.now() - lastCompletion.dateAwarded.getTime() < template.cooldown * 60 * 60 * 1000) {
           continue;
         }
       }
@@ -534,7 +534,7 @@ export class EnhancedQuestService {
         where: {
           userId: userContext.userId,
           type: template.id,
-          createdAt: {
+          dateAwarded: {
             gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
           }
         }

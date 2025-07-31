@@ -16,11 +16,11 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   const enhancedContextManager = new EnhancedContextManager(prisma, pineconeService, memoryManager);
   const gamificationService = new GamificationService(
     prisma,
-    process.env.RPC_URL!,
-    process.env.PRIVATE_KEY!,
-    process.env.FOCUS_TOKEN_ADDRESS!,
-    process.env.QUEST_NFT_ADDRESS!,
-    process.env.FOCUS_SBT_ADDRESS!
+    process.env.BLOCKCHAIN_RPC_URL || '',
+    process.env.BLOCKCHAIN_PRIVATE_KEY || '',
+    process.env.FOCUS_TOKEN_ADDRESS || '',
+    process.env.QUEST_NFT_ADDRESS || '',
+    process.env.FOCUS_SBT_ADDRESS || ''
   );
   
   const questService = new EnhancedQuestService(
@@ -35,11 +35,11 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
     questService,
     pineconeService,
     enhancedContextManager,
-    process.env.RPC_URL!,
-    process.env.PRIVATE_KEY!,
-    process.env.FOCUS_TOKEN_ADDRESS!,
-    process.env.QUEST_NFT_ADDRESS!,
-    process.env.FOCUS_SBT_ADDRESS!
+    process.env.RPC_URL || '',
+    process.env.PRIVATE_KEY || '',
+    process.env.FOCUS_TOKEN_ADDRESS || '',
+    process.env.QUEST_NFT_ADDRESS || '',
+    process.env.FOCUS_SBT_ADDRESS || ''
   );
 
   // Get user's quests with enhanced context

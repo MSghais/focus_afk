@@ -45,10 +45,15 @@ model User {
   userSettings UserSettings?
   embeddingSync EmbeddingSync?
 
-  level Int?
-  totalXp Int?
-  streak Int?
-
+  // Gamification fields
+  level Int? @default(1)
+  totalXp Int? @default(0)
+  streak Int? @default(0)
+  longestStreak Int? @default(0)
+  totalFocusMinutes Int? @default(0)
+  completedQuests Int? @default(0)
+  earnedBadges Int? @default(0)
+  totalTokens Int? @default(0)
 
   // Authentication relations
   sessions Session[]
@@ -345,6 +350,16 @@ model Badge {
   isCompleted String?
   requirements String[]
 
+  // Gamification fields
+  rarity String? @default("common") // common, rare, epic, legendary
+  xpReward Int? @default(0)
+  tokenReward Int? @default(0)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt    DateTime? @default(now())
+  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type], map: "badges_userId_type_idx")
@@ -364,24 +379,19 @@ model Quests {
   name        String
   description String?
   icon        String?  // emoji or icon name
-  dateAwarded DateTime?
+  dateAwarded DateTime @default(now())
+  meta        Json?
   createdAt DateTime @default(now())
   updatedAt  DateTime? @default(now())
   isMinted Boolean @default(false)
-
-
-
-  rewardsTokens Int? @default(0)
-  meta        Json?
-
   nftContractAddress String?
   nftTokenId String?
   imageUrl String?
 
-
   difficulty Int?
 
   rewardXp Int?
+  rewardTokens Int? @default(0)
   rewardBadge String?
   badgeReward String?
   levelRequired Int?

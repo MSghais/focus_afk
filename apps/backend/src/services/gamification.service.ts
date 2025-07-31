@@ -40,11 +40,12 @@ export interface QuestCompletion {
 }
 
 export class GamificationService {
-  private focusToken: ethers.Contract;
-  private questNFT: ethers.Contract;
-  private focusSBT: ethers.Contract;
-  private provider: ethers.Provider;
-  private wallet: ethers.Wallet;
+  private focusToken?: ethers.Contract;
+  private questNFT?: ethers.Contract;
+  private focusSBT?: ethers.Contract;
+  private provider?: ethers.Provider;
+  private wallet?: ethers.Wallet;
+  private blockchainEnabled: boolean = false;
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -54,19 +55,39 @@ export class GamificationService {
     private readonly questNFTAddress: string,
     private readonly focusSBTAddress: string
   ) {
-    this.provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.wallet = new ethers.Wallet(privateKey, this.provider);
-    
-    // Create contract instances using ABIs
-    this.focusToken = new ethers.Contract(focusTokenAddress, FocusTokenABI, this.wallet);
-    this.questNFT = new ethers.Contract(questNFTAddress, QuestNFTABI, this.wallet);
-    this.focusSBT = new ethers.Contract(focusSBTAddress, FocusSBTABI, this.wallet);
+    // Only initialize blockchain components if we have valid credentials
+    if (privateKey && privateKey !== '[ REDACTED ]' && privateKey !== '' && rpcUrl) {
+      try {
+        this.provider = new ethers.JsonRpcProvider(rpcUrl);
+        this.wallet = new ethers.Wallet(privateKey, this.provider);
+        
+        // Create contract instances using ABIs
+        this.focusToken = new ethers.Contract(focusTokenAddress, FocusTokenABI, this.wallet);
+        this.questNFT = new ethers.Contract(questNFTAddress, QuestNFTABI, this.wallet);
+        this.focusSBT = new ethers.Contract(focusSBTAddress, FocusSBTABI, this.wallet);
+        
+        this.blockchainEnabled = true;
+        console.log('✅ Blockchain services initialized successfully');
+      } catch (error) {
+        console.warn('⚠️ Failed to initialize blockchain services:', error.message);
+        console.warn('Continuing with blockchain features disabled');
+        this.blockchainEnabled = false;
+      }
+    } else {
+      console.warn('⚠️ Private key or RPC URL not provided, blockchain features will be disabled');
+      this.blockchainEnabled = false;
+    }
   }
 
   /**
    * Mint SBT for new user (called in background thread)
    */
   async mintSBTForNewUser(userAddress: string, userId: string): Promise<void> {
+    
+    if (!this.blockchainEnabled || !this.provider || !this.focusSBT) {
+      console.log(`⚠️ Blockchain services not available, skipping SBT mint for user: ${userAddress}`);
+      return;
+    }
     
     try {
       console.log(`Minting SBT for new user: ${userAddress}`);
@@ -164,8 +185,8 @@ export class GamificationService {
       badgeId: quest.badgeReward || undefined
     };
 
-    // Mint QuestNFT if quest has NFT reward
-    if (quest.nftContractAddress && quest.nftContractAddress === this.questNFT.target) {
+    // Mint QuestNFT if quest has NFT reward and blockchain is enabled
+    if (this.blockchainEnabled && quest.nftContractAddress && this.questNFT && quest.nftContractAddress === this.questNFT.target) {
       try {
         const tx = await this.questNFT.mintQuest(
           userAddress,
@@ -184,8 +205,8 @@ export class GamificationService {
       }
     }
 
-    // Mint tokens if reward includes tokens
-    if (reward.tokens > 0) {
+    // Mint tokens if reward includes tokens and blockchain is enabled
+    if (this.blockchainEnabled && reward.tokens > 0 && this.focusToken) {
       try {
         const tx = await this.focusToken.mintFocusReward(
           userAddress,
@@ -249,6 +270,11 @@ export class GamificationService {
     sessionMinutes: number, 
     streak: number
   ): Promise<void> {
+    if (!this.blockchainEnabled || !this.focusSBT || !this.focusToken) {
+      console.log(`⚠️ Blockchain services not available, skipping focus stats update for user: ${userAddress}`);
+      return;
+    }
+    
     try {
       // Update SBT stats
       console.log("Updating focus stats:", userAddress, sessionMinutes, streak);
@@ -340,7 +366,7 @@ export class GamificationService {
         requirements: ["streak_7_days"],
         rewardXp: 1000,
         difficulty: 4,
-        nftContractAddress: this.questNFT.target
+        nftContractAddress: this.questNFT?.target || undefined
       }
     ];
 
@@ -470,6 +496,12 @@ export class GamificationService {
       },
       errors: [] as string[]
     };
+
+    if (!this.blockchainEnabled || !this.provider || !this.wallet || !this.focusToken || !this.questNFT || !this.focusSBT) {
+      result.isHealthy = false;
+      result.errors.push('Blockchain services not initialized - private key or RPC URL may be missing');
+      return result;
+    }
 
     console.log("Checking service health:", this.focusToken.target, this.questNFT.target, this.focusSBT.target);
     try {
