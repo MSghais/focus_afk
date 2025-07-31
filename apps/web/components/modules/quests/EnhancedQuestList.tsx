@@ -55,8 +55,8 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
       setError(null);
 
       const [statsResponse, questsResponse] = await Promise.all([
-        api.getEnhancedQuestStats(userId),
-        api.getEnhancedUserQuests(userId)
+        api.getEnhancedQuestStats(),
+        api.getEnhancedUserQuests()
       ]);
 
       if (statsResponse.success && statsResponse.data) {
@@ -67,6 +67,7 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
         setActiveQuests(questsResponse.data.activeQuests || []);
       }
     } catch (err) {
+      console.log('fetchUserData err', err);
       setError('Failed to fetch quest data');
       console.error('Error fetching quest data:', err);
     } finally {
@@ -92,7 +93,7 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
     await fetchUserData(); // Refresh the quest list
   };
 
-  const filteredActiveQuests = activeQuests.filter(quest => 
+  const filteredActiveQuests = activeQuests.filter(quest =>
     selectedCategory === 'all' || (quest.category && quest.category === selectedCategory)
   );
 
@@ -156,13 +157,13 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
     );
   }
 
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.error}>{error}</div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className={styles.container}>
+  //       <div className={styles.error}>{error}</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className={styles.container}>
@@ -180,16 +181,22 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
         </div>
       )}
 
+ 
       {/* Header */}
-      <div className={styles.header}>
-        <h1>🎯 Enhanced Quest System</h1>
-        <button 
+      <div className={styles.header + "gap-2"}>
+        {/* <h1>🎯 Enhanced Quest System</h1> */}
+        <button
           className={styles.createQuestButton}
           onClick={() => setShowQuestCreator(true)}
         >
           🏆 Generate Priority Quests
         </button>
+        <button onClick={() => fetchUserData()}>
+          <Icon name="refresh" />
+        </button>
       </div>
+
+
 
       {/* User Stats */}
       {userStats && (
@@ -227,20 +234,20 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
 
       {/* Action Buttons */}
       <div className={styles.actionButtons}>
-                 <button 
-           className={styles.actionButton}
-           onClick={async () => {
-             try {
-               await api.generateEnhancedQuests(userId, userAddress);
-               await fetchUserData();
-             } catch (err) {
-               setError('Failed to generate quests');
-             }
-           }}
-         >
-           🎲 Generate New Quests
-         </button>
-        <button 
+        <button
+          className={styles.actionButton}
+          onClick={async () => {
+            try {
+              await api.generateEnhancedQuests(userId, userAddress);
+              await fetchUserData();
+            } catch (err) {
+              setError('Failed to generate quests');
+            }
+          }}
+        >
+          🎲 Generate New Quests
+        </button>
+        <button
           className={styles.actionButton}
           onClick={() => api.updateEnhancedQuestProgress(userId)}
         >
@@ -270,11 +277,11 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
       {/* Active Quests */}
       <div className={styles.questsSection}>
         <h2>Active Quests ({filteredActiveQuests.length})</h2>
-        
+
         {filteredActiveQuests.length === 0 ? (
           <div className={styles.noQuests}>
             <p>No active quests found. Generate some quests to get started!</p>
-            <button 
+            <button
               className={styles.generateButton}
               onClick={() => setShowQuestCreator(true)}
             >
@@ -294,7 +301,7 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
                     <p className={styles.questDescription}>{quest.description}</p>
                   </div>
                   <div className={styles.questMeta}>
-                    <span 
+                    <span
                       className={styles.difficulty}
                       style={{ backgroundColor: getDifficultyColor(quest.difficulty) }}
                     >
@@ -310,7 +317,7 @@ export default function EnhancedQuestList({ userId, userAddress }: EnhancedQuest
 
                 <div className={styles.questProgress}>
                   <div className={styles.progressBar}>
-                    <div 
+                    <div
                       className={styles.progressFill}
                       style={{ width: `${quest.progress}%` }}
                     />

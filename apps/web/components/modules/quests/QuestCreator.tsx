@@ -81,7 +81,7 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
   const loadTaskSummary = async () => {
     try {
       setLoading(true);
-      const response = await api.getTaskSummary(userId);
+      const response = await api.getTaskSummary();
       if (response.success && response.data) {
         setTaskSummary(response.data);
       }
@@ -98,7 +98,7 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
       setLoading(true);
       setError(null);
 
-      const response = await api.generatePriorityQuestSuggestions(userId, userAddress);
+      const response = await api.generatePriorityQuestSuggestions(userAddress);
       if (response.success && response.data) {
         onQuestCreated?.(response.data.quests);
         onClose?.();
@@ -116,7 +116,7 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
       setLoading(true);
       setError(null);
 
-      const response = await api.testQuestPersonalization(userId, userAddress);
+      const response = await api.testQuestPersonalization(userAddress);
       if (response.success && response.data) {
         console.log('Personalization Test Results:', response.data);
         alert(`Personalization Test Results:\n\n${response.data.message}\n\nCheck console for detailed results.`);

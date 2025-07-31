@@ -910,18 +910,18 @@ class ApiService {
   }
 
   // Enhanced Quest System Methods
-  async getEnhancedQuestStats(userId: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/enhanced-quests/stats/${userId}`);
+  async getEnhancedQuestStats(): Promise<ApiResponse<any>> {
+    return this.request<any>(`/enhanced-quests/stats/`);
   }
 
-  async getEnhancedUserQuests(userId: string): Promise<ApiResponse<{
+  async getEnhancedUserQuests(): Promise<ApiResponse<{
     activeQuests: any[];
     completedQuests: any[];
   }>> {
     return this.request<{
       activeQuests: any[];
       completedQuests: any[];
-    }>(`/enhanced-quests/user/${userId}`);
+    }>(`/enhanced-quests/user/`);
   }
 
   async generateEnhancedQuests(userId: string, userAddress: string): Promise<ApiResponse<{
@@ -1152,7 +1152,7 @@ class ApiService {
   }
 
   // Priority Quest Suggestions
-  async generatePriorityQuestSuggestions(userId: string, userAddress: string): Promise<ApiResponse<{
+  async generatePriorityQuestSuggestions(userAddress: string): Promise<ApiResponse<{
     quests: any[];
     message: string;
     hasTaskData: boolean;
@@ -1163,14 +1163,14 @@ class ApiService {
       message: string;
       hasTaskData: boolean;
       questTypes: string[];
-    }>(`/enhanced-quests/priority-suggestions/${userId}`, {
+    }>(`/enhanced-quests/priority-suggestions/`, {
       method: 'POST',
       body: JSON.stringify({ userAddress }),
     });
   }
 
   // Task Summary
-  async getTaskSummary(userId: string): Promise<ApiResponse<{
+  async getTaskSummary(): Promise<ApiResponse<{
     totalTasks: number;
     highPriority: number;
     mediumPriority: number;
@@ -1185,11 +1185,11 @@ class ApiService {
       lowPriority: number;
       overdue: number;
       recentTasks: any[];
-    }>(`/enhanced-quests/task-summary/${userId}`);
+    }>(`/enhanced-quests/task-summary/`);
   }
 
   // Test Quest Personalization
-  async testQuestPersonalization(userId: string, userAddress: string): Promise<ApiResponse<{
+  async testQuestPersonalization(userAddress: string): Promise<ApiResponse<{
     userContext: any;
     vectorContext: any;
     personalizedQuests: any;
@@ -1200,7 +1200,7 @@ class ApiService {
       vectorContext: any;
       personalizedQuests: any;
       message: string;
-    }>(`/enhanced-quests/test-personalization/${userId}?userAddress=${userAddress}`);
+    }>(`/enhanced-quests/test-personalization?userAddress=${userAddress}`);
   }
 }
 

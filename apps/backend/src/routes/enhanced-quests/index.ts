@@ -43,21 +43,14 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   );
 
   // Get user's quests with enhanced context
-  fastify.get('/user/:userId', async (request, reply) => {
+  fastify.get('/user/', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string | undefined };
       
 
       const user = request.user as User;
 
+      const userId = user.id;
       if (!user) {
-        return reply.status(401).send({
-          success: false,
-          error: 'Unauthorized'
-        });
-      }
-
-      if(!userId || user.id !== userId) {
         return reply.status(401).send({
           success: false,
           error: 'Unauthorized'
@@ -67,7 +60,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
       // Get user's active quests
       const activeQuests = await prisma.quests.findMany({
         where: {
-          userId: user.id,
+          userId,
           isCompleted: 'false'
         },
         orderBy: [
@@ -79,7 +72,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
       // Get user's completed quests
       const completedQuests = await prisma.quests.findMany({
         where: {
-          userId,
+          userId: user.id,
           isCompleted: 'true'
         },
         orderBy: { dateAwarded: 'desc' },
@@ -107,7 +100,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Generate new quests for user
-  fastify.post('/generate/:userId', async (request, reply) => {
+  fastify.post('/generate/', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { userId } = request.params as { userId: string };
       
@@ -149,7 +142,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Complete a quest
-  fastify.post('/complete/:questId', async (request, reply) => {
+  fastify.post('/complete/:questId', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { questId } = request.params as { questId: string };
       const { userId, userAddress } = request.body as { userId: string; userAddress: string };
@@ -235,7 +228,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Update quest progress
-  fastify.post('/update-progress/:userId', async (request, reply) => {
+  fastify.post('/update-progress/', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { userId } = request.params as { userId: string };
       
@@ -257,7 +250,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get quest templates
-  fastify.get('/templates', async (request, reply) => {
+  fastify.get('/templates', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       // This would return available quest templates
       // For now, return a basic structure
@@ -308,10 +301,17 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get user gamification stats
-  fastify.get('/stats/:userId', async (request, reply) => {
+  fastify.get('/stats/', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
       
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const userStats = await enhancedGamificationService.getUserStats(userId);
       
       if (!userStats) {
@@ -335,7 +335,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get leaderboard
-  fastify.get('/leaderboard', async (request, reply) => {
+  fastify.get('/leaderboard', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { limit = 10 } = request.query as { limit?: number };
       
@@ -355,11 +355,17 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get next level progress
-  fastify.get('/level-progress/:userId', async (request, reply) => {
+  fastify.get('/level-progress', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
-      
-      const levelProgress = await enhancedGamificationService.getNextLevelProgress(userId);
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+        const levelProgress = await enhancedGamificationService.getNextLevelProgress(userId);
       
       if (!levelProgress) {
         return reply.status(404).send({
@@ -382,7 +388,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Process gamification event
-  fastify.post('/event', async (request, reply) => {
+  fastify.post('/event', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const event = request.body as any;
       
@@ -404,9 +410,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get quest analytics
-  fastify.get('/analytics/:userId', async (request, reply) => {
+  fastify.get('/analytics', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       
       // Get quest completion statistics
       const questStats = await prisma.quests.groupBy({
@@ -460,7 +473,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Create generic quest
-  fastify.post('/create-generic', async (request, reply) => {
+  fastify.post('/create-generic', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const questData = request.body as {
         userId: string;
@@ -503,7 +516,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Create suggestion quest
-  fastify.post('/create-suggestion', async (request, reply) => {
+  fastify.post('/create-suggestion', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const questData = request.body as {
         userId: string;
@@ -537,9 +550,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Send connection quests
-  fastify.post('/connection-quests/:userId', async (request, reply) => {
+  fastify.post('/connection-quests', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const { userAddress } = request.body as { userAddress: string };
 
       const quests = await questService.sendConnectionQuests(userId, userAddress);
@@ -561,9 +581,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Send contextual quests
-  fastify.post('/contextual-quests/:userId', async (request, reply) => {
+  fastify.post('/contextual-quests', { preHandler: [fastify.authenticate] },  async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const { userAddress, triggerPoint } = request.body as {
         userAddress: string;
         triggerPoint: 'task_completion' | 'goal_progress' | 'focus_session' | 'note_creation' | 'streak_milestone' | 'level_up' | 'idle_detection';
@@ -588,9 +615,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get quest suggestions based on user context
-  fastify.get('/suggestions/:userId', async (request, reply) => {
+  fastify.get('/suggestions', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const userContext = request.user as User;
+      const userId = userContext.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const { limit = 5 } = request.query as { limit?: number };
 
       // Get user context
@@ -631,7 +665,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get quest templates for different types
-  fastify.get('/templates/:type', async (request, reply) => {
+  fastify.get('/templates/:type', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { type } = request.params as { type: string };
       const { category, difficulty } = request.query as { category?: string; difficulty?: string };
@@ -655,7 +689,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Bulk create quests
-  fastify.post('/bulk-create', async (request, reply) => {
+  fastify.post('/bulk-create', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { userId, userAddress, quests } = request.body as {
         userId: string;
@@ -707,12 +741,28 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Generate priority quest suggestions at connection
-  fastify.post('/priority-suggestions/:userId', async (request, reply) => {
+  fastify.post('/priority-suggestions', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const userContext = request.user as User;
+      const userId = userContext.id;
       const { userAddress } = request.body as { userAddress: string };
-
-      const quests = await questService.generatePriorityQuestSuggestions(userId, userAddress);
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { userAddress: true }
+      });
+      if(!user) {
+        return reply.status(404).send({
+          success: false,
+          error: 'User not found'
+        });
+      }
+      const quests = await questService.generatePriorityQuestSuggestions(userId, user.userAddress);
 
       return {
         success: true,
@@ -722,7 +772,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
           hasTaskData: quests.some(q => q.type === 'priority'),
           questTypes: quests.map(q => q.type)
         }
-      };
+      };  
     } catch (error) {
       console.error('Error generating priority quest suggestions:', error);
       return reply.status(500).send({
@@ -733,10 +783,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Get user task summary for quest generation
-  fastify.get('/task-summary/:userId', async (request, reply) => {
+  fastify.get('/task-summary/', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
-
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const tasks = await prisma.task.findMany({
         where: {
           userId,
@@ -780,9 +836,16 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   });
 
   // Test Pinecone integration and quest personalization
-  fastify.get('/test-personalization/:userId', async (request, reply) => {
+  fastify.get('/test-personalization', { preHandler: [fastify.authenticate] },   async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const user = request.user as User;
+      const userId = user.id;
+      if(!userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
       const { userAddress } = request.query as { userAddress: string };
 
       if (!userAddress) {

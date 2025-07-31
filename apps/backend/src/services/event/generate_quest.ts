@@ -3,17 +3,26 @@ import { PrismaClient } from '@prisma/client';
 import { AiService } from '../../ai/ai';
 import { DEFAULT_MODEL } from '../../config/models';
 import { EnhancedQuestService } from '../enhancedQuestService';
-import { PineconeService } from '../../ai/agent/vector-store';
-import { EnhancedContextManager } from '../../ai/agent/context-manager';
-import { GamificationService } from '../enhancedGamificationService';
+import { PineconeService } from '../../ai/memory/pinecone.service';
+import { EnhancedContextManager } from '../../ai/memory/enhancedContextManager';
+import { MemoryManager } from '../../ai/memory/memoryManager';
+import { GamificationService } from '../gamification.service';
 
 const prisma = new PrismaClient();
 const aiService = new AiService();
 
 // Initialize enhanced quest service with dependencies
-const pineconeService = new PineconeService();
-const enhancedContextManager = new EnhancedContextManager(prisma);
-const gamificationService = new GamificationService(prisma);
+const pineconeService = new PineconeService(prisma);
+const memoryManager = new MemoryManager(prisma);
+const enhancedContextManager = new EnhancedContextManager(prisma, pineconeService, memoryManager);
+const gamificationService = new GamificationService(
+  prisma,
+  process.env.RPC_URL || '',
+  process.env.PRIVATE_KEY || '',
+  process.env.FOCUS_TOKEN_ADDRESS || '',
+  process.env.QUEST_NFT_ADDRESS || '',
+  process.env.FOCUS_SBT_ADDRESS || ''
+);
 const enhancedQuestService = new EnhancedQuestService(
   prisma,
   pineconeService,
@@ -49,7 +58,7 @@ async function getUserPersonalizedContext(userId: string) {
       },
       quests: { 
         take: 100,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { dateAwarded: 'desc' }
       },
       notes: {
         take: 50,
@@ -236,7 +245,7 @@ function calculateEnergyLevel(user: any) {
 
 // Identify areas where user needs to focus
 function identifyFocusAreas(user: any) {
-  const focusAreas = [];
+  const focusAreas: string[] = [];
   
   const incompleteTasks = user.tasks.filter((t: any) => !t.completed);
   const overdueTasks = user.tasks.filter((t: any) => !t.completed && t.dueDate && t.dueDate < new Date());
@@ -266,7 +275,12 @@ function identifyFocusAreas(user: any) {
 
 // Generate personalized insights for quest creation
 async function generatePersonalizedInsights(user: any, preferences: any, recentActivity: any) {
-  const insights = [];
+  const insights: Array<{
+    type: string;
+    message: string;
+    difficulty: number;
+    rewardXp: number;
+  }> = [];
   
   // Analyze task completion patterns
   const incompleteTasks = user.tasks.filter((t: any) => !t.completed);
@@ -350,8 +364,8 @@ export const generateDailyQuest = async (socket: Socket) => {
     const prompt = `Generate a highly personalized, motivating quest for today for this user based on their specific context:
 
 USER PROFILE:
-- Level: ${user.level || 1}
-- Total XP: ${user.totalXp || 0}
+- Level: ${(user as any).level || 1}
+- Total XP: ${(user as any).totalXp || 0}
 - Current Streak: ${recentActivity.streak} days
 - Preferred Categories: ${preferences.preferredCategories.join(', ') || 'None specified'}
 - Difficulty Preference: ${preferences.difficultyPreference}/5
@@ -464,8 +478,7 @@ Format as: "Quest Title" followed by a 2-3 sentence personalized description tha
           type: 'daily',
           dateAwarded: new Date(),
           difficulty: 2,
-          rewardXp: 100,
-          rewardTokens: 10
+          rewardXp: 100
         },
       });
       socket.emit('quest_of_the_day', fallbackQuest);
