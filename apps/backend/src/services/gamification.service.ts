@@ -251,6 +251,7 @@ export class GamificationService {
   ): Promise<void> {
     try {
       // Update SBT stats
+      console.log("Updating focus stats:", userAddress, sessionMinutes, streak);
       const tx = await this.focusSBT.updateFocusRecord(userAddress, sessionMinutes, streak);
       await tx.wait();
 
@@ -272,6 +273,7 @@ export class GamificationService {
    * Generate quests for a user based on their activity
    */
   async generateQuestsForUser(userId: string): Promise<void> {
+    console.log("Generating quests for user:", userId);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -368,6 +370,7 @@ export class GamificationService {
    * Check and update quest progress
    */
   async updateQuestProgress(userId: string): Promise<void> {
+    console.log("Updating quest progress for user:", userId);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -439,6 +442,7 @@ export class GamificationService {
   }
 
   private calculateTokenReward(quest: any): number {
+    console.log("Calculating token reward for quest:", quest);
     // Base token reward based on quest difficulty and XP
     const baseTokens = (quest.rewardXp || 0) * 0.01; // 0.01 tokens per XP
     const difficultyMultiplier = (quest.difficulty || 1) * 0.5;
@@ -467,6 +471,7 @@ export class GamificationService {
       errors: [] as string[]
     };
 
+    console.log("Checking service health:", this.focusToken.target, this.questNFT.target, this.focusSBT.target);
     try {
       // Check FocusToken contract
       try {

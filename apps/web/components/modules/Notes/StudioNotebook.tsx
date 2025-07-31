@@ -129,6 +129,8 @@ export default function StudioNotebook({
 
 
         <div
+            className="flex flex-col gap-2 py-2 mt-4 max-h-[500px] overflow-y-auto py-4"
+
         >
             {/* <h1>Studio Notebook</h1> */}
 
@@ -152,19 +154,14 @@ export default function StudioNotebook({
                 <audio ref={aiAudioRef} controls />
             </div>
 
-            <div className="flex flex-col gap-2 mt-4 max-h-[500px] overflow-y-auto py-4">
-
+            {/* <div className="flex flex-col gap-2 mt-4 max-h-[500px] overflow-y-auto py-4">
                 {note?.noteSources?.map((source: NoteSource) => (
                     <SourceCard
                         source={source}
                         className="w-full"
                     />
                 ))}
-
-            </div>
-
-
-
+            </div> */}
         </div>
     );
 };  
