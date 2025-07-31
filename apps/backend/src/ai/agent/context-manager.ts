@@ -228,19 +228,17 @@ export class ContextManager {
    */
   private async getGamificationData(userId: string): Promise<any> {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        gamification: true
-      }
+      where: { id: userId }
     });
 
-    return user?.gamification || {
-      level: 1,
-      xp: 0,
-      focusPoints: 0,
-      energy: 100,
+    // Access fields directly from the user object
+    return {
+      level: (user as any)?.level || 1,
+      xp: (user as any)?.totalXp || 0,
+      focusPoints: (user as any)?.totalFocusMinutes || 0,
+      energy: 100, // Default energy
       maxEnergy: 100,
-      focusStreak: 0
+      focusStreak: (user as any)?.streak || 0
     };
   }
 
@@ -251,22 +249,22 @@ export class ContextManager {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        settings: true
+        userSettings: true
       }
     });
 
-    return user?.settings;
+    return user?.userSettings;
   }
 
   /**
    * Get optimized quests
    */
   private async getOptimizedQuests(userId: string): Promise<any[]> {
-    const quests = await this.prisma.quest.findMany({
+    const quests = await this.prisma.quests.findMany({
       where: { userId },
       orderBy: [
         { difficulty: 'asc' },
-        { createdAt: 'desc' }
+        { dateAwarded: 'desc' }
       ],
       take: 10
     });
@@ -280,7 +278,7 @@ export class ContextManager {
   private async getOptimizedBadges(userId: string): Promise<any[]> {
     const badges = await this.prisma.badge.findMany({
       where: { userId },
-      orderBy: { earnedAt: 'desc' },
+      orderBy: { dateAwarded: 'desc' },
       take: 10
     });
 
@@ -292,7 +290,7 @@ export class ContextManager {
    */
   private async getConversationHistory(sessionId: string): Promise<any[]> {
     const messages = await this.prisma.message.findMany({
-      where: { sessionId },
+      where: { chatId: sessionId },
       orderBy: { createdAt: 'asc' },
       take: 20 // Limit conversation history
     });
@@ -394,11 +392,24 @@ export class ContextManager {
    * Build context string for LLM prompt
    */
   async buildContextString(context: AgentContext): Promise<string> {
-    return buildContextString({
-      userContext: context.user,
-      appContext: context.app,
-      conversation: context.conversation
-    }, ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings']);
+    const { user, app, conversation, sessionId, agentType, metadata } = context;
+    
+    // Create a complete context object with all required properties
+    const completeContext = {
+      user: {
+        ...user,
+        tasks: app.tasks,
+        goals: app.goals,
+        timerSessions: app.timerSessions
+      },
+      app,
+      conversation,
+      sessionId,
+      agentType,
+      metadata
+    };
+
+    return JSON.stringify(completeContext, null, 2);
   }
 
   /**

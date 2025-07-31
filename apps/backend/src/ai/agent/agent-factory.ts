@@ -151,7 +151,6 @@ export class AgentFactory {
    * Create the language model
    */
   private createModel(): BaseChatModel {
-    // Use environment variables for configuration
     const modelName = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
     const apiKey = process.env.OPENAI_API_KEY;
     
@@ -164,7 +163,7 @@ export class AgentFactory {
       openAIApiKey: apiKey,
       temperature: 0.7,
       maxTokens: 1000
-    });
+    }) as BaseChatModel;
   }
 
   /**
