@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
-const { PineconeService } = require('./src/ai/memory/pinecone.service');
-const { EnhancedContextManager } = require('./src/ai/memory/enhancedContextManager');
-const { MemoryManager } = require('./src/ai/memory/memoryManager');
+import { PrismaClient } from '@prisma/client';
+import { PineconeService } from '../ai/memory/pinecone.service';
+import { EnhancedContextManager } from '../ai/memory/enhancedContextManager';
+import { MemoryManager } from '../ai/memory/memoryManager';
 
 async function testPineconeIntegration() {
   console.log('🧪 Testing Pinecone Integration...\n');
@@ -9,8 +9,8 @@ async function testPineconeIntegration() {
   try {
     // Initialize services
     const prisma = new PrismaClient();
-    const pineconeService = new PineconeService();
-    const memoryManager = new MemoryManager(prisma, pineconeService);
+    const pineconeService = new PineconeService(prisma);
+    const memoryManager = new MemoryManager(prisma);
     const enhancedContextManager = new EnhancedContextManager(prisma, pineconeService, memoryManager);
 
     // Test 1: Check if Pinecone is accessible
@@ -58,7 +58,7 @@ async function testPineconeIntegration() {
     try {
       const enhancedContext = await enhancedContextManager.generateEnhancedContext({
         userId: 'test-user-id',
-        userAddress: '0x123456789',
+        // userAddress: '0x123456789',
         useCase: 'quest_generation',
         userMessage: 'Generate personalized quests for a user with focus on productivity'
       });

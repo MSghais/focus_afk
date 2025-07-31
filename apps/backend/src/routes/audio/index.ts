@@ -60,23 +60,26 @@ async function audioRoutes(fastify: FastifyInstance) {
       The notes sources are: ${notesSourcesContext}
       `
 
-      console.log("promptGeneration", promptGeneration);
 
       const aiService = new EnhancedAiService(fastify.prisma);
-      const aiResponse = await aiService.generateTextWithMemory({
+      console.log("promptGeneration", promptGeneration);
+      const response = await aiService.generateTextWithMemory({
         model: 'openai/gpt-4o-mini',
         prompt: promptGeneration,
         userId,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
-      });
+      }); 
 
+      let audioPrompt = response?.text;
 
-      let audioPrompt = aiResponse?.text;
+      if(!audioPrompt) {
+        return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
+      }
 
       if (!audioPrompt) {
         return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
-      }
-        
+      }        
+
       const audioService = new AudioService(fastify.prisma);
       const audio = await audioService.generateAudio({
         model: 'openai/tts',
@@ -84,6 +87,12 @@ async function audioRoutes(fastify: FastifyInstance) {
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
         userId,
       });
+
+      console.log("audio", audio);
+
+      if(!audio) {
+        return reply.code(500).send({ message: 'Issue generating audio' });
+      }
 
       return reply.send({
         data: audio,
@@ -109,6 +118,10 @@ async function audioRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const { text } = request.body as { text: string };
 
+      if(!userId) {
+        return reply.code(401).send({ message: 'Unauthorized' });
+      }
+
       if (!text) {
         return reply.code(400).send({ message: 'Text is required' });
       }
@@ -123,6 +136,25 @@ async function audioRoutes(fastify: FastifyInstance) {
         prompt = text.slice(0, 1000);
       }
 
+      
+
+      const note = await fastify.prisma.notes.findFirst({
+        where: {  userId },
+        include: {
+          noteSources: true,
+        },
+      });
+
+      if(!note) {
+        return reply.code(404).send({ message: 'Note not found' });
+      }
+
+      const notesSourcesContext = note.noteSources.map((source) => {
+        return `
+        ${source.type}: ${source.url} ${source.title} ${source.type === 'text' ? `\n${source.content}` : ''} 
+        `;
+      }).join('\n');
+
       let promptGeneration = `
       Create a very short audio summary (under 50 words) that captures the key points.
       Focus on the most important insights and actionable takeaways.
@@ -131,13 +163,33 @@ async function audioRoutes(fastify: FastifyInstance) {
       The text is: ${text}
       `
 
+
+      const aiService = new EnhancedAiService(fastify.prisma);
+      console.log("promptGeneration", promptGeneration);
+      const response = await aiService.generateTextWithMemory({
+        model: 'openai/gpt-4o-mini',
+        prompt: promptGeneration,
+        userId,
+        contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
+      }); 
+
+      let audioPrompt = response?.text;
+
+      console.log("prompt summary to send audio", audioPrompt);
+
+      if (!audioPrompt) {
+        return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
+      }
+
       const audioService = new AudioService(fastify.prisma);
       const audio = await audioService.generateAudio({
         model: 'openai/tts',
-        prompt: promptGeneration,
+        prompt: audioPrompt,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
         userId,
       });
+
+      console.log("audio", audio);
 
       return reply.send({
         data: audio,

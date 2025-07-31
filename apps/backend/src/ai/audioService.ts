@@ -60,11 +60,15 @@ export class AudioService {
       // ${prompt}
       // `
 
+      console.log("generating audio elevenlabs", prompt);
+
       const audio = await elevenlabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', {
         text: prompt,
         modelId: 'eleven_multilingual_v2',
         outputFormat: 'mp3_44100_128',
       });
+
+      console.log("audio", audio);
 
       if (!audio) {
         return undefined;
