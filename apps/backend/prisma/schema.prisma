@@ -45,6 +45,10 @@ model User {
   userSettings UserSettings?
   embeddingSync EmbeddingSync?
 
+  level Int?
+  totalXp Int?
+  streak Int?
+
 
   // Authentication relations
   sessions Session[]
