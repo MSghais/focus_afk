@@ -3,6 +3,37 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function gamificationRoutes(fastify: FastifyInstance) {
+  // Health check for gamification service
+  fastify.get('/health',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      try {
+        if (!fastify.gamificationService) {
+          return reply.status(503).send({
+            success: false,
+            error: 'Gamification service not available',
+            message: 'Service not initialized - check blockchain configuration'
+          });
+        }
+
+        const health = await fastify.gamificationService.checkServiceHealth();
+        
+        return reply.status(200).send({
+          success: true,
+          health,
+          message: health.isHealthy ? 'Gamification service is healthy' : 'Gamification service has issues'
+        });
+      } catch (error) {
+        console.error("Error checking gamification health", error);
+        return reply.status(500).send({
+          success: false,
+          error: 'Error checking service health'
+        });
+      }
+    });
+
   // Get user's gamification stats
   fastify.get('/user/:userId/stats',
     {

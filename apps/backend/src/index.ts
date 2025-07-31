@@ -133,16 +133,29 @@ async function buildServer() {
       process.env.QUEST_NFT_ADDRESS && 
       process.env.FOCUS_SBT_ADDRESS) {
     
-    fastify.gamificationService = new GamificationService(
-      fastify.prisma,
-      process.env.BLOCKCHAIN_RPC_URL,
-      process.env.BLOCKCHAIN_PRIVATE_KEY,
-      process.env.FOCUS_TOKEN_ADDRESS,
-      process.env.QUEST_NFT_ADDRESS,
-      process.env.FOCUS_SBT_ADDRESS
-    );
-    
-    console.log('✅ Gamification service initialized with blockchain integration');
+    try {
+      fastify.gamificationService = new GamificationService(
+        fastify.prisma,
+        process.env.BLOCKCHAIN_RPC_URL,
+        process.env.BLOCKCHAIN_PRIVATE_KEY,
+        process.env.FOCUS_TOKEN_ADDRESS,
+        process.env.QUEST_NFT_ADDRESS,
+        process.env.FOCUS_SBT_ADDRESS
+      );
+      
+      console.log('✅ Gamification service initialized with blockchain integration');
+      
+      // Run health check
+      const health = await fastify.gamificationService.checkServiceHealth();
+      if (health.isHealthy) {
+        console.log('✅ Gamification service health check passed');
+      } else {
+        console.log('⚠️  Gamification service health check failed:', health.errors);
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize gamification service:', error);
+      console.log('⚠️  Gamification features will be disabled');
+    }
   } else {
     console.log('⚠️  Gamification service not initialized - missing blockchain configuration');
   }

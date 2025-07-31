@@ -5,7 +5,7 @@ import { useUIStore } from "../../store/uiStore";
 import { logClickedEvent } from "../../lib/analytics";
 import { ButtonPrimary } from "../small/buttons";
 
-export default function LoginBackend() {
+export default function LoginBackend({isTitle = false}) {
     const evmLogin = useEvmLogin();
     const { showToast } = useUIStore();
 
@@ -29,7 +29,7 @@ export default function LoginBackend() {
 
     return (
         <div className="flex flex-col gap-4">
-            <h3>Sign to your account</h3>
+            {isTitle && <h3>Sign to your account</h3>}
             <ButtonPrimary onClick={handleLogin}>
                 <Icon name="login" />
                 Sign with Wallet

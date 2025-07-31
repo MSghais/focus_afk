@@ -56,6 +56,9 @@ chmod +x deploy.sh
 # Deploy to testnet (Sepolia)
 ./deploy.sh sepolia
 
+./deploy.sh base-sepolia
+
+
 # Deploy to mainnet (with confirmation)
 ./deploy.sh mainnet
 ```

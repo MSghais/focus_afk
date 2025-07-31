@@ -47,7 +47,7 @@ export default function ProfileUser({ isLoggoutViewActive = true }: { isLoggoutV
                     {!userConnected && (
                     )} */}
 
-                    {/* <LoginBackend /> */}
+                    <LoginBackend />
 
                 </div>
             )}

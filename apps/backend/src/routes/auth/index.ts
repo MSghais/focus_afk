@@ -140,6 +140,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         },
       });
+
+      authService.authenticateUser(user.userAddress, "ethereum");
       // console.log("token", token);
       return reply.send({ success: true, user, token });
     } catch (error) {

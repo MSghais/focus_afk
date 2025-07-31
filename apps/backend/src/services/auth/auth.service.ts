@@ -29,10 +29,27 @@ export class AuthService {
   }
 
   async authenticateUser(userAddress: string, loginType: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { userAddress: userAddress },
-    });
-    return user;
+ 
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { userAddress: userAddress },
+      });
+      // Mint SBT for new user in background (non-blocking)
+      if (user?.id && this.gamificationService && !user.soulboundToken) {
+        setImmediate(async () => {
+          try {
+            await this.gamificationService!.mintSBTForNewUser(userAddress, user?.id);
+            await this.gamificationService!.generateQuestsForUser(user?.id);
+          } catch (error) {
+            console.error("Background SBT minting failed:", error);
+          }
+        });
+      }
+      return user;
+    } catch (error) {
+      console.error("Background SBT minting failed:", error);
+      return null;
+    }
   }
 
   async createUser(userAddress: string, loginType: string) {
