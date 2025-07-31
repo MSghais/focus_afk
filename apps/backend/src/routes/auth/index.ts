@@ -7,7 +7,7 @@ import { ec } from 'starknet';
 import { BadgeService } from '../../services/badge.service';
 
 export async function authRoutes(fastify: FastifyInstance) {
-  const authService = new AuthService(fastify.prisma);
+  const authService = new AuthService(fastify.prisma, fastify.gamificationService);
   const signatureService = new SignatureService();
   const badgeService = new BadgeService(fastify.prisma);
 

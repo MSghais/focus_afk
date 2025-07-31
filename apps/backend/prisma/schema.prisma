@@ -50,6 +50,8 @@ model User {
   sessions Session[]
   socialAccounts SocialAccount[]
 
+  soulboundToken String?
+
   // New relations
   mentors Mentor[]
   chats Chat[]
