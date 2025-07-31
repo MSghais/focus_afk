@@ -7,6 +7,7 @@ import { useFocusAFKStore } from '../../../store/store';
 import { useUIStore } from '../../../store/uiStore';
 import { ButtonPrimary, ButtonSecondary } from '../../small/buttons';
 import { useRouter } from 'next/navigation';
+import { useWebSocket } from '../../../providers/WebSocketProvider';
 
 interface IQuestItemProps {
   quest?: Quest;
@@ -31,6 +32,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
   const [isAddedAsTask, setIsAddedAsTask] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [expanded, setExpanded] = useState(isExpanded);
+  const { requestEnhancedQuests, requestContextualQuests } = useWebSocket();
 
   const handleAddTask = async (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -76,6 +78,14 @@ const QuestItem: React.FC<IQuestItemProps> = ({
 
   const { name, description, status, goal, rewardXp } = quest;
 
+  const handleRequestEnhancedQuests = () => {
+    requestEnhancedQuests();
+  };
+
+  const handleRequestContextualQuests = (triggerPoint: string) => {
+    requestContextualQuests(triggerPoint);
+  };
+
   // Minimal info first, expandable details
   return (
     <div
@@ -117,8 +127,18 @@ const QuestItem: React.FC<IQuestItemProps> = ({
         <div className="flex items-center gap-2 min-w-0">
           <span
             className="font-semibold text-base truncate"
-            dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(name || '') }}
+            dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(name || 'Quest') }}
           />
+          {quest.meta?.tailored && (
+            <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded ml-2">
+              🎯 Tailored
+            </span>
+          )}
+          {quest.meta?.personalized && !quest.meta?.tailored && (
+            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded ml-2">
+              ⚡ Enhanced
+            </span>
+          )}
 
         </div>
 
@@ -141,7 +161,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
           {description && (
             <div
               className="text-sm mb-2"
-              dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(description) }}
+              dangerouslySetInnerHTML={{ __html: tryMarkdownToHtml(description || '') }}
             />
           )}
 
@@ -185,6 +205,58 @@ const QuestItem: React.FC<IQuestItemProps> = ({
               )}
             </div>
           )}
+
+          {quest.meta?.personalized && (
+            <div className="mt-3 p-3 bg-blue-50/10 rounded-lg border border-blue-200/20">
+              <h4 className="text-sm font-semibold text-blue-600 mb-2">Personalization Details:</h4>
+              <ul className="text-xs space-y-1">
+                {quest.meta.category && <li>Category: {quest.meta.category}</li>}
+                {quest.meta.vectorContextUsed && <li>✓ Vector Context Used</li>}
+                {quest.meta.generatedAt && (
+                  <li>Generated: {new Date(quest.meta.generatedAt).toLocaleString()}</li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button 
+              className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRequestContextualQuests('task_completion');
+              }}
+            >
+              Get Task Quests
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRequestContextualQuests('focus_session');
+              }}
+            >
+              Get Focus Quests
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRequestContextualQuests('goal_progress');
+              }}
+            >
+              Get Goal Quests
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 transition"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRequestEnhancedQuests();
+              }}
+            >
+              Request Enhanced Quests
+            </button>
+          </div>
         </div>
       )}
     </div>

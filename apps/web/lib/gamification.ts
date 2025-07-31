@@ -153,6 +153,18 @@ export interface Quest {
   rewardBadge?: string;
   badgeReward?: string;
   levelRequired?: number;
+  meta?: {
+    personalized?: boolean;
+    tailored?: boolean;
+    enhanced?: boolean;
+    category?: string;
+    vectorContextUsed?: boolean;
+    generatedAt?: string;
+    enhancedQuestId?: string;
+    status?: string;
+    progress?: number;
+    goal?: number;
+  };
 }
 
 // Generate basic RPG-style quests for a user

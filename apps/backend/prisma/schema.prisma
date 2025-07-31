@@ -374,6 +374,9 @@ model Quests {
   isCompleted String?
   requirements String[]
 
+
+  isPersonnalized Boolean?
+
   taskAbout String?
   type        String   // e.g. 'daily_connection', 'streak', etc.
   name        String
