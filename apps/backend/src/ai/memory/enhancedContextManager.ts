@@ -126,6 +126,16 @@ export class EnhancedContextManager {
       systemPrompt: 'You are an analytical AI mentor. Provide deep insights and comprehensive analysis based on all available context.',
       includeHistory: true,
       maxHistoryMessages: 15
+    }],
+    ['quest_generation', {
+      name: 'Quest Generation',
+      description: 'Generate personalized quests based on user context',
+      vectorSearchEnabled: true,
+      contextSources: ['tasks', 'goals', 'sessions', 'messages', 'profile', 'badges', 'quests'],
+      maxVectorResults: 5,
+      systemPrompt: 'You are a quest generation expert. Create personalized, engaging quests that align with the user\'s current situation, goals, and activity patterns. Consider their level, preferences, recent activity, and challenges they might be facing.',
+      includeHistory: false,
+      maxHistoryMessages: 0
     }]
   ]);
 

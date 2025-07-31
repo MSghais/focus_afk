@@ -14,6 +14,7 @@ import fastifySession from '@fastify/session';
 import fastifyOauth2 from '@fastify/oauth2';
 import fastifyMultipart from '@fastify/multipart';
 import { initCron } from './cron';
+import { GamificationService } from './services/gamification.service';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -21,6 +22,7 @@ dotenv.config();
 declare module 'fastify' {
   interface FastifyInstance {
     io: SocketIOServer;
+    gamificationService?: GamificationService;
   }
 }     
 
@@ -123,6 +125,40 @@ async function buildServer() {
   // Register core plugins
   await fastify.register(prismaPlugin);
   await fastify.register(authPlugin);
+
+  // Initialize gamification service if blockchain contracts are configured
+  if (process.env.BLOCKCHAIN_RPC_URL && 
+      process.env.BLOCKCHAIN_PRIVATE_KEY && 
+      process.env.FOCUS_TOKEN_ADDRESS && 
+      process.env.QUEST_NFT_ADDRESS && 
+      process.env.FOCUS_SBT_ADDRESS) {
+    
+    try {
+      fastify.gamificationService = new GamificationService(
+        fastify.prisma,
+        process.env.BLOCKCHAIN_RPC_URL,
+        process.env.BLOCKCHAIN_PRIVATE_KEY,
+        process.env.FOCUS_TOKEN_ADDRESS,
+        process.env.QUEST_NFT_ADDRESS,
+        process.env.FOCUS_SBT_ADDRESS
+      );
+      
+      console.log('✅ Gamification service initialized with blockchain integration');
+      
+      // Run health check
+      const health = await fastify.gamificationService.checkServiceHealth();
+      if (health.isHealthy) {
+        console.log('✅ Gamification service health check passed');
+      } else {
+        console.log('⚠️  Gamification service health check failed:', health.errors);
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize gamification service:', error);
+      console.log('⚠️  Gamification features will be disabled');
+    }
+  } else {
+    console.log('⚠️  Gamification service not initialized - missing blockchain configuration');
+  }
   // await fastify.register(twitterPlugin);
   await fastify.register(fastifyOauth2, {
     name: 'twitterOAuth',

@@ -33,7 +33,7 @@ export async function mergeTimerSessionsFromLocalAndBackend(): Promise<MergedTim
     // Get local sessions
     const localSessions = await dbUtils.getSessions();
     result.localCount = localSessions.length;
-    console.log(`📱 Found ${localSessions.length} local timer sessions`);
+    // console.log(`📱 Found ${localSessions.length} local timer sessions`);
 
     // Get backend sessions if authenticated
     let backendSessions: TimerSession[] = [];
@@ -74,7 +74,7 @@ export async function mergeTimerSessionsFromLocalAndBackend(): Promise<MergedTim
       const key = backendSession.id!;
       mergedSessionsMap.set(key, backendSession);
       processedKeys.add(key);
-      console.log(`✅ Added backend session: ${key}`);
+      // console.log(`✅ Added backend session: ${key}`);
     });
 
     // Then add local sessions that don't have backend equivalents
@@ -84,19 +84,19 @@ export async function mergeTimerSessionsFromLocalAndBackend(): Promise<MergedTim
       
       if (backendKey && processedKeys.has(backendKey)) {
         // This local session has a backend equivalent that's already processed
-        console.log(`🔄 Skipped local session ${localSession.id} (has backend equivalent)`);
+        // console.log(`🔄 Skipped local session ${localSession.id} (has backend equivalent)`);
         result.duplicatesRemoved++;
       } else if (!backendKey && !processedKeys.has(localKey)) {
         // This is a purely local session, add it
         mergedSessionsMap.set(localKey, localSession);
         processedKeys.add(localKey);
-        console.log(`📱 Added local-only session: ${localKey}`);
+        // console.log(`📱 Added local-only session: ${localKey}`);
       } else if (backendKey && !processedKeys.has(backendKey)) {
         // This local session has a backendId but no backend equivalent found
         // This might be a sync issue, keep the local version
         mergedSessionsMap.set(localKey, localSession);
         processedKeys.add(localKey);
-        console.log(`⚠️ Added local session with missing backend: ${localKey}`);
+        // console.log(`⚠️ Added local session with missing backend: ${localKey}`);
       }
     });
 

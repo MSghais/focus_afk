@@ -16,6 +16,7 @@ import notesRoutes from './routes/notes';
 import sourceAgentRoutes from './routes/notes/source-agent';
 import audioRoutes from './routes/audio';
 import enhancedChatRoutes from './routes/enhanced-chat';
+import enhancedQuestsRoutes from './routes/enhanced-quests';
 function declareRoutes(
   fastify: FastifyInstance,
   // deployer: Account,
@@ -36,6 +37,7 @@ function declareRoutes(
   fastify.register(sourceAgentRoutes, { prefix: '/notes/source-agent' });
   fastify.register(audioRoutes, { prefix: '/audio' });
   fastify.register(enhancedChatRoutes, { prefix: '/enhanced-chat' });
+  fastify.register(enhancedQuestsRoutes, { prefix: '/enhanced-quests' });
 }
 
 export default declareRoutes;

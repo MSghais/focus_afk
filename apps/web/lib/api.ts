@@ -900,10 +900,307 @@ class ApiService {
     text: string;
     metadata: any;
   }>> {
-    return this.request('/enhanced-chat/quick-question', {
+    return this.request<{
+      text: string;
+      metadata: any;
+    }>('/enhanced-chat/quick-question', {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  }
+
+  // Enhanced Quest System Methods
+  async getEnhancedQuestStats(): Promise<ApiResponse<any>> {
+    return this.request<any>(`/enhanced-quests/stats/`);
+  }
+
+  async getEnhancedUserQuests(): Promise<ApiResponse<{
+    activeQuests: any[];
+    completedQuests: any[];
+  }>> {
+    return this.request<{
+      activeQuests: any[];
+      completedQuests: any[];
+    }>(`/enhanced-quests/user/`);
+  }
+
+  async generateEnhancedQuests(userId: string, userAddress: string): Promise<ApiResponse<{
+    generatedQuests: any[];
+    message: string;
+  }>> {
+    return this.request<{
+      generatedQuests: any[];
+      message: string;
+    }>(`/enhanced-quests/generate/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ userAddress }),
+    });
+  }
+
+  async completeEnhancedQuest(questId: string, userId: string, userAddress: string): Promise<ApiResponse<{
+    message: string;
+    questId: string;
+    rewards: {
+      xp: number;
+      tokens: number;
+    };
+  }>> {
+    return this.request<{
+      message: string;
+      questId: string;
+      rewards: {
+        xp: number;
+        tokens: number;
+      };
+    }>(`/enhanced-quests/complete/${questId}`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, userAddress }),
+    });
+  }
+
+  async updateEnhancedQuestProgress(userId: string): Promise<ApiResponse<{
+    message: string;
+  }>> {
+    return this.request<{
+      message: string;
+    }>(`/enhanced-quests/update-progress/${userId}`, {
+      method: 'POST',
+    });
+  }
+
+  async getEnhancedQuestTemplates(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/enhanced-quests/templates');
+  }
+
+  async getEnhancedQuestLeaderboard(limit?: number): Promise<ApiResponse<any[]>> {
+    const params = limit ? `?limit=${limit}` : '';
+    return this.request<any[]>(`/enhanced-quests/leaderboard${params}`);
+  }
+
+  async getEnhancedQuestLevelProgress(userId: string): Promise<ApiResponse<{
+    currentLevel: number;
+    currentXp: number;
+    nextLevelXp: number;
+    progress: number;
+  }>> {
+    return this.request<{
+      currentLevel: number;
+      currentXp: number;
+      nextLevelXp: number;
+      progress: number;
+    }>(`/enhanced-quests/level-progress/${userId}`);
+  }
+
+  async processEnhancedGamificationEvent(event: any): Promise<ApiResponse<{
+    message: string;
+  }>> {
+    return this.request<{
+      message: string;
+    }>('/enhanced-quests/event', {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+  }
+
+  async getEnhancedQuestAnalytics(userId: string): Promise<ApiResponse<{
+    questStats: any[];
+    questTimeline: any[];
+    completionRate: number;
+    totalQuests: number;
+    completedQuests: number;
+  }>> {
+    return this.request<{
+      questStats: any[];
+      questTimeline: any[];
+      completionRate: number;
+      totalQuests: number;
+      completedQuests: number;
+    }>(`/enhanced-quests/analytics/${userId}`);
+  }
+
+  // Generic Quest Creation
+  async createGenericQuest(questData: {
+    userId: string;
+    userAddress: string;
+    name: string;
+    description: string;
+    category: 'focus' | 'tasks' | 'goals' | 'notes' | 'learning' | 'social' | 'custom';
+    difficulty: 1 | 2 | 3 | 4 | 5;
+    rewardXp: number;
+    rewardTokens: number;
+    completionCriteria: {
+      type: 'count' | 'duration' | 'streak' | 'custom';
+      target: number;
+      unit?: string;
+    };
+    expiresAt?: string;
+    tags?: string[];
+    priority?: 'low' | 'medium' | 'high';
+  }): Promise<ApiResponse<{
+    quest: any;
+    message: string;
+  }>> {
+    return this.request<{
+      quest: any;
+      message: string;
+    }>('/enhanced-quests/create-generic', {
+      method: 'POST',
+      body: JSON.stringify(questData),
+    });
+  }
+
+  // Suggestion Quest Creation
+  async createSuggestionQuest(questData: {
+    userId: string;
+    userAddress: string;
+    suggestionType: 'productivity' | 'wellness' | 'learning' | 'social' | 'custom';
+    context: any[];
+    aiReasoning: string;
+    difficulty?: 1 | 2 | 3 | 4 | 5;
+    expiresAt?: string;
+  }): Promise<ApiResponse<{
+    quest: any;
+    message: string;
+  }>> {
+    return this.request<{
+      quest: any;
+      message: string;
+    }>('/enhanced-quests/create-suggestion', {
+      method: 'POST',
+      body: JSON.stringify(questData),
+    });
+  }
+
+  // Connection Quests
+  async sendConnectionQuests(userId: string, userAddress: string): Promise<ApiResponse<{
+    quests: any[];
+    message: string;
+  }>> {
+    return this.request<{
+      quests: any[];
+      message: string;
+    }>(`/enhanced-quests/connection-quests/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ userAddress }),
+    });
+  }
+
+  // Contextual Quests
+  async sendContextualQuests(
+    userId: string,
+    userAddress: string,
+    triggerPoint: 'task_completion' | 'goal_progress' | 'focus_session' | 'note_creation' | 'streak_milestone' | 'level_up' | 'idle_detection'
+  ): Promise<ApiResponse<{
+    quests: any[];
+    message: string;
+  }>> {
+    return this.request<{
+      quests: any[];
+      message: string;
+    }>(`/enhanced-quests/contextual-quests/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ userAddress, triggerPoint }),
+    });
+  }
+
+  // Quest Suggestions
+  async getQuestSuggestions(userId: string, limit?: number): Promise<ApiResponse<{
+    suggestions: any[];
+    message: string;
+  }>> {
+    const params = limit ? `?limit=${limit}` : '';
+    return this.request<{
+      suggestions: any[];
+      message: string;
+    }>(`/enhanced-quests/suggestions/${userId}${params}`);
+  }
+
+  // Quest Templates
+  async getQuestTemplates(type: string, filters?: {
+    category?: string;
+    difficulty?: number;
+  }): Promise<ApiResponse<any[]>> {
+    const params = new URLSearchParams();
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.difficulty) params.append('difficulty', filters.difficulty.toString());
+    
+    const queryString = params.toString();
+    const url = `/enhanced-quests/templates/${type}${queryString ? `?${queryString}` : ''}`;
+    
+    return this.request<any[]>(url);
+  }
+
+  // Bulk Quest Creation
+  async bulkCreateQuests(data: {
+    userId: string;
+    userAddress: string;
+    quests: Array<{
+      type: 'generic' | 'suggestion';
+      data: any;
+    }>;
+  }): Promise<ApiResponse<{
+    quests: any[];
+    message: string;
+  }>> {
+    return this.request<{
+      quests: any[];
+      message: string;
+    }>('/enhanced-quests/bulk-create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Priority Quest Suggestions
+  async generatePriorityQuestSuggestions(userAddress: string): Promise<ApiResponse<{
+    quests: any[];
+    message: string;
+    hasTaskData: boolean;
+    questTypes: string[];
+  }>> {
+    return this.request<{
+      quests: any[];
+      message: string;
+      hasTaskData: boolean;
+      questTypes: string[];
+    }>(`/enhanced-quests/priority-suggestions/`, {
+      method: 'POST',
+      body: JSON.stringify({ userAddress }),
+    });
+  }
+
+  // Task Summary
+  async getTaskSummary(): Promise<ApiResponse<{
+    totalTasks: number;
+    highPriority: number;
+    mediumPriority: number;
+    lowPriority: number;
+    overdue: number;
+    recentTasks: any[];
+  }>> {
+    return this.request<{
+      totalTasks: number;
+      highPriority: number;
+      mediumPriority: number;
+      lowPriority: number;
+      overdue: number;
+      recentTasks: any[];
+    }>(`/enhanced-quests/task-summary/`);
+  }
+
+  // Test Quest Personalization
+  async testQuestPersonalization(userAddress: string): Promise<ApiResponse<{
+    userContext: any;
+    vectorContext: any;
+    personalizedQuests: any;
+    message: string;
+  }>> {
+    return this.request<{
+      userContext: any;
+      vectorContext: any;
+      personalizedQuests: any;
+      message: string;
+    }>(`/enhanced-quests/test-personalization?userAddress=${userAddress}`);
   }
 }
 

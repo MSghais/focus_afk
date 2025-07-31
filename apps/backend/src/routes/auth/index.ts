@@ -7,7 +7,7 @@ import { ec } from 'starknet';
 import { BadgeService } from '../../services/badge.service';
 
 export async function authRoutes(fastify: FastifyInstance) {
-  const authService = new AuthService(fastify.prisma);
+  const authService = new AuthService(fastify.prisma, fastify.gamificationService);
   const signatureService = new SignatureService();
   const badgeService = new BadgeService(fastify.prisma);
 
@@ -140,6 +140,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         },
       });
+
+      authService.authenticateUser(user.userAddress, "ethereum");
       // console.log("token", token);
       return reply.send({ success: true, user, token });
     } catch (error) {
@@ -175,8 +177,15 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
       console.log("user", user);
 
-      // Award daily connection badge
-      badgeService.awardDailyConnectionBadge(user.id);
+      // Award daily connection badge in background (non-blocking)
+      setImmediate(async () => {
+        try {
+          await badgeService.awardDailyConnectionBadge(user.id);
+          console.log(`✅ Daily connection badge awarded to user ${user.id}`);
+        } catch (error) {
+          console.error(`❌ Failed to award daily connection badge to user ${user.id}:`, error);
+        }
+      });
 
       // 3. Create JWT
       const token = fastify.jwt.sign({ id: user.id, userAddress: user.userAddress });

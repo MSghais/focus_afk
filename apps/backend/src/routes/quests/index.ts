@@ -3,19 +3,23 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function questsRoutes(fastify: FastifyInstance) {
-  // Get all quests for a user (stub)
+  // Get all quests for a user
   fastify.get('/user/:userId',
     {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-
       try {
         const userId = request.user?.id as string;
         if (!userId) {
           return reply.status(404).send({ success: false, error: 'User not found' });
         }
-        // TODO: Implement quest logic
+
+        // Update quest progress before returning
+        if (fastify.gamificationService) {
+          await fastify.gamificationService.updateQuestProgress(userId);
+        }
+
         const quests = await fastify.prisma.quests.findMany({
           include: {
             user: true,
@@ -23,8 +27,11 @@ async function questsRoutes(fastify: FastifyInstance) {
           where: {
             userId,
           },
+          orderBy: {
+            dateAwarded: 'desc'
+          }
         });
-        console.log("quests", quests);
+
         return reply.status(200).send({ success: true, quests });
       } catch (error) {
         console.error("Error getting quests", error);
@@ -32,6 +39,7 @@ async function questsRoutes(fastify: FastifyInstance) {
       }
     });
 
+  // Get specific quest
   fastify.get('/:id',
     {
       preHandler: [fastify.authenticate],
@@ -58,6 +66,133 @@ async function questsRoutes(fastify: FastifyInstance) {
         return reply.status(403).send({ success: false, error: 'User not authorized' });
       }
       return reply.status(200).send({ success: true, data: quest });
+    });
+
+  // Complete a quest
+  fastify.post('/:id/complete',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const userId = request.user?.id as string;
+        const user = await fastify.prisma.user.findUnique({
+          where: { id: userId }
+        });
+
+        if (!user) {
+          return reply.status(404).send({ success: false, error: 'User not found' });
+        }
+
+        if (!fastify.gamificationService) {
+          return reply.status(500).send({ success: false, error: 'Gamification service not available' });
+        }
+
+        // Mark quest as completed immediately in database
+        const quest = await fastify.prisma.quests.findUnique({
+          where: { id }
+        });
+
+        if (!quest || quest.userId !== userId) {
+          return reply.status(404).send({ success: false, error: 'Quest not found or unauthorized' });
+        }
+
+        if (quest.isCompleted === 'true') {
+          return reply.status(400).send({ success: false, error: 'Quest already completed' });
+        }
+
+        // Update quest status immediately
+        await fastify.prisma.quests.update({
+          where: { id },
+          data: { 
+            isCompleted: 'true',
+            meta: {
+              ...(quest.meta as any || {}),
+              completedAt: new Date().toISOString(),
+              processingStatus: 'pending'
+            }
+          }
+        });
+
+        // Process rewards in background (non-blocking)
+        setImmediate(async () => {
+          try {
+            const completion = await fastify.gamificationService!.completeQuest(id, userId, user.userAddress);
+            
+            // Update quest with completion details
+            await fastify.prisma.quests.update({
+              where: { id },
+              data: { 
+                meta: {
+                  ...(quest.meta as any || {}),
+                  completedAt: new Date().toISOString(),
+                  processingStatus: 'completed',
+                  completion
+                }
+              }
+            });
+
+            console.log(`✅ Background quest completion processing finished for quest ${id}, user ${userId}`);
+          } catch (error) {
+            console.error(`❌ Background quest completion processing failed for quest ${id}, user ${userId}:`, error);
+            
+            // Update quest with error status
+            await fastify.prisma.quests.update({
+              where: { id },
+              data: { 
+                meta: {
+                  ...(quest.meta as any || {}),
+                  completedAt: new Date().toISOString(),
+                  processingStatus: 'failed',
+                  error: error instanceof Error ? error.message : 'Unknown error'
+                }
+              }
+            });
+          }
+        });
+        
+        return reply.status(200).send({ 
+          success: true, 
+          message: 'Quest completion initiated successfully',
+          questId: id,
+          status: 'processing'
+        });
+      } catch (error) {
+        console.error("Error initiating quest completion", error);
+        return reply.status(500).send({ 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Error completing quest' 
+        });
+      }
+    });
+
+  // Generate new quests for user
+  fastify.post('/generate',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      try {
+        const userId = request.user?.id as string;
+        
+        if (!fastify.gamificationService) {
+          return reply.status(500).send({ success: false, error: 'Gamification service not available' });
+        }
+
+        await fastify.gamificationService.generateQuestsForUser(userId);
+        
+        return reply.status(200).send({ 
+          success: true, 
+          message: 'Quests generated successfully' 
+        });
+      } catch (error) {
+        console.error("Error generating quests", error);
+        return reply.status(500).send({ 
+          success: false, 
+          error: 'Error generating quests' 
+        });
+      }
     });
 }
 

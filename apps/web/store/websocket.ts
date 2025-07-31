@@ -23,7 +23,9 @@ interface WebSocketState {
 
   // WebSocket
   questOfTheDay?: any;
+  questSuggestions?: any[];
   setQuestOfTheDay: (quest: any) => void;
+  setQuestSuggestions: (suggestions: any[]) => void;
 }
 
 export const useWebSocketStore = create<WebSocketState>((set, get) => ({
@@ -63,5 +65,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => ({
 
   // WebSocket
   questOfTheDay: undefined,
+  questSuggestions: undefined,
   setQuestOfTheDay: (quest: any) => set({ questOfTheDay: quest }),
+  setQuestSuggestions: (suggestions: any[]) => set({ questSuggestions: suggestions }),
 })); 

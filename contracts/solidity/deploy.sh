@@ -54,6 +54,19 @@ case $NETWORK in
         fi
         forge script script/Deploy.s.sol:DeployScript --rpc-url http://localhost:8545 --broadcast --verify
         ;;
+    "base-sepolia")
+        forge script script/Deploy.s.sol:DeployScript --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast --verify --etherscan-api-key $BASESCAN_API_KEY
+        ;;
+    "base")
+        echo -e "${RED}⚠️  Are you sure you want to deploy to Base mainnet? (y/N)${NC}"
+        read -r response
+        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+            forge script script/Deploy.s.sol:DeployScript --rpc-url $BASE_RPC_URL --broadcast --verify --etherscan-api-key $BASESCAN_API_KEY
+        else
+            echo -e "${YELLOW}Deployment cancelled${NC}"
+            exit 0
+        fi
+        ;;
     "sepolia")
         forge script script/Deploy.s.sol:DeployScript --rpc-url $SEPOLIA_RPC_URL --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
         ;;
@@ -72,7 +85,7 @@ case $NETWORK in
         ;;
     *)
         echo -e "${RED}❌ Unknown network: $NETWORK${NC}"
-        echo -e "${YELLOW}Available networks: anvil, sepolia, goerli, mainnet${NC}"
+        echo -e "${YELLOW}Available networks: anvil, base-sepolia, base, sepolia, goerli, mainnet${NC}"
         exit 1
         ;;
 esac

@@ -35,9 +35,9 @@ async function timerRoutes(fastify: FastifyInstance) {
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
-      return reply.send({ 
-        success: true, 
+
+      return reply.send({
+        success: true,
         data: {
           jwtUserId: userId,
           userExists: !!user,
@@ -75,12 +75,12 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      
+
       // Verify user exists in database
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found in database' });
       }
@@ -88,9 +88,9 @@ async function timerRoutes(fastify: FastifyInstance) {
       const body = TimerSessionSchema.safeParse(request.body);
       if (!body.success) {
         console.log("Validation error:", body.error);
-        return reply.code(400).send({ 
-          error: 'Invalid session data', 
-          details: body.error.issues 
+        return reply.code(400).send({
+          error: 'Invalid session data',
+          details: body.error.issues
         });
       }
 
@@ -161,15 +161,15 @@ async function timerRoutes(fastify: FastifyInstance) {
       return reply.code(201).send({ success: true, data: session });
     } catch (error) {
       request.log.error(error);
-      
+
       // Handle Prisma foreign key constraint errors
       if (error.code === 'P2003') {
-        return reply.code(400).send({ 
+        return reply.code(400).send({
           error: 'Foreign key constraint violation',
           message: 'The referenced task or goal does not exist'
         });
       }
-      
+
       return reply.code(500).send({ error: 'Internal server error' });
     }
   });
@@ -202,16 +202,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      
+
       // Verify user exists in database
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found in database' });
       }
-      
+
       const { taskId, goalId, completed, startDate, endDate } = request.query as {
         taskId?: string;
         goalId?: string;
@@ -254,18 +254,18 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      
+
       // Verify user exists in database
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found in database' });
       }
-      
+
       const { id } = request.params as { id: string };
-      const body = TimerSessionSchema.safeParse(request.body);  
+      const body = TimerSessionSchema.safeParse(request.body);
       if (!body.success) {
         return reply.code(400).send({ error: 'Invalid session data' });
       }
@@ -305,16 +305,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      
+
       // Verify user exists in database
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found in database' });
       }
-      
+
       const { id } = request.params as { id: string };
 
       const session = await fastify.prisma.timerSession.findFirst({
@@ -383,16 +383,16 @@ async function timerRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const userId = request.user.id;
-      
+
       // Verify user exists in database
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId }
       });
-      
+
       if (!user) {
         return reply.code(404).send({ error: 'User not found in database' });
       }
-      
+
       const days = parseInt((request.query as any).days || '7');
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
@@ -438,6 +438,182 @@ async function timerRoutes(fastify: FastifyInstance) {
       return reply.code(500).send({ error: 'Internal server error' });
     }
   });
+  // Complete a timer session and award rewards
+  fastify.post('/complete-session',
+    {
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      try {
+        const userId = request.user?.id as string;
+        const {
+          sessionType,
+          duration,
+          taskId,
+          goalId,
+          notes,
+          metadata
+        } = request.body as {
+          sessionType: 'focus' | 'break' | 'deep';
+          duration: number; // in seconds
+          taskId?: string;
+          goalId?: string;
+          notes?: string;
+          metadata?: any;
+        };
+
+        // Create timer session record
+        const timerSession = await fastify.prisma.timerSession.create({
+          data: {
+            userId,
+            type: sessionType,
+            taskId,
+            goalId,
+            startTime: new Date(Date.now() - duration * 1000),
+            endTime: new Date(),
+            duration,
+            completed: true,
+            note: notes,
+            metadata
+          }
+        });
+
+        // Calculate streak (simplified - you might want to implement more sophisticated streak logic)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const recentSessions = await fastify.prisma.timerSession.findMany({
+          where: {
+            userId,
+            type: 'focus',
+            startTime: {
+              gte: today
+            }
+          },
+          orderBy: {
+            startTime: 'desc'
+          }
+        });
+
+        const streak = recentSessions.length; // Simplified streak calculation
+        const sessionMinutes = Math.floor(duration / 60);
+
+        // Process gamification rewards in background (non-blocking)
+        setImmediate(async () => {
+          try {
+            // Update gamification stats if service is available
+            if (fastify.gamificationService && sessionType === 'focus') {
+              await fastify.gamificationService.updateFocusStats(
+                request.user.userAddress,
+                sessionMinutes,
+                streak
+              );
+            }
+
+            // Update quest progress
+            if (fastify.gamificationService) {
+              await fastify.gamificationService.updateQuestProgress(userId);
+            }
+
+            // Award badges for session milestones
+            const badgeService = new (await import('../../services/badge.service')).BadgeService(fastify.prisma);
+
+            // Award focus session badges
+            if (sessionType === 'focus') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'focus_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'focus_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 30) {
+                await badgeService.awardBadge(userId, 'focus_30min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 60) {
+                await badgeService.awardBadge(userId, 'focus_1hour', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
+
+            // Award deep work badges
+            if (sessionType === 'deep') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'deep_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'deep_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 30) {
+                await badgeService.awardBadge(userId, 'deep_30min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 60) {
+                await badgeService.awardBadge(userId, 'deep_1hour', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
+
+            // Award break badges
+            if (sessionType === 'break') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'break_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'break_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
+
+            console.log(`✅ Background gamification processing completed for user ${userId}, session ${timerSession.id}`);
+          } catch (error) {
+            console.error(`❌ Background gamification processing failed for user ${userId}, session ${timerSession.id}:`, error);
+          }
+        });
+
+        return reply.status(200).send({
+          success: true,
+          message: 'Session completed successfully',
+          session: timerSession,
+          rewards: {
+            xp: sessionMinutes * (sessionType === 'deep' ? 20 : 10),
+            focusPoints: sessionMinutes * 2,
+            streak
+          }
+        });
+      } catch (error) {
+        console.error("Error completing timer session", error);
+        return reply.status(500).send({
+          success: false,
+          error: 'Error completing session'
+        });
+      }
+    });
 }
 
 export default timerRoutes;

@@ -112,7 +112,7 @@ export default function ProfileDashboard() {
         </ButtonSimple>
 
 
-
+{/* 
         <ButtonSimple
           className={activeTab === 'quests' ? 'bg-[var(--brand-primary)] ' : ''}
           onClick={() => { setActiveTab('lfg_session'); logClickedEvent("quests_button_clicked ") }}>
@@ -122,7 +122,7 @@ export default function ProfileDashboard() {
             className="text-gray-500"
           />
 
-        </ButtonSimple>
+        </ButtonSimple> */}
 
         <ButtonSimple
           className={activeTab === 'settings' ? 'bg-[var(--brand-primary)] ' : ''}
