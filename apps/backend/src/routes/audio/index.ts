@@ -18,6 +18,11 @@ async function audioRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const noteId = (request.params as { id: string }).id;
 
+
+      if(!userId) {
+        return reply.code(401).send({ message: 'Unauthorized' });
+      }
+
       const note = await fastify.prisma.notes.findFirst({
         where: { id: noteId, userId },
         include: {
@@ -29,10 +34,20 @@ async function audioRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ message: 'Note not found' });
       }
 
+
+      const notesSourcesData  = note.noteSources.map((source) => {
+        return `
+        ${source.type}: ${source.url} ${source.title} ${source.type === 'text' ? `\n${source.content}` : ''} 
+        `;
+      }).join('\n');
+
       let promptGeneration = `
-      Summarize under 100 words or 1000 characters it:  
-      You are a helpful assistant that generates audio summaries of notes.
+      Create a very short audio summary (under 50 words) that captures the key points of this note.
+      Focus on the most important insights and actionable takeaways.
+      Keep it concise and engaging for audio playback.
+      
       The note is: ${note.text}
+      The notes sources are: ${notesSourcesData}
       `
 
       let notesSourcesContext = note.noteSources.map((source) => {
@@ -45,37 +60,50 @@ async function audioRoutes(fastify: FastifyInstance) {
       The notes sources are: ${notesSourcesContext}
       `
 
-      console.log("promptGeneration", promptGeneration);
 
       const aiService = new EnhancedAiService(fastify.prisma);
-      const aiResponse = await aiService.generateTextWithMemory({
+      console.log("promptGeneration", promptGeneration);
+      const response = await aiService.generateTextWithMemory({
         model: 'openai/gpt-4o-mini',
         prompt: promptGeneration,
         userId,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
-      });
+      }); 
 
+      let audioPrompt = response?.text;
 
-      let audioPrompt = aiResponse?.text;
+      if(!audioPrompt) {
+        return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
+      }
 
       if (!audioPrompt) {
         return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
-      }
-        
+      }        
+
       const audioService = new AudioService(fastify.prisma);
-      const audio = await audioService.generateAudio({
+        const audio = await audioService.createAudioStreamFromText({
         model: 'openai/tts',
         prompt: audioPrompt,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
         userId,
       });
 
-      return reply.send({
-        data: audio,
-        message: 'Audio generated successfully',
-        status: 'success',
-        statusCode: 200,
-      });
+      console.log("audio", audio);
+
+      if(!audio) {
+        return reply.code(500).send({ message: 'Issue generating audio' });
+      }
+
+      // Set proper headers for audio streaming
+      reply.header('Content-Type', 'audio/mpeg');
+      reply.header('Content-Disposition', 'inline; filename="audio-summary.mp3"');
+      reply.header('Cache-Control', 'no-cache');
+      reply.header('Access-Control-Allow-Origin', '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Stream the audio data
+      return reply.send(audio);
 
     }
     catch (error) {
@@ -94,6 +122,10 @@ async function audioRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const { text } = request.body as { text: string };
 
+      if(!userId) {
+        return reply.code(401).send({ message: 'Unauthorized' });
+      }
+
       if (!text) {
         return reply.code(400).send({ message: 'Text is required' });
       }
@@ -108,26 +140,75 @@ async function audioRoutes(fastify: FastifyInstance) {
         prompt = text.slice(0, 1000);
       }
 
+      
+
+      const note = await fastify.prisma.notes.findFirst({
+        where: {  userId },
+        include: {
+          noteSources: true,
+        },
+      });
+
+      if(!note) {
+        return reply.code(404).send({ message: 'Note not found' });
+      }
+
+      const notesSourcesContext = note.noteSources.map((source) => {
+        return `
+        ${source.type}: ${source.url} ${source.title} ${source.type === 'text' ? `\n${source.content}` : ''} 
+        `;
+      }).join('\n');
+
       let promptGeneration = `
-      Summarize under 100 words or 1000 characters it:  
-      You are a helpful assistant that generates audio summaries, conversations.
+      Create a very short audio summary (under 50 words) that captures the key points.
+      Focus on the most important insights and actionable takeaways.
+      Keep it concise and engaging for audio playback.
+      
       The text is: ${text}
       `
 
-      const audioService = new AudioService(fastify.prisma);
-      const audio = await audioService.generateAudio({
-        model: 'openai/tts',
+
+      const aiService = new EnhancedAiService(fastify.prisma);
+      console.log("promptGeneration", promptGeneration);
+      const response = await aiService.generateTextWithMemory({
+        model: 'openai/gpt-4o-mini',
         prompt: promptGeneration,
+        userId,
+        contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
+      }); 
+
+      let audioPrompt = response?.text;
+
+      console.log("prompt summary to send audio", audioPrompt);
+
+      if (!audioPrompt) {
+        return reply.code(500).send({ message: 'Issue generating audio prompt summary' });
+      }
+
+      const audioService = new AudioService(fastify.prisma);
+      const audio = await audioService.createAudioStreamFromText({
+        model: 'openai/tts',
+        prompt: audioPrompt,
         contextSources: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings'],
         userId,
       });
 
-      return reply.send({
-        data: audio,
-        message: 'Audio generated successfully',
-        status: 'success',
-        statusCode: 200,
-      });
+      console.log("audio", audio);
+
+      if(!audio) {
+        return reply.code(500).send({ message: 'Issue generating audio' });
+      }
+
+      // Set proper headers for audio streaming
+      reply.header('Content-Type', 'audio/mpeg');
+      reply.header('Content-Disposition', 'inline; filename="audio-summary.mp3"');
+      reply.header('Cache-Control', 'no-cache');
+      reply.header('Access-Control-Allow-Origin', '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Stream the audio data
+      return reply.send(audio);
 
     }
     catch (error) {

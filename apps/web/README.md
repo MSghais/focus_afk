@@ -39,6 +39,13 @@ A comprehensive focus and productivity application built with Next.js, featuring
 - Theme customization (light/dark/auto)
 - Data management
 
+### 🎵 Audio Features
+- Generate audio summaries of notes and sources
+- Short, concise audio summaries (under 50 words)
+- AI-powered text-to-speech using ElevenLabs
+- Audio player with controls
+- Automatic audio cleanup and memory management
+
 ## Technology Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript
@@ -150,6 +157,7 @@ All data is stored locally in the browser using IndexedDB (via Dexie.js). This m
 - **Store** (`lib/store.ts`): Zustand store with all application state and actions
 - **Modules**: Feature-specific components (Tasks, Goals, Timer, Dashboard, Settings)
 - **Providers**: Store initialization and authentication
+- **API Service** (`lib/api.ts`): Backend communication including audio generation endpoints
 
 ## Development
 
