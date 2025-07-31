@@ -157,7 +157,7 @@ export default function DashboardQuests() {
 
       <QuestList quests={[]} isEnabledRefreshButton={false} />
 
-      <EnhancedQuestList userId={userConnected?.id || ''} userAddress={userConnected?.userAddress || ''} />
+      {/* <EnhancedQuestList userId={userConnected?.id || ''} userAddress={userConnected?.userAddress || ''} /> */}
 
       <div style={{ border: '1px solid var(--border)', borderRadius: 14, padding: '1.2rem', marginBottom: '1.5rem', color: 'var(--foreground)' }}>
         <div style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 8 }}>Set a Goal & Stake</div>

@@ -71,6 +71,7 @@ export interface GeneratedQuest {
 export class EnhancedQuestService {
   private questTemplates: Map<string, QuestTemplate> = new Map();
   private adaptiveQuestPrompts: Map<string, string> = new Map();
+  private questIdCounter: number = 0;
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -80,6 +81,14 @@ export class EnhancedQuestService {
   ) {
     this.initializeQuestTemplates();
     this.initializeAdaptivePrompts();
+  }
+
+  // Generate unique quest ID
+  private generateUniqueQuestId(prefix: string, userId: string): string {
+    this.questIdCounter++;
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `${prefix}_${userId}_${timestamp}_${this.questIdCounter}_${random}`;
   }
 
   private initializeQuestTemplates(): void {
@@ -178,8 +187,10 @@ export class EnhancedQuestService {
     tags?: string[];
     priority?: 'low' | 'medium' | 'high';
   }): Promise<GeneratedQuest> {
+    const now = new Date();
+    
     const quest: GeneratedQuest = {
-      id: `generic_${questData.userId}_${Date.now()}`,
+      id: this.generateUniqueQuestId('generic', questData.userId),
       userId: questData.userId,
       templateId: 'generic',
       name: questData.name,
@@ -192,20 +203,17 @@ export class EnhancedQuestService {
       rewardXp: questData.rewardXp,
       rewardTokens: questData.rewardTokens,
       difficulty: questData.difficulty,
-      createdAt: new Date(),
+      createdAt: now,
       expiresAt: questData.expiresAt,
       meta: {
         template: 'generic',
         completionCriteria: questData.completionCriteria,
         tags: questData.tags || [],
-        priority: questData.priority || 'medium',
-        createdBy: 'user'
+        priority: questData.priority || 'medium'
       }
     };
 
-    // Save to database
     await this.saveQuestsToDatabase([quest]);
-
     return quest;
   }
 
@@ -218,45 +226,33 @@ export class EnhancedQuestService {
     difficulty?: 1 | 2 | 3 | 4 | 5;
     expiresAt?: Date;
   }): Promise<GeneratedQuest> {
-    const questDetails = {
-      name: `${questData.suggestionType.charAt(0).toUpperCase() + questData.suggestionType.slice(1)} Challenge`,
-      description: `Complete a ${questData.suggestionType} activity based on AI analysis of your patterns.`,
-      category: 'custom',
-      difficulty: questData.difficulty || 2,
-      rewardXp: 100,
-      rewardTokens: 10,
-      completionCriteria: { type: 'count', target: 1 }
-    };
-
+    const now = new Date();
+    
     const quest: GeneratedQuest = {
-      id: `suggestion_${questData.userId}_${Date.now()}`,
+      id: this.generateUniqueQuestId('suggestion', questData.userId),
       userId: questData.userId,
-      templateId: `suggestion_${questData.suggestionType}`,
-      name: questDetails.name,
-      description: questDetails.description,
+      templateId: 'suggestion',
+      name: `AI Suggestion: ${questData.suggestionType}`,
+      description: questData.aiReasoning,
       type: 'suggestion',
-      category: questDetails.category,
+      category: questData.suggestionType,
       status: 'active',
       progress: 0,
-      goal: questDetails.completionCriteria.target,
-      rewardXp: questDetails.rewardXp,
-      rewardTokens: questDetails.rewardTokens,
-      difficulty: questDetails.difficulty,
-      createdAt: new Date(),
+      goal: 1,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: questData.difficulty || 2,
+      createdAt: now,
       expiresAt: questData.expiresAt,
       meta: {
-        template: `suggestion_${questData.suggestionType}`,
+        template: 'suggestion',
         suggestionType: questData.suggestionType,
         context: questData.context,
-        aiReasoning: questData.aiReasoning,
-        completionCriteria: questDetails.completionCriteria,
-        createdBy: 'ai'
+        aiReasoning: questData.aiReasoning
       }
     };
 
-    // Save to database
     await this.saveQuestsToDatabase([quest]);
-
     return quest;
   }
 
@@ -886,24 +882,51 @@ export class EnhancedQuestService {
 
   private async saveQuestsToDatabase(quests: GeneratedQuest[]): Promise<void> {
     for (const quest of quests) {
-      await this.prisma.quests.create({
-        data: {
-          id: quest.id,
-          userId: quest.userId,
-          type: quest.type,
-          name: quest.name,
-          description: quest.description,
-          // category: quest.category,
-          difficulty: quest.difficulty,
-          rewardXp: quest.rewardXp,
-          // rewardTokens: quest.rewardTokens,
-          isCompleted: 'false',
-          progress: quest.progress,
-          // goal: quest.goal,
-          // expiresAt: quest.expiresAt,
-          meta: quest.meta
-        }
-      });
+      try {
+        await this.prisma.quests.upsert({
+          where: { id: quest.id },
+          update: {
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            progress: quest.progress,
+            meta: quest.meta
+          },
+          create: {
+            id: quest.id,
+            userId: quest.userId,
+            type: quest.type,
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            isCompleted: 'false',
+            progress: quest.progress,
+            meta: quest.meta
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to save quest ${quest.id}:`, error);
+        // Generate a new unique ID and try again
+        const newId = this.generateUniqueQuestId(quest.type, quest.userId);
+        quest.id = newId;
+        
+        await this.prisma.quests.create({
+          data: {
+            id: quest.id,
+            userId: quest.userId,
+            type: quest.type,
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            isCompleted: 'false',
+            progress: quest.progress,
+            meta: quest.meta
+          }
+        });
+      }
     }
   }
 

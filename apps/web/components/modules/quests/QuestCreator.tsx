@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
+import { useWebSocket } from '../../../providers/WebSocketProvider';
 import styles from './QuestCreator.module.scss';
 
 interface QuestCreatorProps {
@@ -22,11 +23,23 @@ interface QuestSuggestion {
 }
 
 export default function QuestCreator({ userId, userAddress, onQuestCreated, onClose }: QuestCreatorProps) {
-  const [questType, setQuestType] = useState<'generic' | 'suggestion' | 'priority'>('priority');
+  const [questType, setQuestType] = useState<'generic' | 'suggestion' | 'priority' | 'task' | 'focus' | 'goal' | 'quick_win' | 'learning' | 'wellness' | 'social' | 'streak' | 'note'>('priority');
   const [suggestions, setSuggestions] = useState<QuestSuggestion[]>([]);
   const [taskSummary, setTaskSummary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { 
+    requestTaskQuests, 
+    requestFocusQuests, 
+    requestGoalQuests, 
+    requestQuickWinQuests, 
+    requestLearningQuests, 
+    requestWellnessQuests, 
+    requestSocialQuests, 
+    requestStreakQuests, 
+    requestNoteQuests 
+  } = useWebSocket();
 
   // Generic quest form state
   const [genericQuest, setGenericQuest] = useState({
@@ -242,6 +255,70 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
     }
   };
 
+  // New quest generation functions for different types
+  const generateTaskQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestTaskQuests();
+    setTimeout(() => setLoading(false), 2000); // Give time for socket response
+  };
+
+  const generateFocusQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestFocusQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateGoalQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestGoalQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateQuickWinQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestQuickWinQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateLearningQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestLearningQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateWellnessQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestWellnessQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateSocialQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestSocialQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateStreakQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestStreakQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  const generateNoteQuests = () => {
+    setLoading(true);
+    setError(null);
+    requestNoteQuests();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -264,6 +341,60 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
           onClick={() => setQuestType('priority')}
         >
           🏆 Generate Priority Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'task' ? styles.active : ''}`}
+          onClick={() => setQuestType('task')}
+        >
+          📋 Task Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'focus' ? styles.active : ''}`}
+          onClick={() => setQuestType('focus')}
+        >
+          🎯 Focus Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'goal' ? styles.active : ''}`}
+          onClick={() => setQuestType('goal')}
+        >
+          🎯 Goal Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'quick_win' ? styles.active : ''}`}
+          onClick={() => setQuestType('quick_win')}
+        >
+          ⚡ Quick Win Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'learning' ? styles.active : ''}`}
+          onClick={() => setQuestType('learning')}
+        >
+          📚 Learning Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'wellness' ? styles.active : ''}`}
+          onClick={() => setQuestType('wellness')}
+        >
+          🧘 Wellness Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'social' ? styles.active : ''}`}
+          onClick={() => setQuestType('social')}
+        >
+          🤝 Social Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'streak' ? styles.active : ''}`}
+          onClick={() => setQuestType('streak')}
+        >
+          🔥 Streak Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'note' ? styles.active : ''}`}
+          onClick={() => setQuestType('note')}
+        >
+          📝 Note Quests
         </button>
         <button
           className={`${styles.typeButton} ${questType === 'generic' ? styles.active : ''}`}
@@ -384,7 +515,160 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
         </div>
       )}
 
-      {/* Generic Quest Form */}
+      {/* Task Quest Generation */}
+      {questType === 'task' && (
+        <div className={styles.questSection}>
+          <h3>📋 Task-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests specifically focused on your current tasks. These quests will help you tackle your task list more effectively.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateTaskQuests}
+            disabled={loading}
+          >
+            {loading ? '📋 Generating Task Quests...' : '📋 Generate Task Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Focus Quest Generation */}
+      {questType === 'focus' && (
+        <div className={styles.questSection}>
+          <h3>🎯 Focus-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests designed to improve your focus and concentration. These quests will help you build better focus habits.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateFocusQuests}
+            disabled={loading}
+          >
+            {loading ? '🎯 Generating Focus Quests...' : '🎯 Generate Focus Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Goal Quest Generation */}
+      {questType === 'goal' && (
+        <div className={styles.questSection}>
+          <h3>🎯 Goal-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests aligned with your current goals. These quests will help you make progress toward your objectives.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateGoalQuests}
+            disabled={loading}
+          >
+            {loading ? '🎯 Generating Goal Quests...' : '🎯 Generate Goal Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Quick Win Quest Generation */}
+      {questType === 'quick_win' && (
+        <div className={styles.questSection}>
+          <h3>⚡ Quick Win Quest Generation</h3>
+          <p className={styles.description}>
+            Generate short, achievable quests that you can complete quickly. These are perfect for building momentum and motivation.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateQuickWinQuests}
+            disabled={loading}
+          >
+            {loading ? '⚡ Generating Quick Win Quests...' : '⚡ Generate Quick Win Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Learning Quest Generation */}
+      {questType === 'learning' && (
+        <div className={styles.questSection}>
+          <h3>📚 Learning Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests focused on learning and skill development. These quests will help you grow and expand your knowledge.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateLearningQuests}
+            disabled={loading}
+          >
+            {loading ? '📚 Generating Learning Quests...' : '📚 Generate Learning Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Wellness Quest Generation */}
+      {questType === 'wellness' && (
+        <div className={styles.questSection}>
+          <h3>🧘 Wellness Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests focused on your well-being and self-care. These quests will help you maintain a healthy work-life balance.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateWellnessQuests}
+            disabled={loading}
+          >
+            {loading ? '🧘 Generating Wellness Quests...' : '🧘 Generate Wellness Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Social Quest Generation */}
+      {questType === 'social' && (
+        <div className={styles.questSection}>
+          <h3>🤝 Social Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests focused on social connections and networking. These quests will help you build relationships and collaborate.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateSocialQuests}
+            disabled={loading}
+          >
+            {loading ? '🤝 Generating Social Quests...' : '🤝 Generate Social Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Streak Quest Generation */}
+      {questType === 'streak' && (
+        <div className={styles.questSection}>
+          <h3>🔥 Streak-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests based on your current streaks and milestones. These quests will help you maintain momentum and build consistency.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateStreakQuests}
+            disabled={loading}
+          >
+            {loading ? '🔥 Generating Streak Quests...' : '🔥 Generate Streak Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Note Quest Generation */}
+      {questType === 'note' && (
+        <div className={styles.questSection}>
+          <h3>📝 Note-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests focused on note-taking and knowledge management. These quests will help you organize and review your notes effectively.
+          </p>
+          <button
+            className={styles.generateButton}
+            onClick={generateNoteQuests}
+            disabled={loading}
+          >
+            {loading ? '📝 Generating Note Quests...' : '📝 Generate Note Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Generic Quest Creation */}
       {questType === 'generic' && (
         <form onSubmit={handleGenericQuestSubmit} className={styles.form}>
           <h3>🎲 Create Custom Quest</h3>
