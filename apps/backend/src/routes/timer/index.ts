@@ -498,94 +498,103 @@ async function timerRoutes(fastify: FastifyInstance) {
         const streak = recentSessions.length; // Simplified streak calculation
         const sessionMinutes = Math.floor(duration / 60);
 
-        // Update gamification stats if service is available
-        if (fastify.gamificationService && sessionType === 'focus') {
-          await fastify.gamificationService.updateFocusStats(
-            request.user.userAddress,
-            sessionMinutes,
-            streak
-          );
-        }
+        // Process gamification rewards in background (non-blocking)
+        setImmediate(async () => {
+          try {
+            // Update gamification stats if service is available
+            if (fastify.gamificationService && sessionType === 'focus') {
+              await fastify.gamificationService.updateFocusStats(
+                request.user.userAddress,
+                sessionMinutes,
+                streak
+              );
+            }
 
-        // Update quest progress
-        if (fastify.gamificationService) {
-          await fastify.gamificationService.updateQuestProgress(userId);
-        }
+            // Update quest progress
+            if (fastify.gamificationService) {
+              await fastify.gamificationService.updateQuestProgress(userId);
+            }
 
-        // Award badges for session milestones
-        const badgeService = new (await import('../../services/badge.service')).BadgeService(fastify.prisma);
+            // Award badges for session milestones
+            const badgeService = new (await import('../../services/badge.service')).BadgeService(fastify.prisma);
 
-        // Award focus session badges
-        if (sessionType === 'focus') {
-          if (sessionMinutes >= 5) {
-            await badgeService.awardBadge(userId, 'focus_5min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 15) {
-            await badgeService.awardBadge(userId, 'focus_15min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 30) {
-            await badgeService.awardBadge(userId, 'focus_30min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 60) {
-            await badgeService.awardBadge(userId, 'focus_1hour', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-        }
+            // Award focus session badges
+            if (sessionType === 'focus') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'focus_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'focus_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 30) {
+                await badgeService.awardBadge(userId, 'focus_30min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 60) {
+                await badgeService.awardBadge(userId, 'focus_1hour', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
 
-        // Award deep work badges
-        if (sessionType === 'deep') {
-          if (sessionMinutes >= 5) {
-            await badgeService.awardBadge(userId, 'deep_5min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 15) {
-            await badgeService.awardBadge(userId, 'deep_15min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 30) {
-            await badgeService.awardBadge(userId, 'deep_30min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-          if (sessionMinutes >= 60) {
-            await badgeService.awardBadge(userId, 'deep_1hour', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-        }
+            // Award deep work badges
+            if (sessionType === 'deep') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'deep_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'deep_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 30) {
+                await badgeService.awardBadge(userId, 'deep_30min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 60) {
+                await badgeService.awardBadge(userId, 'deep_1hour', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
 
-        // Award break badges
-        if (sessionType === 'break') {
-          if (sessionMinutes >= 5) {
-            await badgeService.awardBadge(userId, 'break_5min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
+            // Award break badges
+            if (sessionType === 'break') {
+              if (sessionMinutes >= 5) {
+                await badgeService.awardBadge(userId, 'break_5min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+              if (sessionMinutes >= 15) {
+                await badgeService.awardBadge(userId, 'break_15min', {
+                  sessionMinutes,
+                  sessionId: timerSession.id
+                });
+              }
+            }
+
+            console.log(`✅ Background gamification processing completed for user ${userId}, session ${timerSession.id}`);
+          } catch (error) {
+            console.error(`❌ Background gamification processing failed for user ${userId}, session ${timerSession.id}:`, error);
           }
-          if (sessionMinutes >= 15) {
-            await badgeService.awardBadge(userId, 'break_15min', {
-              sessionMinutes,
-              sessionId: timerSession.id
-            });
-          }
-        }
+        });
 
         return reply.status(200).send({
           success: true,

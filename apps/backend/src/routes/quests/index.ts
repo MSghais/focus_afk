@@ -28,7 +28,7 @@ async function questsRoutes(fastify: FastifyInstance) {
             userId,
           },
           orderBy: {
-            createdAt: 'desc'
+            dateAwarded: 'desc'
           }
         });
 
@@ -89,15 +89,77 @@ async function questsRoutes(fastify: FastifyInstance) {
           return reply.status(500).send({ success: false, error: 'Gamification service not available' });
         }
 
-        const completion = await fastify.gamificationService.completeQuest(id, userId, user.userAddress);
+        // Mark quest as completed immediately in database
+        const quest = await fastify.prisma.quests.findUnique({
+          where: { id }
+        });
+
+        if (!quest || quest.userId !== userId) {
+          return reply.status(404).send({ success: false, error: 'Quest not found or unauthorized' });
+        }
+
+        if (quest.isCompleted === 'true') {
+          return reply.status(400).send({ success: false, error: 'Quest already completed' });
+        }
+
+        // Update quest status immediately
+        await fastify.prisma.quests.update({
+          where: { id },
+          data: { 
+            isCompleted: 'true',
+            meta: {
+              ...(quest.meta as any || {}),
+              completedAt: new Date().toISOString(),
+              processingStatus: 'pending'
+            }
+          }
+        });
+
+        // Process rewards in background (non-blocking)
+        setImmediate(async () => {
+          try {
+            const completion = await fastify.gamificationService!.completeQuest(id, userId, user.userAddress);
+            
+            // Update quest with completion details
+            await fastify.prisma.quests.update({
+              where: { id },
+              data: { 
+                meta: {
+                  ...(quest.meta as any || {}),
+                  completedAt: new Date().toISOString(),
+                  processingStatus: 'completed',
+                  completion
+                }
+              }
+            });
+
+            console.log(`✅ Background quest completion processing finished for quest ${id}, user ${userId}`);
+          } catch (error) {
+            console.error(`❌ Background quest completion processing failed for quest ${id}, user ${userId}:`, error);
+            
+            // Update quest with error status
+            await fastify.prisma.quests.update({
+              where: { id },
+              data: { 
+                meta: {
+                  ...(quest.meta as any || {}),
+                  completedAt: new Date().toISOString(),
+                  processingStatus: 'failed',
+                  error: error instanceof Error ? error.message : 'Unknown error'
+                }
+              }
+            });
+          }
+        });
         
         return reply.status(200).send({ 
           success: true, 
-          message: 'Quest completed successfully',
-          completion 
+          message: 'Quest completion initiated successfully',
+          questId: id,
+          status: 'processing'
         });
       } catch (error) {
-        console.error("Error completing quest", error);
+        console.error("Error initiating quest completion", error);
         return reply.status(500).send({ 
           success: false, 
           error: error instanceof Error ? error.message : 'Error completing quest' 
