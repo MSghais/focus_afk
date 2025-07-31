@@ -3,17 +3,22 @@ import { ChatOpenAI } from '@langchain/openai';
 import { PrismaClient } from '@prisma/client';
 import { AgentType, AgentConfig } from './types';
 import { GeneralAgent } from './general-agent';
+import { RAGAgent } from './rag-agent';
 import { ContextService } from './context-service';
+import { VectorStoreManager } from './vector-store';
 import { CreateTaskTool, UpdateTaskTool, DeleteTaskTool, GetTasksTool, ToggleTaskCompleteTool } from './tools/task-tools';
+import { VectorSearchTool, IndexDocumentsTool, GetSearchContextTool, GetSearchStatsTool, ClearUserDocumentsTool, SemanticSimilarityTool, KnowledgeRetrievalTool } from './tools/rag-tools';
 
 export class AgentFactory {
   private prisma: PrismaClient;
   private contextService: ContextService;
+  private vectorStore: VectorStoreManager;
   private agents: Map<AgentType, any> = new Map();
 
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
     this.contextService = new ContextService(prisma);
+    this.vectorStore = new VectorStoreManager(prisma);
   }
 
   /**
@@ -38,6 +43,26 @@ export class AgentFactory {
     switch (agentType) {
       case AgentType.GENERAL:
         return new GeneralAgent(config, this.contextService, this.prisma);
+      
+      case AgentType.MENTOR:
+        return new RAGAgent(config, this.contextService, this.vectorStore, this.prisma, {
+          enableVectorSearch: true,
+          searchThreshold: 0.7,
+          maxSearchResults: 8,
+          includeSearchContext: true,
+          documentTypes: ['task', 'goal', 'note', 'session', 'quest', 'badge'],
+          rerankResults: true
+        });
+      
+      case AgentType.PRODUCTIVITY_ANALYSIS:
+        return new RAGAgent(config, this.contextService, this.vectorStore, this.prisma, {
+          enableVectorSearch: true,
+          searchThreshold: 0.6,
+          maxSearchResults: 10,
+          includeSearchContext: true,
+          documentTypes: ['task', 'goal', 'session', 'note'],
+          rerankResults: true
+        });
       
       // Add other agent types here as they are implemented
       // case AgentType.TASK_MANAGEMENT:
@@ -154,6 +179,16 @@ export class AgentFactory {
       new ToggleTaskCompleteTool(this.prisma)
     ];
 
+    const ragTools = [
+      new VectorSearchTool(this.prisma, this.vectorStore),
+      new IndexDocumentsTool(this.prisma, this.vectorStore),
+      new GetSearchContextTool(this.prisma, this.vectorStore),
+      new GetSearchStatsTool(this.prisma, this.vectorStore),
+      new ClearUserDocumentsTool(this.prisma, this.vectorStore),
+      new SemanticSimilarityTool(this.prisma, this.vectorStore),
+      new KnowledgeRetrievalTool(this.prisma, this.vectorStore)
+    ];
+
     // Add specialized tools based on agent type
     switch (agentType) {
       case AgentType.GENERAL:
@@ -172,10 +207,10 @@ export class AgentFactory {
         return baseTools; // Gamification agents need task tools for quest completion
       
       case AgentType.PRODUCTIVITY_ANALYSIS:
-        return baseTools; // Analysis agents need task tools for data access
+        return [...baseTools, ...ragTools]; // Analysis agents get RAG tools
       
       case AgentType.MENTOR:
-        return baseTools; // Mentors need task tools for guidance
+        return [...baseTools, ...ragTools]; // Mentors get RAG tools for personalized guidance
       
       case AgentType.ORCHESTRATOR:
         return []; // Orchestrators don't need tools, they delegate

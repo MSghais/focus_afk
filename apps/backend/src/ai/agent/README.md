@@ -23,9 +23,20 @@ The AI agent system follows a modular architecture with the following components
    - Handles basic productivity queries
    - Suggests relevant actions based on context
 
-4. **Tools** (`tools/`)
+4. **RAG Agent** (`rag-agent.ts`)
+   - RAG-enhanced AI assistant with vector search
+   - Provides personalized, context-aware responses
+   - Leverages semantic search for better recommendations
+
+5. **Vector Store Manager** (`vector-store.ts`)
+   - Manages document embeddings and vector search
+   - Handles document indexing and retrieval
+   - Provides semantic search capabilities
+
+6. **Tools** (`tools/`)
    - Structured tools for database operations
    - Task management tools (create, update, delete, get)
+   - RAG tools for vector search and knowledge retrieval
    - Extensible tool system for specialized agents
 
 ### Agent Types
@@ -35,8 +46,8 @@ The AI agent system follows a modular architecture with the following components
 - **Goal Tracking**: Focused on goal setting and progress
 - **Focus Timer**: Optimizes focus sessions and time management
 - **Gamification**: Handles quests, badges, and motivation
-- **Productivity Analysis**: Provides insights and recommendations
-- **Mentor**: Personal coaching and guidance
+- **Productivity Analysis**: RAG-enhanced insights and recommendations
+- **Mentor**: RAG-enhanced personal coaching and guidance
 - **Orchestrator**: Coordinates between specialized agents
 
 ## 🚀 Quick Start
@@ -51,7 +62,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 const agentFactory = new AgentFactory(prisma);
 
-// Get an agent
+// Get a general agent
 const generalAgent = await agentFactory.getAgent(AgentType.GENERAL);
 
 // Use the agent
@@ -62,6 +73,27 @@ const response = await generalAgent.processMessage(
 );
 
 console.log(response.content);
+```
+
+### RAG-Enhanced Usage
+
+```typescript
+// Get a RAG-enhanced mentor agent
+const mentorAgent = await agentFactory.getAgent(AgentType.MENTOR);
+
+// Index user documents for vector search
+await mentorAgent.indexUserDocuments('user-123');
+
+// Use RAG capabilities
+const ragResponse = await mentorAgent.processMessage(
+  'user-123',
+  'What patterns do you see in my productivity?',
+  'session-456'
+);
+
+console.log(ragResponse.content);
+console.log('Search Results:', ragResponse.metadata.searchResults);
+console.log('Confidence:', ragResponse.confidence);
 ```
 
 ### Environment Setup
@@ -82,6 +114,28 @@ The context service provides intelligent context optimization:
 - **Compression**: Reduces context size for better performance
 - **Priority Loading**: Loads data based on agent type
 - **Retention Policy**: Automatic cleanup of old data
+
+## 🔍 RAG System
+
+The RAG (Retrieval-Augmented Generation) system provides semantic search and knowledge retrieval:
+
+### Features
+
+- **Vector Search**: Semantic search across user data
+- **Document Indexing**: Automatic indexing of tasks, goals, sessions, notes
+- **Knowledge Retrieval**: Intelligent pattern analysis and insights
+- **Semantic Similarity**: Find similar content and patterns
+- **Personalized Recommendations**: Data-driven suggestions
+
+### Document Types
+
+- **Tasks**: Task titles, descriptions, priorities, completion status
+- **Goals**: Goal progress, target dates, related tasks
+- **Sessions**: Focus session data, productivity metrics, mood tracking
+- **Notes**: User notes, summaries, topics, AI-generated insights
+- **Quests**: Gamification quests, progress, rewards
+- **Badges**: Earned badges, requirements, achievements
+- **User Profiles**: User preferences, settings, statistics
 
 ### Usage
 
@@ -106,11 +160,21 @@ The system includes structured tools for database operations:
 
 ### Available Tools
 
+#### Task Management Tools
 - `CreateTaskTool`: Create new tasks
 - `UpdateTaskTool`: Update existing tasks
 - `DeleteTaskTool`: Delete tasks
 - `GetTasksTool`: Retrieve tasks with filtering
 - `ToggleTaskCompleteTool`: Mark tasks as complete/incomplete
+
+#### RAG Tools
+- `VectorSearchTool`: Semantic search across user data
+- `IndexDocumentsTool`: Index user documents for vector search
+- `GetSearchContextTool`: Get contextual information from search results
+- `GetSearchStatsTool`: Get vector search statistics
+- `ClearUserDocumentsTool`: Clear indexed documents for a user
+- `SemanticSimilarityTool`: Find semantically similar content
+- `KnowledgeRetrievalTool`: Retrieve knowledge and insights with pattern analysis
 
 ### Adding New Tools
 
