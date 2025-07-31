@@ -25,14 +25,14 @@ contract RevokeMinterScript is Script {
         // Check if deployer has admin role
         bytes32 DEFAULT_ADMIN_ROLE = 0x00;
         if (!focusToken.hasRole(DEFAULT_ADMIN_ROLE, deployer)) {
-            console.log("❌ Deployer does not have admin role!");
+            console.log("Deployer does not have admin role!");
             return;
         }
         
         // Check if minter has minter role
         bytes32 MINTER_ROLE = keccak256("MINTER_ROLE");
         if (!focusToken.hasRole(MINTER_ROLE, minterToRevoke)) {
-            console.log("⚠️  Address does not have minter role!");
+            console.log("Address does not have minter role!");
             return;
         }
         
@@ -43,7 +43,7 @@ contract RevokeMinterScript is Script {
         
         vm.stopBroadcast();
         
-        console.log("✅ Minter role revoked successfully!");
+        console.log("Minter role revoked successfully!");
         console.log("Address can no longer mint tokens.");
     }
 } 

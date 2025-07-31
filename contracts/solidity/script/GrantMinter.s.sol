@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
@@ -25,14 +26,14 @@ contract GrantMinterScript is Script {
         // Check if deployer has admin role
         bytes32 DEFAULT_ADMIN_ROLE = 0x00;
         if (!focusToken.hasRole(DEFAULT_ADMIN_ROLE, deployer)) {
-            console.log("❌ Deployer does not have admin role!");
+            console.log("Deployer does not have admin role!");
             return;
         }
         
         // Check if new minter already has minter role
         bytes32 MINTER_ROLE = keccak256("MINTER_ROLE");
         if (focusToken.hasRole(MINTER_ROLE, newMinter)) {
-            console.log("⚠️  Address already has minter role!");
+            console.log(" Address already has minter role!");
             return;
         }
         
@@ -43,7 +44,7 @@ contract GrantMinterScript is Script {
         
         vm.stopBroadcast();
         
-        console.log("✅ Minter role granted successfully!");
+        console.log("Minter role granted successfully!");
         console.log("New minter can now call:");
         console.log("  - mint(address to, uint256 amount, string reason)");
         console.log("  - mintFocusReward(address user, uint256 sessionMinutes, uint256 streak)");
