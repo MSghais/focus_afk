@@ -257,481 +257,1076 @@ export class EnhancedQuestService {
   }
 
   /**
-   * Build comprehensive user context for quest generation
+   * Create a generic quest manually
    */
-  private async buildUserContext(userId: string, userAddress: string): Promise<UserQuestContext> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        timerSessions: {
-          where: {
-            startTime: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
-            }
-          },
-          orderBy: { startTime: 'desc' }
-        },
-        tasks: {
-          where: {
-            updatedAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-            }
-          }
-        },
-        goals: {
-          where: {
-            updatedAt: {
-              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-            }
-          }
-        },
-        quests: true,
-        badges: true
+  async createGenericQuest(questData: {
+    userId: string;
+    userAddress: string;
+    name: string;
+    description: string;
+    category: 'focus' | 'tasks' | 'goals' | 'notes' | 'learning' | 'social' | 'custom';
+    difficulty: 1 | 2 | 3 | 4 | 5;
+    rewardXp: number;
+    rewardTokens: number;
+    completionCriteria: {
+      type: 'count' | 'duration' | 'streak' | 'custom';
+      target: number;
+      unit?: string;
+    };
+    expiresAt?: Date;
+    tags?: string[];
+    priority?: 'low' | 'medium' | 'high';
+  }): Promise<GeneratedQuest> {
+    const quest: GeneratedQuest = {
+      id: `generic_${questData.userId}_${Date.now()}`,
+      userId: questData.userId,
+      templateId: 'generic',
+      name: questData.name,
+      description: questData.description,
+      type: 'generic',
+      category: questData.category,
+      status: 'active',
+      progress: 0,
+      goal: questData.completionCriteria.target,
+      rewardXp: questData.rewardXp,
+      rewardTokens: questData.rewardTokens,
+      difficulty: questData.difficulty,
+      createdAt: new Date(),
+      expiresAt: questData.expiresAt,
+      meta: {
+        template: 'generic',
+        completionCriteria: questData.completionCriteria,
+        tags: questData.tags || [],
+        priority: questData.priority || 'medium',
+        createdBy: 'user'
+      }
+    };
+
+    // Save to database
+    await this.saveQuestsToDatabase([quest]);
+
+    return quest;
+  }
+
+  /**
+   * Create a suggestion quest based on AI analysis
+   */
+  async createSuggestionQuest(questData: {
+    userId: string;
+    userAddress: string;
+    suggestionType: 'productivity' | 'wellness' | 'learning' | 'social' | 'custom';
+    context: any[];
+    aiReasoning: string;
+    difficulty?: 1 | 2 | 3 | 4 | 5;
+    expiresAt?: Date;
+  }): Promise<GeneratedQuest> {
+    // Generate quest details based on suggestion type
+    const questDetails = await this.generateSuggestionQuestDetails(
+      questData.suggestionType,
+      questData.context,
+      questData.aiReasoning
+    );
+
+    const quest: GeneratedQuest = {
+      id: `suggestion_${questData.userId}_${Date.now()}`,
+      userId: questData.userId,
+      templateId: 'suggestion',
+      name: questDetails.name,
+      description: questDetails.description,
+      type: 'suggestion',
+      category: questDetails.category,
+      status: 'active',
+      progress: 0,
+      goal: questDetails.completionCriteria.target,
+      rewardXp: questDetails.rewardXp,
+      rewardTokens: questDetails.rewardTokens,
+      difficulty: questData.difficulty || questDetails.difficulty,
+      createdAt: new Date(),
+      expiresAt: questData.expiresAt,
+      vectorContext: questData.context,
+      meta: {
+        template: 'suggestion',
+        suggestionType: questData.suggestionType,
+        aiReasoning: questData.aiReasoning,
+        completionCriteria: questDetails.completionCriteria,
+        generatedBy: 'ai',
+        confidence: questDetails.confidence
+      }
+    };
+
+    // Save to database
+    await this.saveQuestsToDatabase([quest]);
+
+    return quest;
+  }
+
+  /**
+   * Generate quest details for suggestion quests
+   */
+  private async generateSuggestionQuestDetails(
+    suggestionType: string,
+    context: any[],
+    aiReasoning: string
+  ): Promise<{
+    name: string;
+    description: string;
+    category: string;
+    difficulty: number;
+    rewardXp: number;
+    rewardTokens: number;
+    completionCriteria: any;
+    confidence: number;
+  }> {
+    // Use AI to generate quest details based on context and reasoning
+    const prompt = `
+      Based on the following context and AI reasoning, generate a quest suggestion:
+      
+      Context: ${JSON.stringify(context)}
+      AI Reasoning: ${aiReasoning}
+      Suggestion Type: ${suggestionType}
+      
+      Generate a quest with:
+      - Name (engaging and specific)
+      - Description (clear and motivating)
+      - Category (focus, tasks, goals, notes, learning, social, custom)
+      - Difficulty (1-5, where 1 is easy, 5 is very challenging)
+      - Reward XP (10-500 based on difficulty)
+      - Reward Tokens (1-50 based on difficulty)
+      - Completion Criteria (type: count/duration/streak/custom, target: number, unit: optional)
+      - Confidence (0-1, how confident the AI is in this suggestion)
+      
+      Return as JSON:
+      {
+        "name": "Quest Name",
+        "description": "Quest description",
+        "category": "category",
+        "difficulty": 3,
+        "rewardXp": 150,
+        "rewardTokens": 15,
+        "completionCriteria": {"type": "count", "target": 5},
+        "confidence": 0.8
+      }
+    `;
+
+    try {
+      const response = await this.enhancedContextManager.generateResponse(
+        'quest_generation',
+        prompt,
+        context
+      );
+
+      // Parse AI response
+      const questDetails = JSON.parse(response.text);
+      return {
+        name: questDetails.name,
+        description: questDetails.description,
+        category: questDetails.category,
+        difficulty: questDetails.difficulty,
+        rewardXp: questDetails.rewardXp,
+        rewardTokens: questDetails.rewardTokens,
+        completionCriteria: questDetails.completionCriteria,
+        confidence: questDetails.confidence
+      };
+    } catch (error) {
+      console.error('Error generating suggestion quest details:', error);
+      
+      // Fallback quest details
+      return {
+        name: `${suggestionType.charAt(0).toUpperCase() + suggestionType.slice(1)} Challenge`,
+        description: `Complete a ${suggestionType} activity based on AI analysis of your patterns.`,
+        category: 'custom',
+        difficulty: 2,
+        rewardXp: 100,
+        rewardTokens: 10,
+        completionCriteria: { type: 'count', target: 1 },
+        confidence: 0.5
+      };
+    }
+  }
+
+  /**
+   * Send quests at user connection
+   */
+  async sendConnectionQuests(userId: string, userAddress: string): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    
+    // Get user context for personalized quests
+    const userContext = await this.buildUserContext(userId, userAddress);
+    const vectorContext = await this.getVectorContext(userId, userContext);
+    
+    // Check user's last connection time
+    const lastConnection = await this.getLastConnectionTime(userId);
+    const daysSinceLastConnection = lastConnection ? 
+      (Date.now() - lastConnection.getTime()) / (1000 * 60 * 60 * 24) : 7;
+
+    // Send different quests based on connection frequency
+    if (daysSinceLastConnection > 7) {
+      // Welcome back quests for returning users
+      quests.push(...await this.generateWelcomeBackQuests(userContext, vectorContext));
+    } else if (daysSinceLastConnection > 1) {
+      // Daily check-in quests
+      quests.push(...await this.generateDailyCheckinQuests(userContext, vectorContext));
+    } else {
+      // Multiple connections per day - focus on quick wins
+      quests.push(...await this.generateQuickWinQuests(userContext, vectorContext));
+    }
+
+    // Add generic onboarding quests for new users
+    if (userContext.completedQuests.length < 3) {
+      quests.push(...await this.generateOnboardingQuests(userContext));
+    }
+
+    // Save and return quests
+    await this.saveQuestsToDatabase(quests);
+    return quests;
+  }
+
+  /**
+   * Send quests at specific app usage points
+   */
+  async sendContextualQuests(
+    userId: string, 
+    userAddress: string, 
+    triggerPoint: 'task_completion' | 'goal_progress' | 'focus_session' | 'note_creation' | 'streak_milestone' | 'level_up' | 'idle_detection'
+  ): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const userContext = await this.buildUserContext(userId, userAddress);
+    const vectorContext = await this.getVectorContext(userId, userContext);
+
+    switch (triggerPoint) {
+      case 'task_completion':
+        quests.push(...await this.generateTaskCompletionQuests(userContext, vectorContext));
+        break;
+      case 'goal_progress':
+        quests.push(...await this.generateGoalProgressQuests(userContext, vectorContext));
+        break;
+      case 'focus_session':
+        quests.push(...await this.generateFocusSessionQuests(userContext, vectorContext));
+        break;
+      case 'note_creation':
+        quests.push(...await this.generateNoteCreationQuests(userContext, vectorContext));
+        break;
+      case 'streak_milestone':
+        quests.push(...await this.generateStreakMilestoneQuests(userContext, vectorContext));
+        break;
+      case 'level_up':
+        quests.push(...await this.generateLevelUpQuests(userContext, vectorContext));
+        break;
+      case 'idle_detection':
+        quests.push(...await this.generateIdleDetectionQuests(userContext, vectorContext));
+        break;
+    }
+
+    await this.saveQuestsToDatabase(quests);
+    return quests;
+  }
+
+  /**
+   * Generate welcome back quests for returning users
+   */
+  private async generateWelcomeBackQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Catch-up quest
+    quests.push({
+      id: `welcome_back_catchup_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'welcome_back_catchup',
+      name: 'Welcome Back! Let\'s Catch Up',
+      description: 'Complete 3 tasks to get back into your productive rhythm.',
+      type: 'welcome_back',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 200,
+      rewardTokens: 20,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days
+      meta: {
+        template: 'welcome_back_catchup',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'high'
       }
     });
 
-    if (!user) {
-      throw new Error(`User not found: ${userId}`);
-    }
-
-    // Calculate user stats
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todayFocusSessions = user.timerSessions.filter(s => 
-      s.startTime >= today && s.type === 'focus'
-    );
-    
-    const todayCompletedTasks = user.tasks.filter(t => 
-      t.completed && t.updatedAt >= today
-    );
-    
-    const todayCompletedGoals = user.goals.filter(g => 
-      g.completed && g.updatedAt >= today
-    );
-
-    // Determine user preferences based on activity patterns
-    const preferences = this.analyzeUserPreferences(user.timerSessions, user.tasks, user.goals);
-
-    return {
-      userId,
-      userAddress,
-      level: user.level || 1,
-      totalXp: user.totalXp || 0,
-      streak: user.streak || 0,
-      completedQuests: user.quests.filter(q => q.isCompleted === 'true').map(q => q.type),
-      recentActivity: {
-        focusSessions: todayFocusSessions.length,
-        completedTasks: todayCompletedTasks.length,
-        completedGoals: todayCompletedGoals.length,
-        mentorChats: 0, // TODO: Get from chat history
-        lastActive: user.updatedAt
-      },
-      preferences,
-      vectorContext: []
-    };
-  }
-
-  /**
-   * Get vector-based context for quest personalization
-   */
-  private async getVectorContext(userId: string, userContext: UserQuestContext): Promise<any[]> {
-    try {
-      // Create a context query based on user's recent activity
-      const contextQuery = this.buildContextQuery(userContext);
-      
-      const vectorContext = await this.pineconeService.retrieveUserContext(
-        userId,
-        contextQuery,
-        5, // Get top 5 most relevant items
-        ['tasks', 'goals', 'sessions', 'messages', 'profile']
-      );
-
-      return vectorContext;
-    } catch (error) {
-      console.warn('Vector context retrieval failed:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Build a context query for vector search based on user activity
-   */
-  private buildContextQuery(userContext: UserQuestContext): string {
-    const { recentActivity, preferences } = userContext;
-    
-    let query = 'user activity context: ';
-    
-    if (recentActivity.focusSessions > 0) {
-      query += `focus sessions: ${recentActivity.focusSessions}, `;
-    }
-    
-    if (recentActivity.completedTasks > 0) {
-      query += `completed tasks: ${recentActivity.completedTasks}, `;
-    }
-    
-    if (recentActivity.completedGoals > 0) {
-      query += `completed goals: ${recentActivity.completedGoals}, `;
-    }
-    
-    if (preferences.preferredCategories.length > 0) {
-      query += `preferred categories: ${preferences.preferredCategories.join(', ')}, `;
-    }
-    
-    query += `level: ${userContext.level}, streak: ${userContext.streak}`;
-    
-    return query;
-  }
-
-  /**
-   * Analyze user preferences based on activity patterns
-   */
-  private analyzeUserPreferences(sessions: any[], tasks: any[], goals: any[]): UserQuestContext['preferences'] {
-    const categories = {
-      focus: sessions.filter(s => s.type === 'focus').length,
-      tasks: tasks.length,
-      goals: goals.length,
-      mentor: 0, // TODO: Get from chat history
-      streak: 0,
-      learning: 0,
-      social: 0
-    };
-
-    const preferredCategories = Object.entries(categories)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .map(([category]) => category);
-
-    // Determine time of day preference
-    const sessionHours = sessions.map(s => new Date(s.startTime).getHours());
-    const avgHour = sessionHours.length > 0 ? 
-      sessionHours.reduce((sum, hour) => sum + hour, 0) / sessionHours.length : 12;
-    
-    let timeOfDay: 'morning' | 'afternoon' | 'evening' | 'any';
-    if (avgHour < 12) timeOfDay = 'morning';
-    else if (avgHour < 17) timeOfDay = 'afternoon';
-    else timeOfDay = 'evening';
-
-    return {
-      preferredCategories,
-      difficultyPreference: Math.min(5, Math.max(1, Math.floor(sessions.length / 5) + 1)),
-      timeOfDay
-    };
-  }
-
-  /**
-   * Generate daily quests with context awareness
-   */
-  private async generateDailyQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
-    const quests: GeneratedQuest[] = [];
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    // Get daily quest templates
-    const dailyTemplates = Array.from(this.questTemplates.values())
-      .filter(t => t.type === 'daily');
-
-    for (const template of dailyTemplates) {
-      // Check if user already has this quest today
-      const existingQuest = await this.prisma.quests.findFirst({
-        where: {
-          userId: userContext.userId,
-          type: template.id,
-          dateAwarded: {
-            gte: today
-          }
-        }
-      });
-
-      if (existingQuest) continue;
-
-      // Check cooldown
-      if (template.cooldown) {
-        const lastCompletion = await this.prisma.quests.findFirst({
-          where: {
-            userId: userContext.userId,
-            type: template.id,
-            isCompleted: 'true'
-          },
-          orderBy: { dateAwarded: 'desc' }
-        });
-
-        if (lastCompletion && 
-            Date.now() - lastCompletion.dateAwarded.getTime() < template.cooldown * 60 * 60 * 1000) {
-          continue;
-        }
+    // Focus restart quest
+    quests.push({
+      id: `welcome_back_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'welcome_back_focus',
+      name: 'Restart Your Focus Engine',
+      description: 'Complete a 25-minute focus session to rebuild your concentration.',
+      type: 'welcome_back',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 25,
+      rewardXp: 150,
+      rewardTokens: 15,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+      meta: {
+        template: 'welcome_back_focus',
+        completionCriteria: { type: 'duration', target: 25, unit: 'minutes' },
+        priority: 'high'
       }
-
-      // Check max completions
-      if (template.maxCompletions) {
-        const completionCount = await this.prisma.quests.count({
-          where: {
-            userId: userContext.userId,
-            type: template.id,
-            isCompleted: 'true'
-          }
-        });
-
-        if (completionCount >= template.maxCompletions) continue;
-      }
-
-      // Personalize quest description based on vector context
-      const personalizedDescription = await this.personalizeQuestDescription(
-        template,
-        userContext,
-        vectorContext
-      );
-
-      const quest: GeneratedQuest = {
-        id: `${template.id}_${userContext.userId}_${Date.now()}`,
-        userId: userContext.userId,
-        templateId: template.id,
-        name: template.name,
-        description: personalizedDescription,
-        type: template.type,
-        category: template.category,
-        status: 'active',
-        progress: 0,
-        goal: template.completionCriteria.target,
-        rewardXp: template.rewardXp,
-        rewardTokens: template.rewardTokens,
-        difficulty: template.difficulty,
-        createdAt: today,
-        expiresAt: tomorrow,
-        vectorContext: vectorContext.filter(ctx => 
-          template.vectorContextTypes?.includes(ctx.type)
-        ),
-        meta: {
-          template: template.id,
-          requirements: template.requirements,
-          completionCriteria: template.completionCriteria
-        }
-      };
-
-      quests.push(quest);
-    }
+    });
 
     return quests;
   }
 
   /**
-   * Generate weekly quests
+   * Generate daily check-in quests
    */
-  private async generateWeeklyQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+  private async generateDailyCheckinQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
     const quests: GeneratedQuest[] = [];
     const now = new Date();
-    const weekEnd = new Date(now);
-    weekEnd.setDate(weekEnd.getDate() + (7 - weekEnd.getDay()));
-    weekEnd.setHours(23, 59, 59, 999);
 
-    const weeklyTemplates = Array.from(this.questTemplates.values())
-      .filter(t => t.type === 'weekly');
-
-    for (const template of weeklyTemplates) {
-      const existingQuest = await this.prisma.quests.findFirst({
-        where: {
-          userId: userContext.userId,
-          type: template.id,
-          dateAwarded: {
-            gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          }
-        }
-      });
-
-      if (existingQuest) continue;
-
-      const personalizedDescription = await this.personalizeQuestDescription(
-        template,
-        userContext,
-        vectorContext
-      );
-
-      const quest: GeneratedQuest = {
-        id: `${template.id}_${userContext.userId}_${Date.now()}`,
-        userId: userContext.userId,
-        templateId: template.id,
-        name: template.name,
-        description: personalizedDescription,
-        type: template.type,
-        category: template.category,
-        status: 'active',
-        progress: 0,
-        goal: template.completionCriteria.target,
-        rewardXp: template.rewardXp,
-        rewardTokens: template.rewardTokens,
-        difficulty: template.difficulty,
-        createdAt: now,
-        expiresAt: weekEnd,
-        vectorContext: vectorContext.filter(ctx => 
-          template.vectorContextTypes?.includes(ctx.type)
-        ),
-        meta: {
-          template: template.id,
-          requirements: template.requirements,
-          completionCriteria: template.completionCriteria
-        }
-      };
-
-      quests.push(quest);
-    }
-
-    return quests;
-  }
-
-  /**
-   * Generate special quests
-   */
-  private async generateSpecialQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
-    const quests: GeneratedQuest[] = [];
-    const specialTemplates = Array.from(this.questTemplates.values())
-      .filter(t => t.type === 'special');
-
-    for (const template of specialTemplates) {
-      // Check if user already completed this special quest
-      const existingQuest = await this.prisma.quests.findFirst({
-        where: {
-          userId: userContext.userId,
-          type: template.id,
-          isCompleted: 'true'
-        }
-      });
-
-      if (existingQuest) continue;
-
-      // Check prerequisites
-      if (template.prerequisites) {
-        const hasPrerequisites = await this.checkPrerequisites(
-          userContext.userId,
-          template.prerequisites
-        );
-        if (!hasPrerequisites) continue;
-      }
-
-      const personalizedDescription = await this.personalizeQuestDescription(
-        template,
-        userContext,
-        vectorContext
-      );
-
-      const quest: GeneratedQuest = {
-        id: `${template.id}_${userContext.userId}_${Date.now()}`,
-        userId: userContext.userId,
-        templateId: template.id,
-        name: template.name,
-        description: personalizedDescription,
-        type: template.type,
-        category: template.category,
-        status: 'active',
-        progress: 0,
-        goal: template.completionCriteria.target,
-        rewardXp: template.rewardXp,
-        rewardTokens: template.rewardTokens,
-        difficulty: template.difficulty,
-        createdAt: new Date(),
-        vectorContext: vectorContext.filter(ctx => 
-          template.vectorContextTypes?.includes(ctx.type)
-        ),
-        meta: {
-          template: template.id,
-          requirements: template.requirements,
-          completionCriteria: template.completionCriteria
-        }
-      };
-
-      quests.push(quest);
-    }
-
-    return quests;
-  }
-
-  /**
-   * Generate adaptive quests using AI
-   */
-  private async generateAdaptiveQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
-    const quests: GeneratedQuest[] = [];
-
-    try {
-      // Use enhanced context manager to generate personalized quest
-      const enhancedContext = await this.enhancedContextManager.generateEnhancedContext({
-        userId: userContext.userId,
-        userMessage: 'Generate a personalized quest based on my current context and goals',
-        useCase: 'quest_generation',
-        contextSources: ['tasks', 'goals', 'sessions', 'messages', 'profile'],
-        enableVectorSearch: true,
-        maxVectorResults: 5,
-        extraData: {
-          userLevel: userContext.level,
-          userStreak: userContext.streak,
-          recentActivity: userContext.recentActivity,
-          preferences: userContext.preferences
-        }
-      });
-
-      // Generate adaptive quest using AI
-      const adaptiveQuest = await this.generateAdaptiveQuestWithAI(
-        enhancedContext.enhancedPrompt,
-        userContext,
-        vectorContext
-      );
-
-      if (adaptiveQuest) {
-        quests.push(adaptiveQuest);
-      }
-    } catch (error) {
-      console.error('Failed to generate adaptive quest:', error);
-    }
-
-    return quests;
-  }
-
-  /**
-   * Generate adaptive quest using AI
-   */
-  private async generateAdaptiveQuestWithAI(
-    enhancedPrompt: string,
-    userContext: UserQuestContext,
-    vectorContext: any[]
-  ): Promise<GeneratedQuest | null> {
-    // This would integrate with your AI service to generate personalized quests
-    // For now, we'll create a template-based adaptive quest
-    
-    const adaptiveTemplate = this.questTemplates.get('adaptive_personalized');
-    if (!adaptiveTemplate) return null;
-
-    const personalizedDescription = await this.personalizeQuestDescription(
-      adaptiveTemplate,
-      userContext,
-      vectorContext
-    );
-
-    return {
-      id: `adaptive_${userContext.userId}_${Date.now()}`,
+    // Daily planning quest
+    quests.push({
+      id: `daily_planning_${userContext.userId}_${Date.now()}`,
       userId: userContext.userId,
-      templateId: adaptiveTemplate.id,
-      name: 'Personalized Challenge',
-      description: personalizedDescription,
-      type: 'adaptive',
-      category: 'learning',
+      templateId: 'daily_planning',
+      name: 'Plan Your Day',
+      description: 'Create 3 tasks for today to set clear priorities.',
+      type: 'daily_checkin',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 100,
+      rewardTokens: 10,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day
+      meta: {
+        template: 'daily_planning',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate quick win quests for frequent users
+   */
+  private async generateQuickWinQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Micro focus quest
+    quests.push({
+      id: `quick_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'quick_focus',
+      name: 'Quick Focus Burst',
+      description: 'Complete a 10-minute focus session for a quick productivity boost.',
+      type: 'quick_win',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 10,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2 hours
+      meta: {
+        template: 'quick_focus',
+        completionCriteria: { type: 'duration', target: 10, unit: 'minutes' },
+        priority: 'low'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate onboarding quests for new users
+   */
+  private async generateOnboardingQuests(userContext: UserQuestContext): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // First task quest
+    quests.push({
+      id: `onboarding_first_task_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'onboarding_first_task',
+      name: 'Create Your First Task',
+      description: 'Start your productivity journey by creating your first task.',
+      type: 'onboarding',
+      category: 'tasks',
       status: 'active',
       progress: 0,
       goal: 1,
-      rewardXp: adaptiveTemplate.rewardXp,
-      rewardTokens: adaptiveTemplate.rewardTokens,
-      difficulty: adaptiveTemplate.difficulty,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      vectorContext,
-      adaptiveDescription: personalizedDescription,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
       meta: {
-        template: adaptiveTemplate.id,
-        aiGenerated: true,
-        enhancedPrompt,
-        requirements: adaptiveTemplate.requirements,
-        completionCriteria: adaptiveTemplate.completionCriteria
+        template: 'onboarding_first_task',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'high'
+      }
+    });
+
+    // First focus session quest
+    quests.push({
+      id: `onboarding_first_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'onboarding_first_focus',
+      name: 'Try Your First Focus Session',
+      description: 'Experience the power of focused work with a 15-minute session.',
+      type: 'onboarding',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 15,
+      rewardXp: 75,
+      rewardTokens: 8,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      meta: {
+        template: 'onboarding_first_focus',
+        completionCriteria: { type: 'duration', target: 15, unit: 'minutes' },
+        priority: 'high'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate quests based on vector search recommendations
+   */
+  private async generateRecommendedQuests(
+    userContext: UserQuestContext, 
+    vectorContext: any[], 
+    recentQuests: any[], 
+    recentActivities: any[]
+  ): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Analyze vector context for patterns and recommendations
+    const recommendations = await this.analyzeVectorContextForRecommendations(
+      vectorContext, 
+      userContext, 
+      recentQuests, 
+      recentActivities
+    );
+
+    for (const recommendation of recommendations) {
+      // Create quest template based on recommendation
+      const questTemplate = await this.createAdaptiveQuestTemplate(recommendation);
+      
+      if (!questTemplate) continue;
+
+      const quest: GeneratedQuest = {
+        id: `adaptive_${recommendation.type}_${userContext.userId}_${Date.now()}`,
+        userId: userContext.userId,
+        templateId: questTemplate.id,
+        name: questTemplate.name,
+        description: questTemplate.description,
+        type: 'adaptive',
+        category: recommendation.category,
+        status: 'active',
+        progress: 0,
+        goal: questTemplate.completionCriteria.target,
+        rewardXp: questTemplate.rewardXp,
+        rewardTokens: questTemplate.rewardTokens,
+        difficulty: recommendation.difficulty,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        vectorContext: recommendation.relevantContext,
+        meta: {
+          template: questTemplate.id,
+          recommendation: recommendation.reason,
+          requirements: questTemplate.requirements,
+          completionCriteria: questTemplate.completionCriteria,
+          similarityScore: recommendation.similarityScore
+        }
+      };
+
+      quests.push(quest);
+    }
+
+    return quests;
+  }
+
+  /**
+   * Analyze vector context for quest recommendations
+   */
+  private async analyzeVectorContextForRecommendations(
+    vectorContext: any[], 
+    userContext: UserQuestContext, 
+    recentQuests: any[], 
+    recentActivities: any[]
+  ): Promise<any[]> {
+    const recommendations: any[] = [];
+
+    // Group vector context by type
+    const tasks = vectorContext.filter(ctx => ctx.type === 'task');
+    const goals = vectorContext.filter(ctx => ctx.type === 'goal');
+    const notes = vectorContext.filter(ctx => ctx.type === 'note');
+    const focusSessions = vectorContext.filter(ctx => ctx.type === 'focus_session');
+
+    // Analyze task patterns
+    if (tasks.length > 0) {
+      const taskRecommendations = await this.analyzeTaskPatterns(tasks, recentQuests, recentActivities);
+      recommendations.push(...taskRecommendations);
+    }
+
+    // Analyze goal patterns
+    if (goals.length > 0) {
+      const goalRecommendations = await this.analyzeGoalPatterns(goals, recentQuests, recentActivities);
+      recommendations.push(...goalRecommendations);
+    }
+
+    // Analyze note patterns
+    if (notes.length > 0) {
+      const noteRecommendations = await this.analyzeNotePatterns(notes, recentQuests, recentActivities);
+      recommendations.push(...noteRecommendations);
+    }
+
+    // Analyze focus session patterns
+    if (focusSessions.length > 0) {
+      const focusRecommendations = await this.analyzeFocusPatterns(focusSessions, recentQuests, recentActivities);
+      recommendations.push(...focusRecommendations);
+    }
+
+    // Sort by relevance and remove duplicates
+    return this.deduplicateAndSortRecommendations(recommendations);
+  }
+
+  /**
+   * Analyze task patterns for quest recommendations
+   */
+  private async analyzeTaskPatterns(tasks: any[], recentQuests: any[], recentActivities: any[]): Promise<any[]> {
+    const recommendations: any[] = [];
+
+    // Find incomplete tasks
+    const incompleteTasks = tasks.filter(task => !task.completed);
+    
+    // Find high-priority tasks
+    const highPriorityTasks = tasks.filter(task => task.priority === 'high');
+    
+    // Find overdue tasks
+    const overdueTasks = tasks.filter(task => {
+      if (!task.dueDate) return false;
+      return new Date(task.dueDate) < new Date();
+    });
+
+    // Generate recommendations based on patterns
+    if (incompleteTasks.length > 5) {
+      recommendations.push({
+        type: 'task_completion',
+        category: 'tasks',
+        difficulty: 2,
+        reason: `You have ${incompleteTasks.length} incomplete tasks. Focus on completing them systematically.`,
+        relevantContext: incompleteTasks.slice(0, 3),
+        similarityScore: 0.8
+      });
+    }
+
+    if (highPriorityTasks.length > 0) {
+      recommendations.push({
+        type: 'priority_focus',
+        category: 'tasks',
+        difficulty: 3,
+        reason: `You have ${highPriorityTasks.length} high-priority tasks. Focus on completing them first.`,
+        relevantContext: highPriorityTasks.slice(0, 2),
+        similarityScore: 0.9
+      });
+    }
+
+    if (overdueTasks.length > 0) {
+      recommendations.push({
+        type: 'catch_up',
+        category: 'tasks',
+        difficulty: 4,
+        reason: `You have ${overdueTasks.length} overdue tasks. Time to catch up!`,
+        relevantContext: overdueTasks.slice(0, 2),
+        similarityScore: 0.95
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Analyze goal patterns for quest recommendations
+   */
+  private async analyzeGoalPatterns(goals: any[], recentQuests: any[], recentActivities: any[]): Promise<any[]> {
+    const recommendations: any[] = [];
+
+    // Find active goals
+    const activeGoals = goals.filter(goal => goal.status === 'active' || !goal.completed);
+    
+    // Find goals with low progress
+    const lowProgressGoals = goals.filter(goal => {
+      const progress = goal.progress || 0;
+      return progress < 30; // Less than 30% complete
+    });
+
+    // Find goals nearing deadline
+    const deadlineGoals = goals.filter(goal => {
+      if (!goal.dueDate) return false;
+      const daysUntilDeadline = (new Date(goal.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
+      return daysUntilDeadline <= 7 && daysUntilDeadline > 0;
+    });
+
+    if (lowProgressGoals.length > 0) {
+      recommendations.push({
+        type: 'goal_progress',
+        category: 'goals',
+        difficulty: 3,
+        reason: `You have ${lowProgressGoals.length} goals with low progress. Let's boost them!`,
+        relevantContext: lowProgressGoals.slice(0, 2),
+        similarityScore: 0.85
+      });
+    }
+
+    if (deadlineGoals.length > 0) {
+      recommendations.push({
+        type: 'deadline_push',
+        category: 'goals',
+        difficulty: 4,
+        reason: `You have ${deadlineGoals.length} goals with upcoming deadlines. Time to push hard!`,
+        relevantContext: deadlineGoals,
+        similarityScore: 0.95
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Analyze note patterns for quest recommendations
+   */
+  private async analyzeNotePatterns(notes: any[], recentQuests: any[], recentActivities: any[]): Promise<any[]> {
+    const recommendations: any[] = [];
+
+    // Find notes with action items
+    const actionNotes = notes.filter(note => 
+      note.text?.includes('TODO') || 
+      note.text?.includes('ACTION') || 
+      note.text?.includes('DO') ||
+      note.text?.includes('REVIEW')
+    );
+
+    // Find notes that haven't been reviewed recently
+    const unreviewedNotes = notes.filter(note => {
+      const lastReview = note.lastReviewed || note.createdAt;
+      const daysSinceReview = (new Date().getTime() - new Date(lastReview).getTime()) / (1000 * 60 * 60 * 24);
+      return daysSinceReview > 7;
+    });
+
+    if (actionNotes.length > 0) {
+      recommendations.push({
+        type: 'note_actions',
+        category: 'notes',
+        difficulty: 2,
+        reason: `You have ${actionNotes.length} notes with action items. Let's tackle them!`,
+        relevantContext: actionNotes.slice(0, 3),
+        similarityScore: 0.8
+      });
+    }
+
+    if (unreviewedNotes.length > 5) {
+      recommendations.push({
+        type: 'note_review',
+        category: 'notes',
+        difficulty: 1,
+        reason: `You have ${unreviewedNotes.length} notes that haven't been reviewed recently. Time for a review session!`,
+        relevantContext: unreviewedNotes.slice(0, 5),
+        similarityScore: 0.7
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Analyze focus session patterns for quest recommendations
+   */
+  private async analyzeFocusPatterns(focusSessions: any[], recentQuests: any[], recentActivities: any[]): Promise<any[]> {
+    const recommendations: any[] = [];
+
+    // Calculate average session length
+    const sessionLengths = focusSessions.map(session => session.duration || 0);
+    const avgSessionLength = sessionLengths.reduce((sum, length) => sum + length, 0) / sessionLengths.length;
+
+    // Find short sessions
+    const shortSessions = focusSessions.filter(session => (session.duration || 0) < 25);
+
+    // Find long sessions
+    const longSessions = focusSessions.filter(session => (session.duration || 0) > 60);
+
+    if (avgSessionLength < 25) {
+      recommendations.push({
+        type: 'extend_focus',
+        category: 'focus',
+        difficulty: 2,
+        reason: `Your average focus session is ${Math.round(avgSessionLength)} minutes. Let's extend that!`,
+        relevantContext: shortSessions.slice(0, 3),
+        similarityScore: 0.8
+      });
+    }
+
+    if (longSessions.length > 0) {
+      recommendations.push({
+        type: 'maintain_momentum',
+        category: 'focus',
+        difficulty: 3,
+        reason: `You've had ${longSessions.length} long focus sessions. Keep up the momentum!`,
+        relevantContext: longSessions.slice(0, 2),
+        similarityScore: 0.85
+      });
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Create adaptive quest template based on recommendation
+   */
+  private async createAdaptiveQuestTemplate(recommendation: any): Promise<QuestTemplate | null> {
+    const templates: Record<string, QuestTemplate> = {
+      task_completion: {
+        id: 'adaptive_task_completion',
+        name: 'Task Completion Sprint',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'tasks',
+        difficulty: recommendation.difficulty,
+        rewardXp: 150,
+        rewardTokens: 15,
+        cooldown: 24, // 24 hours
+        maxCompletions: 1,
+        requirements: ['active_tasks'],
+        completionCriteria: {
+          type: 'task_count',
+          target: 3,
+          timeframe: '24h'
+        },
+        vectorContextTypes: ['task']
+      },
+      priority_focus: {
+        id: 'adaptive_priority_focus',
+        name: 'Priority Task Focus',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'tasks',
+        difficulty: recommendation.difficulty,
+        rewardXp: 200,
+        rewardTokens: 20,
+        cooldown: 48, // 48 hours
+        maxCompletions: 1,
+        requirements: ['high_priority_tasks'],
+        completionCriteria: {
+          type: 'priority_task_completion',
+          target: 2,
+          timeframe: '48h'
+        },
+        vectorContextTypes: ['task']
+      },
+      catch_up: {
+        id: 'adaptive_catch_up',
+        name: 'Overdue Task Catch-up',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'tasks',
+        difficulty: recommendation.difficulty,
+        rewardXp: 300,
+        rewardTokens: 30,
+        cooldown: 72, // 72 hours
+        maxCompletions: 1,
+        requirements: ['overdue_tasks'],
+        completionCriteria: {
+          type: 'overdue_task_completion',
+          target: 2,
+          timeframe: '72h'
+        },
+        vectorContextTypes: ['task']
+      },
+      goal_progress: {
+        id: 'adaptive_goal_progress',
+        name: 'Goal Progress Boost',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'goals',
+        difficulty: recommendation.difficulty,
+        rewardXp: 250,
+        rewardTokens: 25,
+        cooldown: 168, // 1 week
+        maxCompletions: 1,
+        requirements: ['active_goals'],
+        completionCriteria: {
+          type: 'goal_progress_increase',
+          target: 20, // 20% progress increase
+          timeframe: '168h'
+        },
+        vectorContextTypes: ['goal']
+      },
+      deadline_push: {
+        id: 'adaptive_deadline_push',
+        name: 'Deadline Push',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'goals',
+        difficulty: recommendation.difficulty,
+        rewardXp: 400,
+        rewardTokens: 40,
+        cooldown: 168, // 1 week
+        maxCompletions: 1,
+        requirements: ['deadline_goals'],
+        completionCriteria: {
+          type: 'goal_completion',
+          target: 1,
+          timeframe: '168h'
+        },
+        vectorContextTypes: ['goal']
+      },
+      note_actions: {
+        id: 'adaptive_note_actions',
+        name: 'Note Action Items',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'notes',
+        difficulty: recommendation.difficulty,
+        rewardXp: 100,
+        rewardTokens: 10,
+        cooldown: 48, // 48 hours
+        maxCompletions: 1,
+        requirements: ['action_notes'],
+        completionCriteria: {
+          type: 'note_action_completion',
+          target: 3,
+          timeframe: '48h'
+        },
+        vectorContextTypes: ['note']
+      },
+      note_review: {
+        id: 'adaptive_note_review',
+        name: 'Note Review Session',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'notes',
+        difficulty: recommendation.difficulty,
+        rewardXp: 75,
+        rewardTokens: 8,
+        cooldown: 24, // 24 hours
+        maxCompletions: 1,
+        requirements: ['unreviewed_notes'],
+        completionCriteria: {
+          type: 'note_review_count',
+          target: 5,
+          timeframe: '24h'
+        },
+        vectorContextTypes: ['note']
+      },
+      extend_focus: {
+        id: 'adaptive_extend_focus',
+        name: 'Extended Focus Session',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'focus',
+        difficulty: recommendation.difficulty,
+        rewardXp: 120,
+        rewardTokens: 12,
+        cooldown: 24, // 24 hours
+        maxCompletions: 1,
+        requirements: ['focus_sessions'],
+        completionCriteria: {
+          type: 'focus_duration',
+          target: 45, // 45 minutes
+          timeframe: '24h'
+        },
+        vectorContextTypes: ['focus_session']
+      },
+      maintain_momentum: {
+        id: 'adaptive_maintain_momentum',
+        name: 'Maintain Focus Momentum',
+        description: recommendation.reason,
+        type: 'adaptive',
+        category: 'focus',
+        difficulty: recommendation.difficulty,
+        rewardXp: 180,
+        rewardTokens: 18,
+        cooldown: 48, // 48 hours
+        maxCompletions: 1,
+        requirements: ['focus_sessions'],
+        completionCriteria: {
+          type: 'focus_duration',
+          target: 60, // 60 minutes
+          timeframe: '48h'
+        },
+        vectorContextTypes: ['focus_session']
       }
     };
+
+    return templates[recommendation.type] || null;
+  }
+
+  /**
+   * Get recent user quests
+   */
+  private async getRecentUserQuests(userId: string, days: number): Promise<any[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    return await this.prisma.quests.findMany({
+      where: {
+        userId,
+        dateAwarded: {
+          gte: cutoffDate
+        }
+      },
+      orderBy: { dateAwarded: 'desc' }
+    });
+  }
+
+  /**
+   * Get recent user activities
+   */
+  private async getRecentUserActivities(userId: string, days: number): Promise<any[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    // Get recent tasks, goals, notes, and focus sessions
+    const [tasks, goals, notes, focusSessions] = await Promise.all([
+      this.prisma.task.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: cutoffDate }
+        }
+      }),
+      this.prisma.goal.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: cutoffDate }
+        }
+      }),
+      this.prisma.notes.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: cutoffDate }
+        }
+      }),
+      this.prisma.timerSession.findMany({
+        where: {
+          userId,
+          createdAt: { gte: cutoffDate }
+        }
+      })
+    ]);
+
+    return [...tasks, ...goals, ...notes, ...focusSessions];
+  }
+
+  /**
+   * Check if quest is similar to recent quests
+   */
+  private async isQuestSimilarToRecent(quest: GeneratedQuest, recentQuests: any[]): Promise<boolean> {
+    const similarityThreshold = 0.7;
+
+    for (const recentQuest of recentQuests) {
+      const similarity = this.calculateQuestSimilarity(quest, recentQuest);
+      if (similarity > similarityThreshold) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Calculate similarity between two quests
+   */
+  private calculateQuestSimilarity(quest1: GeneratedQuest, quest2: any): number {
+    let similarity = 0;
+    let factors = 0;
+
+    // Compare categories
+    if (quest1.category === quest2.type) {
+      similarity += 0.3;
+    }
+    factors += 0.3;
+
+    // Compare difficulty
+    if (quest1.difficulty === quest2.difficulty) {
+      similarity += 0.2;
+    }
+    factors += 0.2;
+
+    // Compare reward ranges
+    const rewardDiff = Math.abs((quest1.rewardXp || 0) - (quest2.rewardXp || 0));
+    if (rewardDiff < 50) {
+      similarity += 0.2;
+    }
+    factors += 0.2;
+
+    // Compare descriptions (basic text similarity)
+    const desc1 = quest1.description?.toLowerCase() || '';
+    const desc2 = quest2.description?.toLowerCase() || '';
+    const commonWords = desc1.split(' ').filter(word => desc2.includes(word)).length;
+    const totalWords = Math.max(desc1.split(' ').length, desc2.split(' ').length);
+    
+    if (totalWords > 0) {
+      similarity += (commonWords / totalWords) * 0.3;
+    }
+    factors += 0.3;
+
+    return factors > 0 ? similarity / factors : 0;
+  }
+
+  /**
+   * Check if quest conflicts with recent activities
+   */
+  private async doesQuestConflictWithActivities(quest: GeneratedQuest, recentActivities: any[]): Promise<boolean> {
+    // Check if the quest type conflicts with recent activities
+    const conflictingActivities = recentActivities.filter(activity => {
+      switch (quest.category) {
+        case 'tasks':
+          return activity.completed === true; // Don't suggest task quests if tasks were just completed
+        case 'goals':
+          return activity.completed === true; // Don't suggest goal quests if goals were just completed
+        case 'focus':
+          return activity.duration > 60; // Don't suggest focus quests if user just had long sessions
+        default:
+          return false;
+      }
+    });
+
+    return conflictingActivities.length > 0;
+  }
+
+  /**
+   * Deduplicate and sort recommendations
+   */
+  private deduplicateAndSortRecommendations(recommendations: any[]): any[] {
+    // Remove duplicates based on type and category
+    const uniqueRecommendations = recommendations.filter((rec, index, self) => 
+      index === self.findIndex(r => r.type === rec.type && r.category === rec.category)
+    );
+
+    // Sort by similarity score (higher is better) and difficulty
+    return uniqueRecommendations.sort((a, b) => {
+      if (a.similarityScore !== b.similarityScore) {
+        return b.similarityScore - a.similarityScore;
+      }
+      return a.difficulty - b.difficulty; // Lower difficulty first
+    });
   }
 
   /**
@@ -985,5 +1580,976 @@ export class EnhancedQuestService {
         totalXp: { increment: quest.rewardXp || 0 }
       }
     });
+  }
+
+  /**
+   * Generate welcome back quests for returning users
+   */
+  private async generateWelcomeBackQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Catch-up quest
+    quests.push({
+      id: `welcome_back_catchup_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'welcome_back_catchup',
+      name: 'Welcome Back! Let\'s Catch Up',
+      description: 'Complete 3 tasks to get back into your productive rhythm.',
+      type: 'welcome_back',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 200,
+      rewardTokens: 20,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days
+      meta: {
+        template: 'welcome_back_catchup',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'high'
+      }
+    });
+
+    // Focus restart quest
+    quests.push({
+      id: `welcome_back_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'welcome_back_focus',
+      name: 'Restart Your Focus Engine',
+      description: 'Complete a 25-minute focus session to rebuild your concentration.',
+      type: 'welcome_back',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 25,
+      rewardXp: 150,
+      rewardTokens: 15,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+      meta: {
+        template: 'welcome_back_focus',
+        completionCriteria: { type: 'duration', target: 25, unit: 'minutes' },
+        priority: 'high'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate daily check-in quests
+   */
+  private async generateDailyCheckinQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Daily planning quest
+    quests.push({
+      id: `daily_planning_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'daily_planning',
+      name: 'Plan Your Day',
+      description: 'Create 3 tasks for today to set clear priorities.',
+      type: 'daily_checkin',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 100,
+      rewardTokens: 10,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day
+      meta: {
+        template: 'daily_planning',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate quick win quests for frequent users
+   */
+  private async generateQuickWinQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Micro focus quest
+    quests.push({
+      id: `quick_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'quick_focus',
+      name: 'Quick Focus Burst',
+      description: 'Complete a 10-minute focus session for a quick productivity boost.',
+      type: 'quick_win',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 10,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2 hours
+      meta: {
+        template: 'quick_focus',
+        completionCriteria: { type: 'duration', target: 10, unit: 'minutes' },
+        priority: 'low'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate onboarding quests for new users
+   */
+  private async generateOnboardingQuests(userContext: UserQuestContext): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // First task quest
+    quests.push({
+      id: `onboarding_first_task_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'onboarding_first_task',
+      name: 'Create Your First Task',
+      description: 'Start your productivity journey by creating your first task.',
+      type: 'onboarding',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      meta: {
+        template: 'onboarding_first_task',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'high'
+      }
+    });
+
+    // First focus session quest
+    quests.push({
+      id: `onboarding_first_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'onboarding_first_focus',
+      name: 'Try Your First Focus Session',
+      description: 'Experience the power of focused work with a 15-minute session.',
+      type: 'onboarding',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 15,
+      rewardXp: 75,
+      rewardTokens: 8,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      meta: {
+        template: 'onboarding_first_focus',
+        completionCriteria: { type: 'duration', target: 15, unit: 'minutes' },
+        priority: 'high'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Generate quests for different trigger points
+   */
+  private async generateTaskCompletionQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Task streak quest
+    quests.push({
+      id: `task_streak_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'task_streak',
+      name: 'Task Completion Streak',
+      description: 'Complete 3 more tasks today to build momentum.',
+      type: 'contextual',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 120,
+      rewardTokens: 12,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day
+      meta: {
+        template: 'task_streak',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateGoalProgressQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Goal momentum quest
+    quests.push({
+      id: `goal_momentum_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'goal_momentum',
+      name: 'Keep the Momentum Going',
+      description: 'Make progress on 2 different goals this week.',
+      type: 'contextual',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 2,
+      rewardXp: 200,
+      rewardTokens: 20,
+      difficulty: 3,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      meta: {
+        template: 'goal_momentum',
+        completionCriteria: { type: 'count', target: 2 },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateFocusSessionQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Extended focus quest
+    quests.push({
+      id: `extended_focus_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'extended_focus',
+      name: 'Extend Your Focus',
+      description: 'Complete a 45-minute focus session to build deep concentration.',
+      type: 'contextual',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 45,
+      rewardXp: 180,
+      rewardTokens: 18,
+      difficulty: 3,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days
+      meta: {
+        template: 'extended_focus',
+        completionCriteria: { type: 'duration', target: 45, unit: 'minutes' },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateNoteCreationQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Note organization quest
+    quests.push({
+      id: `note_organization_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'note_organization',
+      name: 'Organize Your Notes',
+      description: 'Add tags or categories to 3 of your recent notes.',
+      type: 'contextual',
+      category: 'notes',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 80,
+      rewardTokens: 8,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+      meta: {
+        template: 'note_organization',
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'low'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateStreakMilestoneQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Streak extension quest
+    quests.push({
+      id: `streak_extension_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'streak_extension',
+      name: 'Extend Your Streak',
+      description: 'Maintain your current streak for 3 more days.',
+      type: 'contextual',
+      category: 'streak',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 300,
+      rewardTokens: 30,
+      difficulty: 4,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days
+      meta: {
+        template: 'streak_extension',
+        completionCriteria: { type: 'streak', target: 3 },
+        priority: 'high'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateLevelUpQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Level celebration quest
+    quests.push({
+      id: `level_celebration_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 'level_celebration',
+      name: 'Level Up Celebration',
+      description: 'Complete 5 tasks to celebrate your new level and build momentum.',
+      type: 'contextual',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 5,
+      rewardXp: 250,
+      rewardTokens: 25,
+      difficulty: 3,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      meta: {
+        template: 'level_celebration',
+        completionCriteria: { type: 'count', target: 5 },
+        priority: 'high'
+      }
+    });
+
+    return quests;
+  }
+
+  private async generateIdleDetectionQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Re-engagement quest
+    quests.push({
+      id: `re_engagement_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: 're_engagement',
+      name: 'Get Back on Track',
+      description: 'Complete a simple 5-minute task to re-engage with your productivity.',
+      type: 'contextual',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 30,
+      rewardTokens: 3,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 1 day
+      meta: {
+        template: 're_engagement',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'medium'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Get user's last connection time
+   */
+  private async getLastConnectionTime(userId: string): Promise<Date | null> {
+    // This would typically come from user activity tracking
+    // For now, we'll use the last quest creation time as a proxy
+    const lastQuest = await this.prisma.quests.findFirst({
+      where: { userId },
+      orderBy: { dateAwarded: 'desc' }
+    });
+
+    return lastQuest?.dateAwarded || null;
+  }
+
+  /**
+   * Generate quest suggestions based on user data
+   */
+  async generateQuestSuggestions(user: any, limit: number = 5): Promise<any[]> {
+    const suggestions: any[] = [];
+
+    // Analyze user's recent activity
+    const recentTasks = user.tasks || [];
+    const recentGoals = user.goals || [];
+    const recentNotes = user.notes || [];
+    const recentSessions = user.timerSessions || [];
+
+    // Task-based suggestions
+    if (recentTasks.length > 0) {
+      const incompleteTasks = recentTasks.filter((task: any) => !task.completed);
+      if (incompleteTasks.length > 3) {
+        suggestions.push({
+          type: 'productivity',
+          title: 'Task Completion Sprint',
+          description: `You have ${incompleteTasks.length} incomplete tasks. Focus on completing them systematically.`,
+          difficulty: 2,
+          estimatedReward: { xp: 150, tokens: 15 },
+          confidence: 0.8
+        });
+      }
+    }
+
+    // Goal-based suggestions
+    if (recentGoals.length > 0) {
+      const lowProgressGoals = recentGoals.filter((goal: any) => (goal.progress || 0) < 30);
+      if (lowProgressGoals.length > 0) {
+        suggestions.push({
+          type: 'productivity',
+          title: 'Goal Progress Boost',
+          description: `You have ${lowProgressGoals.length} goals with low progress. Let's boost them!`,
+          difficulty: 3,
+          estimatedReward: { xp: 200, tokens: 20 },
+          confidence: 0.7
+        });
+      }
+    }
+
+    // Focus session suggestions
+    if (recentSessions.length > 0) {
+      const avgSessionLength = recentSessions.reduce((sum: number, session: any) => sum + (session.duration || 0), 0) / recentSessions.length;
+      if (avgSessionLength < 25) {
+        suggestions.push({
+          type: 'productivity',
+          title: 'Extend Your Focus',
+          description: `Your average focus session is ${Math.round(avgSessionLength)} minutes. Let's extend that!`,
+          difficulty: 2,
+          estimatedReward: { xp: 120, tokens: 12 },
+          confidence: 0.6
+        });
+      }
+    }
+
+    // Note-based suggestions
+    if (recentNotes.length > 0) {
+      const actionNotes = recentNotes.filter((note: any) => 
+        note.text?.includes('TODO') || note.text?.includes('ACTION')
+      );
+      if (actionNotes.length > 0) {
+        suggestions.push({
+          type: 'productivity',
+          title: 'Note Action Items',
+          description: `You have ${actionNotes.length} notes with action items. Let's tackle them!`,
+          difficulty: 2,
+          estimatedReward: { xp: 100, tokens: 10 },
+          confidence: 0.7
+        });
+      }
+    }
+
+    // Wellness suggestions
+    if (recentSessions.length > 5) {
+      suggestions.push({
+        type: 'wellness',
+        title: 'Take a Break',
+        description: 'You\'ve been working hard. Consider taking a short break to recharge.',
+        difficulty: 1,
+        estimatedReward: { xp: 50, tokens: 5 },
+        confidence: 0.5
+      });
+    }
+
+    // Learning suggestions
+    if (recentNotes.length > 3) {
+      suggestions.push({
+        type: 'learning',
+        title: 'Review Your Notes',
+        description: 'Review and organize your recent notes to reinforce your learning.',
+        difficulty: 1,
+        estimatedReward: { xp: 75, tokens: 8 },
+        confidence: 0.6
+      });
+    }
+
+    return suggestions.slice(0, limit);
+  }
+
+  /**
+   * Get quest templates for different types
+   */
+  async getQuestTemplates(
+    type: string, 
+    filters?: {
+      category?: string;
+      difficulty?: number;
+    }
+  ): Promise<QuestTemplate[]> {
+    let templates = Array.from(this.questTemplates.values());
+
+    // Filter by type
+    if (type !== 'all') {
+      templates = templates.filter(t => t.type === type);
+    }
+
+    // Filter by category
+    if (filters?.category) {
+      templates = templates.filter(t => t.category === filters.category);
+    }
+
+    // Filter by difficulty
+    if (filters?.difficulty) {
+      templates = templates.filter(t => t.difficulty === filters.difficulty);
+    }
+
+    return templates;
+  }
+
+  /**
+   * Create a quest from template
+   */
+  async createQuestFromTemplate(
+    userId: string,
+    userAddress: string,
+    templateId: string,
+    customizations?: {
+      name?: string;
+      description?: string;
+      difficulty?: number;
+      rewardXp?: number;
+      rewardTokens?: number;
+      expiresAt?: Date;
+    }
+  ): Promise<GeneratedQuest | null> {
+    const template = this.questTemplates.get(templateId);
+    if (!template) return null;
+
+    const quest: GeneratedQuest = {
+      id: `${templateId}_${userId}_${Date.now()}`,
+      userId,
+      templateId,
+      name: customizations?.name || template.name,
+      description: customizations?.description || template.description,
+      type: template.type,
+      category: template.category,
+      status: 'active',
+      progress: 0,
+      goal: template.completionCriteria.target,
+      rewardXp: customizations?.rewardXp || template.rewardXp,
+      rewardTokens: customizations?.rewardTokens || template.rewardTokens,
+      difficulty: customizations?.difficulty || template.difficulty,
+      createdAt: new Date(),
+      expiresAt: customizations?.expiresAt,
+      meta: {
+        template: templateId,
+        requirements: template.requirements,
+        completionCriteria: template.completionCriteria,
+        createdFromTemplate: true
+      }
+    };
+
+    await this.saveQuestsToDatabase([quest]);
+    return quest;
+  }
+
+  /**
+   * Generate priority-based quest suggestions from user tasks at connection
+   */
+  async generatePriorityQuestSuggestions(userId: string, userAddress: string): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    try {
+      // Get user's current tasks with priority information
+      const userTasks = await this.prisma.task.findMany({
+        where: {
+          userId,
+          completed: false
+        },
+        orderBy: [
+          { priority: 'desc' },
+          { dueDate: 'asc' },
+          { createdAt: 'desc' }
+        ],
+        take: 10
+      });
+
+      // Get user's recent activity for context
+      const recentActivity = await this.getRecentUserActivity(userId);
+      
+      // Get user's current level and stats
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!user) {
+        return this.generateGenericConnectionQuests(userId, userAddress);
+      }
+
+      // If user has tasks, create priority-based quests
+      if (userTasks.length > 0) {
+        quests.push(...await this.createTaskBasedPriorityQuests(userTasks, user, recentActivity));
+      }
+
+      // If user has no tasks or very few, create generic quests
+      if (userTasks.length < 2) {
+        quests.push(...await this.generateGenericConnectionQuests(userId, userAddress));
+      }
+
+      // Add onboarding quests for new users
+      if ((user.completedQuests || 0) < 3) {
+        quests.push(...await this.generateOnboardingQuests({
+          userId,
+          userAddress,
+          level: user.level || 1,
+          totalXp: user.totalXp || 0,
+          streak: user.streak || 0,
+          completedQuests: [],
+          recentActivity: { focusSessions: 0, completedTasks: 0, completedGoals: 0, mentorChats: 0, lastActive: now },
+          preferences: { preferredCategories: [], difficultyPreference: 2, timeOfDay: 'any' },
+          vectorContext: []
+        }));
+      }
+
+      // Save quests to database
+      await this.saveQuestsToDatabase(quests);
+
+      return quests;
+    } catch (error) {
+      console.error('Error generating priority quest suggestions:', error);
+      // Fallback to generic quests
+      return this.generateGenericConnectionQuests(userId, userAddress);
+    }
+  }
+
+  /**
+   * Create priority-based quests from user tasks
+   */
+  private async createTaskBasedPriorityQuests(
+    tasks: any[], 
+    user: any, 
+    recentActivity: any
+  ): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Group tasks by priority
+    const highPriorityTasks = tasks.filter(task => task.priority === 'high');
+    const mediumPriorityTasks = tasks.filter(task => task.priority === 'medium');
+    const lowPriorityTasks = tasks.filter(task => task.priority === 'low');
+    const overdueTasks = tasks.filter(task => task.dueDate && new Date(task.dueDate) < now);
+
+    // High Priority Task Quest
+    if (highPriorityTasks.length > 0) {
+      quests.push({
+        id: `priority_high_${user.id}_${Date.now()}`,
+        userId: user.id,
+        templateId: 'priority_high',
+        name: '🔥 High Priority Sprint',
+        description: `Complete ${Math.min(3, highPriorityTasks.length)} high-priority tasks to maintain momentum.`,
+        type: 'priority',
+        category: 'tasks',
+        status: 'active',
+        progress: 0,
+        goal: Math.min(3, highPriorityTasks.length),
+        rewardXp: 200,
+        rewardTokens: 20,
+        difficulty: 3,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+        meta: {
+          template: 'priority_high',
+          completionCriteria: { type: 'count', target: Math.min(3, highPriorityTasks.length) },
+          priority: 'high',
+          taskIds: highPriorityTasks.slice(0, 3).map(t => t.id)
+        }
+      });
+    }
+
+    // Overdue Task Quest
+    if (overdueTasks.length > 0) {
+      quests.push({
+        id: `priority_overdue_${user.id}_${Date.now()}`,
+        userId: user.id,
+        templateId: 'priority_overdue',
+        name: '⏰ Catch Up Quest',
+        description: `Complete ${Math.min(2, overdueTasks.length)} overdue tasks to get back on track.`,
+        type: 'priority',
+        category: 'tasks',
+        status: 'active',
+        progress: 0,
+        goal: Math.min(2, overdueTasks.length),
+        rewardXp: 250,
+        rewardTokens: 25,
+        difficulty: 4,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000), // 1 day
+        meta: {
+          template: 'priority_overdue',
+          completionCriteria: { type: 'count', target: Math.min(2, overdueTasks.length) },
+          priority: 'high',
+          taskIds: overdueTasks.slice(0, 2).map(t => t.id)
+        }
+      });
+    }
+
+    // Medium Priority Task Quest
+    if (mediumPriorityTasks.length > 0) {
+      quests.push({
+        id: `priority_medium_${user.id}_${Date.now()}`,
+        userId: user.id,
+        templateId: 'priority_medium',
+        name: '📋 Steady Progress',
+        description: `Complete ${Math.min(4, mediumPriorityTasks.length)} medium-priority tasks for consistent progress.`,
+        type: 'priority',
+        category: 'tasks',
+        status: 'active',
+        progress: 0,
+        goal: Math.min(4, mediumPriorityTasks.length),
+        rewardXp: 150,
+        rewardTokens: 15,
+        difficulty: 2,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days
+        meta: {
+          template: 'priority_medium',
+          completionCriteria: { type: 'count', target: Math.min(4, mediumPriorityTasks.length) },
+          priority: 'medium',
+          taskIds: mediumPriorityTasks.slice(0, 4).map(t => t.id)
+        }
+      });
+    }
+
+    // Task Organization Quest
+    if (tasks.length > 5) {
+      quests.push({
+        id: `priority_organize_${user.id}_${Date.now()}`,
+        userId: user.id,
+        templateId: 'priority_organize',
+        name: '🗂️ Task Organization',
+        description: 'Organize your tasks by adding due dates, priorities, or categories to 5 tasks.',
+        type: 'priority',
+        category: 'tasks',
+        status: 'active',
+        progress: 0,
+        goal: 5,
+        rewardXp: 100,
+        rewardTokens: 10,
+        difficulty: 1,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+        meta: {
+          template: 'priority_organize',
+          completionCriteria: { type: 'count', target: 5 },
+          priority: 'low'
+        }
+      });
+    }
+
+    // Focus Session Quest based on task count
+    if (tasks.length > 3) {
+      const focusDuration = Math.min(45, Math.max(25, tasks.length * 10));
+      quests.push({
+        id: `priority_focus_${user.id}_${Date.now()}`,
+        userId: user.id,
+        templateId: 'priority_focus',
+        name: '🎯 Focus on Priorities',
+        description: `Complete a ${focusDuration}-minute focus session to tackle your priority tasks.`,
+        type: 'priority',
+        category: 'focus',
+        status: 'active',
+        progress: 0,
+        goal: focusDuration,
+        rewardXp: 120,
+        rewardTokens: 12,
+        difficulty: 2,
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+        meta: {
+          template: 'priority_focus',
+          completionCriteria: { type: 'duration', target: focusDuration, unit: 'minutes' },
+          priority: 'medium'
+        }
+      });
+    }
+
+    return quests;
+  }
+
+  /**
+   * Generate generic connection quests when no task data is available
+   */
+  private async generateGenericConnectionQuests(userId: string, userAddress: string): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    // Welcome Quest
+    quests.push({
+      id: `generic_welcome_${userId}_${Date.now()}`,
+      userId,
+      templateId: 'generic_welcome',
+      name: '👋 Welcome Back!',
+      description: 'Create your first task to get started with your productivity journey.',
+      type: 'generic',
+      category: 'tasks',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      meta: {
+        template: 'generic_welcome',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'high'
+      }
+    });
+
+    // Focus Introduction Quest
+    quests.push({
+      id: `generic_focus_intro_${userId}_${Date.now()}`,
+      userId,
+      templateId: 'generic_focus_intro',
+      name: '⏲️ Try Focus Mode',
+      description: 'Complete a 15-minute focus session to experience the power of concentrated work.',
+      type: 'generic',
+      category: 'focus',
+      status: 'active',
+      progress: 0,
+      goal: 15,
+      rewardXp: 75,
+      rewardTokens: 8,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      meta: {
+        template: 'generic_focus_intro',
+        completionCriteria: { type: 'duration', target: 15, unit: 'minutes' },
+        priority: 'medium'
+      }
+    });
+
+    // Goal Setting Quest
+    quests.push({
+      id: `generic_goal_setting_${userId}_${Date.now()}`,
+      userId,
+      templateId: 'generic_goal_setting',
+      name: '🎯 Set Your First Goal',
+      description: 'Create a goal to give direction to your productivity efforts.',
+      type: 'generic',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 100,
+      rewardTokens: 10,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // 2 weeks
+      meta: {
+        template: 'generic_goal_setting',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'medium'
+      }
+    });
+
+    // Note Taking Quest
+    quests.push({
+      id: `generic_note_taking_${userId}_${Date.now()}`,
+      userId,
+      templateId: 'generic_note_taking',
+      name: '📝 Start Note Taking',
+      description: 'Create your first note to capture ideas and thoughts.',
+      type: 'generic',
+      category: 'notes',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      meta: {
+        template: 'generic_note_taking',
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'low'
+      }
+    });
+
+    return quests;
+  }
+
+  /**
+   * Get recent user activity for context
+   */
+  private async getRecentUserActivity(userId: string): Promise<any> {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [focusSessions, completedTasks, completedGoals, mentorChats] = await Promise.all([
+      this.prisma.timerSession.count({
+        where: {
+          userId,
+          createdAt: { gte: weekAgo }
+        }
+      }),
+      this.prisma.task.count({
+        where: {
+          userId,
+          completed: true,
+          updatedAt: { gte: weekAgo }
+        }
+      }),
+      this.prisma.goal.count({
+        where: {
+          userId,
+          completed: true,
+          updatedAt: { gte: weekAgo }
+        }
+      }),
+      this.prisma.chatMessage.count({
+        where: {
+          userId,
+          createdAt: { gte: weekAgo }
+        }
+      })
+    ]);
+
+    return {
+      focusSessions,
+      completedTasks,
+      completedGoals,
+      mentorChats,
+      lastActive: now
+    };
   }
 } 

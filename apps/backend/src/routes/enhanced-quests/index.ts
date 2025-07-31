@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import { EnhancedQuestService } from "../../services/enhancedQuestService";
 import { EnhancedGamificationService } from "../../services/enhancedGamificationService";
 import { PineconeService } from "../../ai/memory/pinecone.service";
@@ -45,12 +45,29 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
   // Get user's quests with enhanced context
   fastify.get('/user/:userId', async (request, reply) => {
     try {
-      const { userId } = request.params as { userId: string };
+      const { userId } = request.params as { userId: string | undefined };
       
+
+      const user = request.user as User;
+
+      if (!user) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+
+      if(!userId || user.id !== userId) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+
       // Get user's active quests
       const activeQuests = await prisma.quests.findMany({
         where: {
-          userId,
+          userId: user.id,
           isCompleted: 'false'
         },
         orderBy: [
@@ -95,9 +112,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
       const { userId } = request.params as { userId: string };
       
       // Get user to get their address
-      const user = await prisma.user.findUnique({
-        where: { id: userId }
-      });
+      const user = request.user as User;
 
       if (!user) {
         return reply.status(404).send({
@@ -106,7 +121,15 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Generate new quests
+      if(!userId || user.id !== userId) {
+
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
+
+        // Generate new quests
       const generatedQuests = await questService.generateQuestsForUser(userId, user.userAddress);
 
       return {
@@ -130,6 +153,23 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
     try {
       const { questId } = request.params as { questId: string };
       const { userId, userAddress } = request.body as { userId: string; userAddress: string };
+
+      const user = request.user as User;
+
+      if (!user) {
+        return reply.status(404).send({
+          success: false,
+          error: 'User not found'   
+        });
+      }
+
+      if(!userId || user.id !== userId) {
+
+        return reply.status(401).send({
+          success: false,
+          error: 'Unauthorized'
+        });
+      }
 
       // Get the quest
       const quest = await prisma.quests.findUnique({
@@ -384,11 +424,11 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
           isCompleted: 'true'
         },
         select: {
-          updatedAt: true,
+          dateAwarded: true,
           type: true,
           rewardXp: true
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { dateAwarded: 'desc' },
         take: 30
       });
 
@@ -415,6 +455,326 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch quest analytics'
+      });
+    }
+  });
+
+  // Create generic quest
+  fastify.post('/create-generic', async (request, reply) => {
+    try {
+      const questData = request.body as {
+        userId: string;
+        userAddress: string;
+        name: string;
+        description: string;
+        category: 'focus' | 'tasks' | 'goals' | 'notes' | 'learning' | 'social' | 'custom';
+        difficulty: 1 | 2 | 3 | 4 | 5;
+        rewardXp: number;
+        rewardTokens: number;
+        completionCriteria: {
+          type: 'count' | 'duration' | 'streak' | 'custom';
+          target: number;
+          unit?: string;
+        };
+        expiresAt?: string;
+        tags?: string[];
+        priority?: 'low' | 'medium' | 'high';
+      };
+
+      const quest = await questService.createGenericQuest({
+        ...questData,
+        expiresAt: questData.expiresAt ? new Date(questData.expiresAt) : undefined
+      });
+
+      return {
+        success: true,
+        data: {
+          quest,
+          message: 'Generic quest created successfully'
+        }
+      };
+    } catch (error) {
+      console.error('Error creating generic quest:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to create generic quest'
+      });
+    }
+  });
+
+  // Create suggestion quest
+  fastify.post('/create-suggestion', async (request, reply) => {
+    try {
+      const questData = request.body as {
+        userId: string;
+        userAddress: string;
+        suggestionType: 'productivity' | 'wellness' | 'learning' | 'social' | 'custom';
+        context: any[];
+        aiReasoning: string;
+        difficulty?: 1 | 2 | 3 | 4 | 5;
+        expiresAt?: string;
+      };
+
+      const quest = await questService.createSuggestionQuest({
+        ...questData,
+        expiresAt: questData.expiresAt ? new Date(questData.expiresAt) : undefined
+      });
+
+      return {
+        success: true,
+        data: {
+          quest,
+          message: 'Suggestion quest created successfully'
+        }
+      };
+    } catch (error) {
+      console.error('Error creating suggestion quest:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to create suggestion quest'
+      });
+    }
+  });
+
+  // Send connection quests
+  fastify.post('/connection-quests/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+      const { userAddress } = request.body as { userAddress: string };
+
+      const quests = await questService.sendConnectionQuests(userId, userAddress);
+
+      return {
+        success: true,
+        data: {
+          quests,
+          message: `Sent ${quests.length} connection quests`
+        }
+      };
+    } catch (error) {
+      console.error('Error sending connection quests:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to send connection quests'
+      });
+    }
+  });
+
+  // Send contextual quests
+  fastify.post('/contextual-quests/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+      const { userAddress, triggerPoint } = request.body as {
+        userAddress: string;
+        triggerPoint: 'task_completion' | 'goal_progress' | 'focus_session' | 'note_creation' | 'streak_milestone' | 'level_up' | 'idle_detection';
+      };
+
+      const quests = await questService.sendContextualQuests(userId, userAddress, triggerPoint);
+
+      return {
+        success: true,
+        data: {
+          quests,
+          message: `Sent ${quests.length} contextual quests for ${triggerPoint}`
+        }
+      };
+    } catch (error) {
+      console.error('Error sending contextual quests:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to send contextual quests'
+      });
+    }
+  });
+
+  // Get quest suggestions based on user context
+  fastify.get('/suggestions/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+      const { limit = 5 } = request.query as { limit?: number };
+
+      // Get user context
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          tasks: { take: 10 },
+          goals: { take: 10 },
+          notes: { take: 10 },
+          timerSessions: { take: 10 }
+        }
+      });
+
+      if (!user) {
+        return reply.status(404).send({
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      // Generate suggestions based on user data
+      const suggestions = await questService.generateQuestSuggestions(user, limit);
+
+      return {
+        success: true,
+        data: {
+          suggestions,
+          message: `Generated ${suggestions.length} quest suggestions`
+        }
+      };
+    } catch (error) {
+      console.error('Error generating quest suggestions:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to generate quest suggestions'
+      });
+    }
+  });
+
+  // Get quest templates for different types
+  fastify.get('/templates/:type', async (request, reply) => {
+    try {
+      const { type } = request.params as { type: string };
+      const { category, difficulty } = request.query as { category?: string; difficulty?: string };
+
+      const templates = await questService.getQuestTemplates(type, {
+        category: category as any,
+        difficulty: difficulty ? parseInt(difficulty) as any : undefined
+      });
+
+      return {
+        success: true,
+        data: templates
+      };
+    } catch (error) {
+      console.error('Error fetching quest templates:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to fetch quest templates'
+      });
+    }
+  });
+
+  // Bulk create quests
+  fastify.post('/bulk-create', async (request, reply) => {
+    try {
+      const { userId, userAddress, quests } = request.body as {
+        userId: string;
+        userAddress: string;
+        quests: Array<{
+          type: 'generic' | 'suggestion';
+          data: any;
+        }>;
+      };
+
+      const createdQuests = [];
+
+      for (const questRequest of quests) {
+        try {
+          let quest;
+          if (questRequest.type === 'generic') {
+            quest = await questService.createGenericQuest({
+              userId,
+              userAddress,
+              ...questRequest.data
+            });
+          } else if (questRequest.type === 'suggestion') {
+            quest = await questService.createSuggestionQuest({
+              userId,
+              userAddress,
+              ...questRequest.data
+            });
+          }
+          if (quest) createdQuests.push(quest);
+        } catch (error) {
+          console.error(`Error creating quest of type ${questRequest.type}:`, error);
+        }
+      }
+
+      return {
+        success: true,
+        data: {
+          quests: createdQuests,
+          message: `Created ${createdQuests.length} out of ${quests.length} quests`
+        }
+      };
+    } catch (error) {
+      console.error('Error bulk creating quests:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to bulk create quests'
+      });
+    }
+  });
+
+  // Generate priority quest suggestions at connection
+  fastify.post('/priority-suggestions/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+      const { userAddress } = request.body as { userAddress: string };
+
+      const quests = await questService.generatePriorityQuestSuggestions(userId, userAddress);
+
+      return {
+        success: true,
+        data: {
+          quests,
+          message: `Generated ${quests.length} priority-based quest suggestions`,
+          hasTaskData: quests.some(q => q.type === 'priority'),
+          questTypes: quests.map(q => q.type)
+        }
+      };
+    } catch (error) {
+      console.error('Error generating priority quest suggestions:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to generate priority quest suggestions'
+      });
+    }
+  });
+
+  // Get user task summary for quest generation
+  fastify.get('/task-summary/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+
+      const tasks = await prisma.task.findMany({
+        where: {
+          userId,
+          completed: false
+        },
+        orderBy: [
+          { priority: 'desc' },
+          { dueDate: 'asc' },
+          { createdAt: 'desc' }
+        ],
+        take: 10,
+        select: {
+          id: true,
+          title: true,
+          priority: true,
+          dueDate: true,
+          createdAt: true
+        }
+      });
+
+      const taskSummary = {
+        totalTasks: tasks.length,
+        highPriority: tasks.filter(t => t.priority === 'high').length,
+        mediumPriority: tasks.filter(t => t.priority === 'medium').length,
+        lowPriority: tasks.filter(t => t.priority === 'low').length,
+        overdue: tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date()).length,
+        recentTasks: tasks.slice(0, 5)
+      };
+
+      return {
+        success: true,
+        data: taskSummary
+      };
+    } catch (error) {
+      console.error('Error fetching task summary:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to fetch task summary'
       });
     }
   });
