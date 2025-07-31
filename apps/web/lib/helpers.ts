@@ -3,7 +3,7 @@ import MarkdownIt from 'markdown-it';
 
 export const tryMarkdownToHtml = (text: string) => {
     try {
-        console.log("text", text);
+        // console.log("text", text);
         let textRendered = markdownToHtml(text);
         // console.log("textRendered", textRendered);
         if (!textRendered) {
