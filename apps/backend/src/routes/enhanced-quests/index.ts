@@ -65,7 +65,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
           userId,
           isCompleted: 'true'
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { dateAwarded: 'desc' },
         take: 10
       });
 

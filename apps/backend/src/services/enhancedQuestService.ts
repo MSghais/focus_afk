@@ -459,7 +459,7 @@ export class EnhancedQuestService {
         });
 
         if (lastCompletion && 
-            Date.now() - lastCompletion.updatedAt.getTime() < template.cooldown * 60 * 60 * 1000) {
+            Date.now() - lastCompletion.updatedAt!.getTime() < template.cooldown * 60 * 60 * 1000) {
           continue;
         }
       }
