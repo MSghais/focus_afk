@@ -666,7 +666,7 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
         }>;
       };
 
-      const createdQuests = [];
+      const createdQuests:any[] = [];
 
       for (const questRequest of quests) {
         try {
@@ -775,6 +775,68 @@ export default async function enhancedQuestsRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: 'Failed to fetch task summary'
+      });
+    }
+  });
+
+  // Test Pinecone integration and quest personalization
+  fastify.get('/test-personalization/:userId', async (request, reply) => {
+    try {
+      const { userId } = request.params as { userId: string };
+      const { userAddress } = request.query as { userAddress: string };
+
+      if (!userAddress) {
+        return reply.status(400).send({
+          success: false,
+          error: 'userAddress is required'
+        });
+      }
+
+      // Test vector context generation
+      const userContext = await questService['buildUserContext'](userId, userAddress);
+      const vectorContext = await questService['getVectorContext'](userId, userContext);
+
+      // Test quest generation with personalization
+      const personalizedQuests = await questService['createVectorBasedPersonalizedQuests'](userContext, vectorContext);
+
+      return {
+        success: true,
+        data: {
+          userContext: {
+            level: userContext.level,
+            totalXp: userContext.totalXp,
+            streak: userContext.streak,
+            recentActivity: userContext.recentActivity,
+            preferences: userContext.preferences
+          },
+          vectorContext: {
+            totalItems: vectorContext.length,
+            itemsByType: vectorContext.reduce((acc, item) => {
+              acc[item.type] = (acc[item.type] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>),
+            sampleItems: vectorContext.slice(0, 3)
+          },
+          personalizedQuests: {
+            totalGenerated: personalizedQuests.length,
+            quests: personalizedQuests.map(q => ({
+              name: q.name,
+              description: q.description,
+              category: q.category,
+              difficulty: q.difficulty,
+              type: q.type,
+              vectorBased: q.meta?.vectorBased
+            }))
+          },
+          message: `Successfully tested personalization with ${vectorContext.length} vector context items and generated ${personalizedQuests.length} personalized quests`
+        }
+      };
+    } catch (error) {
+      console.error('Error testing personalization:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to test personalization',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });

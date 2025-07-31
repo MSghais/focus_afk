@@ -1187,6 +1187,21 @@ class ApiService {
       recentTasks: any[];
     }>(`/enhanced-quests/task-summary/${userId}`);
   }
+
+  // Test Quest Personalization
+  async testQuestPersonalization(userId: string, userAddress: string): Promise<ApiResponse<{
+    userContext: any;
+    vectorContext: any;
+    personalizedQuests: any;
+    message: string;
+  }>> {
+    return this.request<{
+      userContext: any;
+      vectorContext: any;
+      personalizedQuests: any;
+      message: string;
+    }>(`/enhanced-quests/test-personalization/${userId}?userAddress=${userAddress}`);
+  }
 }
 
 export const api = new ApiService();

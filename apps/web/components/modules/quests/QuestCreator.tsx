@@ -22,8 +22,9 @@ interface QuestSuggestion {
 }
 
 export default function QuestCreator({ userId, userAddress, onQuestCreated, onClose }: QuestCreatorProps) {
-  const [questType, setQuestType] = useState<'generic' | 'suggestion'>('generic');
+  const [questType, setQuestType] = useState<'generic' | 'suggestion' | 'priority'>('priority');
   const [suggestions, setSuggestions] = useState<QuestSuggestion[]>([]);
+  const [taskSummary, setTaskSummary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +58,8 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
   useEffect(() => {
     if (questType === 'suggestion') {
       loadSuggestions();
+    } else if (questType === 'priority') {
+      loadTaskSummary();
     }
   }, [questType]);
 
@@ -70,6 +73,57 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
     } catch (err) {
       setError('Failed to load quest suggestions');
       console.error('Error loading suggestions:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTaskSummary = async () => {
+    try {
+      setLoading(true);
+      const response = await api.getTaskSummary(userId);
+      if (response.success && response.data) {
+        setTaskSummary(response.data);
+      }
+    } catch (err) {
+      setError('Failed to load task summary');
+      console.error('Error loading task summary:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generatePriorityQuests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.generatePriorityQuestSuggestions(userId, userAddress);
+      if (response.success && response.data) {
+        onQuestCreated?.(response.data.quests);
+        onClose?.();
+      }
+    } catch (err) {
+      setError('Failed to generate priority quests');
+      console.error('Error generating priority quests:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testPersonalization = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.testQuestPersonalization(userId, userAddress);
+      if (response.success && response.data) {
+        console.log('Personalization Test Results:', response.data);
+        alert(`Personalization Test Results:\n\n${response.data.message}\n\nCheck console for detailed results.`);
+      }
+    } catch (err) {
+      setError('Failed to test personalization');
+      console.error('Error testing personalization:', err);
     } finally {
       setLoading(false);
     }
@@ -206,6 +260,12 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
       {/* Quest Type Selector */}
       <div className={styles.typeSelector}>
         <button
+          className={`${styles.typeButton} ${questType === 'priority' ? styles.active : ''}`}
+          onClick={() => setQuestType('priority')}
+        >
+          🏆 Generate Priority Quests
+        </button>
+        <button
           className={`${styles.typeButton} ${questType === 'generic' ? styles.active : ''}`}
           onClick={() => setQuestType('generic')}
         >
@@ -219,40 +279,110 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
         </button>
       </div>
 
-      {/* Quick Actions */}
-      <div className={styles.quickActions}>
-        <h3>⚡ Quick Actions</h3>
-        <div className={styles.actionButtons}>
-          <button
-            className={styles.actionButton}
-            onClick={sendConnectionQuests}
-            disabled={loading}
-          >
-            🔗 Send Connection Quests
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={() => sendContextualQuests('task_completion')}
-            disabled={loading}
-          >
-            ✅ Task Completion Quests
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={() => sendContextualQuests('focus_session')}
-            disabled={loading}
-          >
-            ⏲️ Focus Session Quests
-          </button>
-          <button
-            className={styles.actionButton}
-            onClick={() => sendContextualQuests('level_up')}
-            disabled={loading}
-          >
-            ⭐ Level Up Quests
-          </button>
+      {/* Priority Quest Generation */}
+      {questType === 'priority' && (
+        <div className={styles.prioritySection}>
+          <h3>🏆 Priority-Based Quest Generation</h3>
+          <p className={styles.description}>
+            Generate quests based on your current tasks and priorities. The system will analyze your tasks and create personalized quests to help you stay focused and productive.
+          </p>
+
+          {loading ? (
+            <div className={styles.loading}>Analyzing your tasks...</div>
+          ) : taskSummary ? (
+            <div className={styles.taskSummary}>
+              <h4>📊 Your Task Summary</h4>
+              <div className={styles.summaryGrid}>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>Total Tasks:</span>
+                  <span className={styles.summaryValue}>{taskSummary.totalTasks}</span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>High Priority:</span>
+                  <span className={`${styles.summaryValue} ${styles.highPriority}`}>
+                    {taskSummary.highPriority}
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>Medium Priority:</span>
+                  <span className={`${styles.summaryValue} ${styles.mediumPriority}`}>
+                    {taskSummary.mediumPriority}
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>Low Priority:</span>
+                  <span className={`${styles.summaryValue} ${styles.lowPriority}`}>
+                    {taskSummary.lowPriority}
+                  </span>
+                </div>
+                <div className={styles.summaryItem}>
+                  <span className={styles.summaryLabel}>Overdue:</span>
+                  <span className={`${styles.summaryValue} ${styles.overdue}`}>
+                    {taskSummary.overdue}
+                  </span>
+                </div>
+              </div>
+
+              {taskSummary.recentTasks.length > 0 && (
+                <div className={styles.recentTasks}>
+                  <h5>📝 Recent Tasks</h5>
+                  <div className={styles.taskList}>
+                    {taskSummary.recentTasks.map((task: any, index: number) => (
+                      <div key={index} className={styles.taskItem}>
+                        <span className={styles.taskTitle}>{task.title}</span>
+                        <span className={`${styles.taskPriority} ${styles[task.priority]}`}>
+                          {task.priority}
+                        </span>
+                        {task.dueDate && (
+                          <span className={styles.taskDueDate}>
+                            Due: {new Date(task.dueDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.noData}>
+              <p>📋 No task data available. Create some tasks first to get personalized quest suggestions!</p>
+            </div>
+          )}
+
+          <div className={styles.priorityActions}>
+            <button
+              className={styles.generatePriorityButton}
+              onClick={generatePriorityQuests}
+              disabled={loading}
+            >
+              {loading ? '🎯 Generating Priority Quests...' : '🎯 Generate Priority Quests'}
+            </button>
+            
+            <button
+              className={styles.testButton}
+              onClick={testPersonalization}
+              disabled={loading}
+            >
+              🧪 Test Personalization
+            </button>
+            
+            <div className={styles.priorityInfo}>
+              <h5>✨ What you'll get:</h5>
+              <ul>
+                <li>🔥 High Priority Sprint - Focus on your most important tasks</li>
+                <li>⏰ Catch Up Quest - Complete overdue tasks</li>
+                <li>📋 Steady Progress - Work on medium priority tasks</li>
+                <li>🗂️ Task Organization - Organize your task system</li>
+                <li>🎯 Focus Sessions - Dedicated time for priority work</li>
+                {(!taskSummary || taskSummary.totalTasks < 2) && (
+                  <li>👋 Welcome Quests - Get started with basic activities</li>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Generic Quest Form */}
       {questType === 'generic' && (

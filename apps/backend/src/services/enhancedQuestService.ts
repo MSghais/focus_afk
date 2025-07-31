@@ -2186,6 +2186,13 @@ export class EnhancedQuestService {
     const now = new Date();
 
     try {
+      // Build comprehensive user context with both database and vector data
+      const userContext = await this.buildUserContext(userId, userAddress);
+      const vectorContext = await this.getVectorContext(userId, userContext);
+      
+      // Update user context with vector data
+      userContext.vectorContext = vectorContext;
+
       // Get user's current tasks with priority information
       const userTasks = await this.prisma.task.findMany({
         where: {
@@ -2200,9 +2207,6 @@ export class EnhancedQuestService {
         take: 10
       });
 
-      // Get user's recent activity for context
-      const recentActivity = await this.getRecentUserActivity(userId);
-      
       // Get user's current level and stats
       const user = await this.prisma.user.findUnique({
         where: { id: userId }
@@ -2212,9 +2216,14 @@ export class EnhancedQuestService {
         return this.generateGenericConnectionQuests(userId, userAddress);
       }
 
-      // If user has tasks, create priority-based quests
+      // If user has tasks, create priority-based quests with vector context
       if (userTasks.length > 0) {
-        quests.push(...await this.createTaskBasedPriorityQuests(userTasks, user, recentActivity));
+        quests.push(...await this.createTaskBasedPriorityQuests(userTasks, user, userContext.recentActivity));
+        
+        // Add personalized quests based on vector context
+        if (vectorContext.length > 0) {
+          quests.push(...await this.createVectorBasedPersonalizedQuests(userContext, vectorContext));
+        }
       }
 
       // If user has no tasks or very few, create generic quests
@@ -2224,22 +2233,13 @@ export class EnhancedQuestService {
 
       // Add onboarding quests for new users
       if ((user.completedQuests || 0) < 3) {
-        quests.push(...await this.generateOnboardingQuests({
-          userId,
-          userAddress,
-          level: user.level || 1,
-          totalXp: user.totalXp || 0,
-          streak: user.streak || 0,
-          completedQuests: [],
-          recentActivity: { focusSessions: 0, completedTasks: 0, completedGoals: 0, mentorChats: 0, lastActive: now },
-          preferences: { preferredCategories: [], difficultyPreference: 2, timeOfDay: 'any' },
-          vectorContext: []
-        }));
+        quests.push(...await this.generateOnboardingQuests(userContext));
       }
 
       // Save quests to database
       await this.saveQuestsToDatabase(quests);
 
+      console.log(`Generated ${quests.length} priority quests for user ${userId} with ${vectorContext.length} vector context items`);
       return quests;
     } catch (error) {
       console.error('Error generating priority quest suggestions:', error);
@@ -2551,5 +2551,447 @@ export class EnhancedQuestService {
       mentorChats,
       lastActive: now
     };
+  }
+
+  /**
+   * Build comprehensive user context from database
+   */
+  private async buildUserContext(userId: string, userAddress: string): Promise<UserQuestContext> {
+    // Get user data
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        tasks: { take: 20 },
+        goals: { take: 20 },
+        notes: { take: 20 },
+        timerSessions: { take: 20 },
+        quests: { take: 50 },
+        chatMessages: { take: 10 }
+      }
+    });
+
+    if (!user) {
+      throw new Error(`User not found: ${userId}`);
+    }
+
+    // Get recent activity
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const recentActivity = {
+      focusSessions: user.timerSessions.filter(s => s.createdAt >= weekAgo).length,
+      completedTasks: user.tasks.filter(t => t.completed && t.updatedAt >= weekAgo).length,
+      completedGoals: user.goals.filter(g => g.completed && g.updatedAt >= weekAgo).length,
+      mentorChats: user.chatMessages.filter(m => m.createdAt >= weekAgo).length,
+      lastActive: user.updatedAt
+    };
+
+    // Analyze user preferences
+    const preferences = await this.analyzeUserPreferences(user);
+
+    // Get completed quests
+    const completedQuests = user.quests
+      .filter(q => q.isCompleted === 'true')
+      .map(q => q.type);
+
+    return {
+      userId,
+      userAddress,
+      level: user.level || 1,
+      totalXp: user.totalXp || 0,
+      streak: user.streak || 0,
+      completedQuests,
+      recentActivity,
+      preferences,
+      vectorContext: [] // Will be populated by getVectorContext
+    };
+  }
+
+  /**
+   * Get vector-based context from Pinecone
+   */
+  private async getVectorContext(userId: string, userContext: UserQuestContext): Promise<any[]> {
+    try {
+      // Create a comprehensive search query based on user context
+      const searchQuery = this.buildVectorSearchQuery(userContext);
+      
+      // Use enhanced context manager to search user content
+      const vectorResults = await this.enhancedContextManager.searchUserContent(
+        userId,
+        searchQuery,
+        ['tasks', 'goals', 'notes', 'focus_sessions', 'chat_messages'],
+        10
+      );
+
+      console.log(`Found ${vectorResults.length} vector context items for user ${userId}`);
+      return vectorResults;
+    } catch (error) {
+      console.error('Error getting vector context:', error);
+      // Fallback to database-only context
+      return this.getFallbackVectorContext(userId, userContext);
+    }
+  }
+
+  /**
+   * Build search query for vector search
+   */
+  private buildVectorSearchQuery(userContext: UserQuestContext): string {
+    const queryParts = [];
+
+    // Add user level and experience
+    queryParts.push(`user level ${userContext.level}, ${userContext.totalXp} total XP`);
+
+    // Add recent activity context
+    const { recentActivity } = userContext;
+    if (recentActivity.focusSessions > 0) {
+      queryParts.push(`${recentActivity.focusSessions} focus sessions this week`);
+    }
+    if (recentActivity.completedTasks > 0) {
+      queryParts.push(`${recentActivity.completedTasks} tasks completed this week`);
+    }
+    if (recentActivity.completedGoals > 0) {
+      queryParts.push(`${recentActivity.completedGoals} goals completed this week`);
+    }
+
+    // Add streak information
+    if (userContext.streak > 0) {
+      queryParts.push(`${userContext.streak} day streak`);
+    }
+
+    // Add preference context
+    if (userContext.preferences.preferredCategories.length > 0) {
+      queryParts.push(`prefers ${userContext.preferences.preferredCategories.join(', ')} activities`);
+    }
+
+    return queryParts.join(', ');
+  }
+
+  /**
+   * Fallback vector context when Pinecone is unavailable
+   */
+  private async getFallbackVectorContext(userId: string, userContext: UserQuestContext): Promise<any[]> {
+    // Get recent user data from database as fallback
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [recentTasks, recentGoals, recentNotes, recentSessions] = await Promise.all([
+      this.prisma.task.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: weekAgo }
+        },
+        take: 10
+      }),
+      this.prisma.goal.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: weekAgo }
+        },
+        take: 10
+      }),
+      this.prisma.notes.findMany({
+        where: {
+          userId,
+          updatedAt: { gte: weekAgo }
+        },
+        take: 10
+      }),
+      this.prisma.timerSession.findMany({
+        where: {
+          userId,
+          createdAt: { gte: weekAgo }
+        },
+        take: 10
+      })
+    ]);
+
+    // Convert to vector context format
+    const fallbackContext = [
+      ...recentTasks.map(task => ({
+        type: 'task',
+        id: task.id,
+        content: task.title,
+        metadata: {
+          priority: task.priority,
+          completed: task.completed,
+          category: task.category
+        }
+      })),
+      ...recentGoals.map(goal => ({
+        type: 'goal',
+        id: goal.id,
+        content: goal.title,
+        metadata: {
+          progress: goal.progress,
+          completed: goal.completed,
+          category: goal.category
+        }
+      })),
+      ...recentNotes.map(note => ({
+        type: 'note',
+        id: note.id,
+        content: note.text?.substring(0, 200) || '',
+        metadata: {
+          type: note.type,
+          source: note.source
+        }
+      })),
+      ...recentSessions.map(session => ({
+        type: 'focus_session',
+        id: session.id,
+        content: `Focus session: ${session.duration} minutes`,
+        metadata: {
+          duration: session.duration,
+          type: session.type
+        }
+      }))
+    ];
+
+    console.log(`Using fallback context with ${fallbackContext.length} items for user ${userId}`);
+    return fallbackContext;
+  }
+
+  /**
+   * Analyze user preferences from their data
+   */
+  private async analyzeUserPreferences(user: any): Promise<{
+    preferredCategories: string[];
+    difficultyPreference: number;
+    timeOfDay: 'morning' | 'afternoon' | 'evening' | 'any';
+  }> {
+    const preferences = {
+      preferredCategories: [] as string[],
+      difficultyPreference: 2,
+      timeOfDay: 'any' as const
+    };
+
+    // Analyze task categories
+    const taskCategories = user.tasks.map((t: any) => t.category).filter(Boolean);
+    if (taskCategories.length > 0) {
+      const categoryCounts = taskCategories.reduce((acc: any, cat: string) => {
+        acc[cat] = (acc[cat] || 0) + 1;
+        return acc;
+      }, {});
+      
+      const sortedCategories = Object.entries(categoryCounts)
+        .sort(([,a]: any, [,b]: any) => b - a)
+        .slice(0, 3)
+        .map(([cat]) => cat);
+      
+      preferences.preferredCategories = sortedCategories;
+    }
+
+    // Analyze difficulty preference based on completed quests
+    const completedQuests = user.quests.filter((q: any) => q.isCompleted === 'true');
+    if (completedQuests.length > 0) {
+      const avgDifficulty = completedQuests.reduce((sum: number, q: any) => sum + (q.difficulty || 2), 0) / completedQuests.length;
+      preferences.difficultyPreference = Math.round(avgDifficulty);
+    }
+
+    // Analyze time of day preference from focus sessions
+    const focusSessions = user.timerSessions.filter((s: any) => s.type === 'focus');
+    if (focusSessions.length > 0) {
+      const hourCounts = focusSessions.reduce((acc: any, session: any) => {
+        const hour = new Date(session.createdAt).getHours();
+        const timeSlot = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+        acc[timeSlot] = (acc[timeSlot] || 0) + 1;
+        return acc;
+      }, {});
+
+      const preferredTime = Object.entries(hourCounts)
+        .sort(([,a]: any, [,b]: any) => b - a)[0]?.[0] as any;
+      
+      if (preferredTime) {
+        preferences.timeOfDay = preferredTime;
+      }
+    }
+
+    return preferences;
+  }
+
+  /**
+   * Create personalized quests based on vector context analysis
+   */
+  private async createVectorBasedPersonalizedQuests(userContext: UserQuestContext, vectorContext: any[]): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const now = new Date();
+
+    try {
+      // Analyze vector context for patterns and insights
+      const insights = await this.analyzeVectorContextForPersonalization(vectorContext, userContext);
+
+      // Create quests based on insights
+      for (const insight of insights) {
+        const quest = await this.createPersonalizedQuestFromInsight(insight, userContext);
+        if (quest) {
+          quests.push(quest);
+        }
+      }
+
+      return quests;
+    } catch (error) {
+      console.error('Error creating vector-based personalized quests:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Analyze vector context for personalization insights
+   */
+  private async analyzeVectorContextForPersonalization(vectorContext: any[], userContext: UserQuestContext): Promise<any[]> {
+    const insights: any[] = [];
+
+    // Group context by type
+    const tasks = vectorContext.filter(ctx => ctx.type === 'task');
+    const goals = vectorContext.filter(ctx => ctx.type === 'goal');
+    const notes = vectorContext.filter(ctx => ctx.type === 'note');
+    const focusSessions = vectorContext.filter(ctx => ctx.type === 'focus_session');
+
+    // Analyze task patterns
+    if (tasks.length > 0) {
+      const incompleteTasks = tasks.filter(task => !task.metadata?.completed);
+      const highPriorityTasks = tasks.filter(task => task.metadata?.priority === 'high');
+      
+      if (incompleteTasks.length > 3) {
+        insights.push({
+          type: 'task_completion_pattern',
+          category: 'tasks',
+          difficulty: 2,
+          description: `You have ${incompleteTasks.length} incomplete tasks. Focus on completing them systematically.`,
+          target: Math.min(3, incompleteTasks.length),
+          rewardXp: 150,
+          rewardTokens: 15,
+          priority: 'medium'
+        });
+      }
+
+      if (highPriorityTasks.length > 0) {
+        insights.push({
+          type: 'priority_focus',
+          category: 'tasks',
+          difficulty: 3,
+          description: `You have ${highPriorityTasks.length} high-priority tasks. Focus on completing them first.`,
+          target: Math.min(2, highPriorityTasks.length),
+          rewardXp: 200,
+          rewardTokens: 20,
+          priority: 'high'
+        });
+      }
+    }
+
+    // Analyze goal patterns
+    if (goals.length > 0) {
+      const lowProgressGoals = goals.filter(goal => (goal.metadata?.progress || 0) < 30);
+      
+      if (lowProgressGoals.length > 0) {
+        insights.push({
+          type: 'goal_progress_boost',
+          category: 'goals',
+          difficulty: 3,
+          description: `You have ${lowProgressGoals.length} goals with low progress. Let's boost them!`,
+          target: 1,
+          rewardXp: 250,
+          rewardTokens: 25,
+          priority: 'medium'
+        });
+      }
+    }
+
+    // Analyze note patterns
+    if (notes.length > 0) {
+      const actionNotes = notes.filter(note => 
+        note.content?.includes('TODO') || 
+        note.content?.includes('ACTION') ||
+        note.content?.includes('DO')
+      );
+      
+      if (actionNotes.length > 0) {
+        insights.push({
+          type: 'note_action_items',
+          category: 'notes',
+          difficulty: 2,
+          description: `You have ${actionNotes.length} notes with action items. Let's tackle them!`,
+          target: Math.min(3, actionNotes.length),
+          rewardXp: 100,
+          rewardTokens: 10,
+          priority: 'medium'
+        });
+      }
+    }
+
+    // Analyze focus session patterns
+    if (focusSessions.length > 0) {
+      const avgDuration = focusSessions.reduce((sum, session) => sum + (session.metadata?.duration || 0), 0) / focusSessions.length;
+      
+      if (avgDuration < 25) {
+        insights.push({
+          type: 'extend_focus_sessions',
+          category: 'focus',
+          difficulty: 2,
+          description: `Your average focus session is ${Math.round(avgDuration)} minutes. Let's extend that!`,
+          target: 30,
+          rewardXp: 120,
+          rewardTokens: 12,
+          priority: 'medium'
+        });
+      }
+    }
+
+    return insights;
+  }
+
+  /**
+   * Create a personalized quest from an insight
+   */
+  private async createPersonalizedQuestFromInsight(insight: any, userContext: UserQuestContext): Promise<GeneratedQuest | null> {
+    const now = new Date();
+    
+    const quest: GeneratedQuest = {
+      id: `personalized_${insight.type}_${userContext.userId}_${Date.now()}`,
+      userId: userContext.userId,
+      templateId: `personalized_${insight.type}`,
+      name: this.generatePersonalizedQuestName(insight),
+      description: insight.description,
+      type: 'personalized',
+      category: insight.category,
+      status: 'active',
+      progress: 0,
+      goal: insight.target,
+      rewardXp: insight.rewardXp,
+      rewardTokens: insight.rewardTokens,
+      difficulty: insight.difficulty,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 1 week
+      vectorContext: userContext.vectorContext,
+      meta: {
+        template: `personalized_${insight.type}`,
+        insight: insight,
+        priority: insight.priority,
+        completionCriteria: { 
+          type: insight.category === 'focus' ? 'duration' : 'count', 
+          target: insight.target 
+        },
+        personalized: true,
+        vectorBased: true
+      }
+    };
+
+    return quest;
+  }
+
+  /**
+   * Generate personalized quest name based on insight
+   */
+  private generatePersonalizedQuestName(insight: any): string {
+    const names: Record<string, string> = {
+      task_completion_pattern: '📋 Task Completion Sprint',
+      priority_focus: '🔥 Priority Task Focus',
+      goal_progress_boost: '🎯 Goal Progress Boost',
+      note_action_items: '📝 Note Action Items',
+      extend_focus_sessions: '⏲️ Extended Focus Challenge'
+    };
+
+    return names[insight.type] || '🎯 Personalized Challenge';
   }
 } 
