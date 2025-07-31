@@ -18,6 +18,11 @@ async function audioRoutes(fastify: FastifyInstance) {
       const userId = request.user.id;
       const noteId = (request.params as { id: string }).id;
 
+
+      if(!userId) {
+        return reply.code(401).send({ message: 'Unauthorized' });
+      }
+
       const note = await fastify.prisma.notes.findFirst({
         where: { id: noteId, userId },
         include: {
@@ -29,10 +34,20 @@ async function audioRoutes(fastify: FastifyInstance) {
         return reply.code(404).send({ message: 'Note not found' });
       }
 
+
+      const notesSourcesData  = note.noteSources.map((source) => {
+        return `
+        ${source.type}: ${source.url} ${source.title} ${source.type === 'text' ? `\n${source.content}` : ''} 
+        `;
+      }).join('\n');
+
       let promptGeneration = `
-      Summarize under 100 words or 1000 characters it:  
-      You are a helpful assistant that generates audio summaries of notes.
+      Create a very short audio summary (under 50 words) that captures the key points of this note.
+      Focus on the most important insights and actionable takeaways.
+      Keep it concise and engaging for audio playback.
+      
       The note is: ${note.text}
+      The notes sources are: ${notesSourcesData}
       `
 
       let notesSourcesContext = note.noteSources.map((source) => {
@@ -109,8 +124,10 @@ async function audioRoutes(fastify: FastifyInstance) {
       }
 
       let promptGeneration = `
-      Summarize under 100 words or 1000 characters it:  
-      You are a helpful assistant that generates audio summaries, conversations.
+      Create a very short audio summary (under 50 words) that captures the key points.
+      Focus on the most important insights and actionable takeaways.
+      Keep it concise and engaging for audio playback.
+      
       The text is: ${text}
       `
 

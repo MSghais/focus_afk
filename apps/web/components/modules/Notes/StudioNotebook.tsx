@@ -4,9 +4,10 @@ import { useNotesStore } from "../../../store/notes";
 import { Note, NoteSource } from "../../../types";
 import SourceCard from "./SourceCard";
 import { useUIStore } from "../../../store/uiStore";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ButtonSecondary } from "../../small/buttons";
 import { logClickedEvent } from "../../../lib/analytics";
+import { api } from "../../../lib/api";
 
 interface StudioNotebookProps {
     note: Note;
@@ -22,9 +23,9 @@ export default function StudioNotebook({
     const { showToast } = useUIStore();
 
     const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-
-    const [audioData, setAudioData] = useState<Blob | null>(null);      
-
+    const [audioData, setAudioData] = useState<Blob | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+    const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
 
     const aiAudioRef = useRef<HTMLAudioElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -45,7 +46,6 @@ export default function StudioNotebook({
         }
     };
 
-
     // Utility function to check if the system volume is activated (not muted and > 0)
     // Note: Browsers do not provide direct access to system volume/mute state for privacy reasons.
     // We can only check if the AudioContext is not suspended (i.e., audio output is allowed).
@@ -62,53 +62,79 @@ export default function StudioNotebook({
         }
     };
 
-    // Example usage: check on mount or before starting audio
-    // useEffect(() => {
-    //     checkAudioActivated().then(isActive => {
-    //         if (!isActive) {
-    //             showToast({
-    //                 message: 'Microphone access is not enabled.',
-    //                 type: 'error'
-    //             });
-    //         }
-    //     });
-    // }, []);
-
-
     const handleGenerateSummaryAudio = async () => {
-        // const result = await handleInitAudioContext();
+
+        console.log("handleGenerateSummaryAudio", note);
+
+        if (!note.id) {
+            showToast({
+                message: 'No note selected',
+                type: 'error'
+            });
+            return;
+        }
+
+        if (!note.text || note.text.trim().length === 0) {
+            showToast({
+                message: 'Note has no content to summarize',
+                type: 'error'
+            });
+            return;
+        }
+
         console.log("handleGenerateSummaryAudio");
         logClickedEvent("studio_notebook_generate_summary_audio");
+        
+        setIsGeneratingAudio(true);
         showToast({
-            message: 'Coming soon',
+            message: 'Generating audio summary',
             description: 'Please wait while we generate the summary audio',
             type: 'info',
             duration: 10000
         });
-        // const isSystemVolumeActivated = await checkVolumeActivated();
-        // const isAudioActivated = await checkAudioActivated();
-        // console.log("isSystemVolumeActivated", isSystemVolumeActivated);
-        // console.log("isAudioActivated", isAudioActivated);
-        // if (result) {
-        //     const audioContext = result.audioContext;
-        //     const source = result.source;
-        //     const processor = result.processor;
-        //     source.connect(processor);
-        //     processor.connect(audioContext.destination);
-        // }
 
-        // showToast({
-        //     message: 'Generating summary audio',
-        //     description: 'Please wait while we generate the summary audio',
-        //     type: 'info',
-        //     duration: 10000
-        // });
+        try {
+            // Call the backend API to generate audio summary
+            const audioBlob = await api.generateNoteAudioSummary(note.id);
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // Clean up previous audio URL if it exists
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+            
+            setCurrentAudioUrl(audioUrl);
+            
+            // Set the audio source and play it
+            if (aiAudioRef.current) {
+                aiAudioRef.current.src = audioUrl;
+                aiAudioRef.current.load();
+                aiAudioRef.current.play().catch(err => {
+                    console.error('Error playing audio:', err);
+                    showToast({
+                        message: 'Error playing audio',
+                        type: 'error'
+                    });
+                });
+            }
+
+            showToast({
+                message: 'Audio summary generated successfully',
+                type: 'success'
+            });
+        } catch (error) {
+            console.error('Error generating audio summary:', error);
+            showToast({
+                message: 'Failed to generate audio summary',
+                description: error instanceof Error ? error.message : 'Unknown error',
+                type: 'error'
+            });
+        } finally {
+            setIsGeneratingAudio(false);
+        }
     }
 
-
-
     const handleInitAudioContext = async () => {
-
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
@@ -117,51 +143,43 @@ export default function StudioNotebook({
         processor.connect(audioContext.destination);
 
         return { audioContext, source, processor };
-
-        // showToast({
-        //     message: 'Generating summary audio',
-        //     description: 'Please wait while we generate the summary audio',
-        //     type: 'info',
-        //     duration: 10000
-        // });
     }
+
+    // Cleanup audio URL on unmount
+    useEffect(() => {
+        return () => {
+            if (currentAudioUrl) {
+                URL.revokeObjectURL(currentAudioUrl);
+            }
+        };
+    }, [currentAudioUrl]);
+
     return (
-
-
-        <div
-            className="flex flex-col gap-2 py-2 mt-4 max-h-[500px] overflow-y-auto py-4"
-
-        >
-            {/* <h1>Studio Notebook</h1> */}
-
+        <div className="flex flex-col gap-2 py-2 mt-4 max-h-[500px] overflow-y-auto py-4">
             <div>
-                <p>Summary of your note</p>
+                <p className="text-sm font-medium mb-2">Audio Summary</p>
+                <p className="text-xs text-gray-600 mb-3">
+                    Generate a short audio summary of your note and its sources
+                </p>
 
-                <ButtonSecondary className="bg-[#000] text-primary-foreground px-4 py-2 rounded-md" onClick={handleGenerateSummaryAudio} disabled={!note.id}    >
-                    Generate summary audio
+                <ButtonSecondary 
+                    className="bg-[#000] text-primary-foreground px-4 py-2 rounded-md hover:bg-gray-800 transition-colors" 
+                    onClick={handleGenerateSummaryAudio} 
+                    disabled={!note.id || isGeneratingAudio}
+                >
+                    {isGeneratingAudio ? '🎵 Generating audio...' : '🎵 Generate summary audio'}
                 </ButtonSecondary>
             </div>
 
-            {/* <div>
-                <p>User audio</p>
-                <audio ref={userAudioRef} controls />
-            </div> */}
-
-            <div>
-                <p>AI audio</p>
-
-                
-                <audio ref={aiAudioRef} controls />
+            <div className="mt-4">
+                <p className="text-sm font-medium mb-2">Audio Player</p>
+                <audio 
+                    ref={aiAudioRef} 
+                    controls 
+                    className="w-full"
+                    preload="none"
+                />
             </div>
-
-            {/* <div className="flex flex-col gap-2 mt-4 max-h-[500px] overflow-y-auto py-4">
-                {note?.noteSources?.map((source: NoteSource) => (
-                    <SourceCard
-                        source={source}
-                        className="w-full"
-                    />
-                ))}
-            </div> */}
         </div>
     );
 };  

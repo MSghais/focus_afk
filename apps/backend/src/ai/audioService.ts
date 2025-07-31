@@ -52,14 +52,16 @@ export class AudioService {
         return undefined;
       }
 
-      let promptGeneration = `
-      Summarize under 100 words or 1000 characters it:  
-      You are a helpful assistant that generates audio summaries of notes.
-      ${prompt}
-      `
+      // let promptGeneration = `
+      // Create a very short audio summary (under 50 words) that captures the key points.
+      // Focus on the most important insights and actionable takeaways.
+      // Keep it concise and engaging for audio playback.
+      
+      // ${prompt}
+      // `
 
       const audio = await elevenlabs.textToSpeech.convert('JBFqnCBsd6RMkjVDRZzb', {
-        text: promptGeneration,
+        text: prompt,
         modelId: 'eleven_multilingual_v2',
         outputFormat: 'mp3_44100_128',
       });

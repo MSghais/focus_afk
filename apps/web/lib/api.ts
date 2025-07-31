@@ -1202,6 +1202,52 @@ class ApiService {
       message: string;
     }>(`/enhanced-quests/test-personalization?userAddress=${userAddress}`);
   }
+
+  // Audio methods
+  async generateNoteAudioSummary(noteId: string): Promise<Blob> {
+    const url = `${this.baseUrl}/audio/${noteId}/note/summary`;
+    const headers: Record<string, string> = {};
+    
+    const token = this.getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+    }
+
+    return await response.blob();
+  }
+
+  async generateTextAudioSummary(text: string): Promise<Blob> {
+    const url = `${this.baseUrl}/audio/summary`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    const token = this.getAuthToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+    }
+
+    return await response.blob();
+  }
 }
 
 export const api = new ApiService();
