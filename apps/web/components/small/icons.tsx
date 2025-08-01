@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete";
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" ;
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   add: (
@@ -145,6 +145,13 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M19 11l-7-7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <line x1="5" y1="11" x2="19" y2="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
+  calendar: (
+    <>
+      <path d="M19 21v-2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M22 9l-10-7-10 7L2 11v12h20V11L22 9z" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" strokeWidth="2"/>
     </>
   )
 };

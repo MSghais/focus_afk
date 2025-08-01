@@ -1274,6 +1274,55 @@ class ApiService {
       throw new Error(errorData.message || 'Failed to generate audio');
     }
   }
+
+  // Google Calendar Methods
+  async getGoogleCalendarAuthUrl(): Promise<ApiResponse<{ authUrl: string }>> {
+    return this.request<{ authUrl: string }>('/calendar/google/auth-url');
+  }
+
+  async handleGoogleCalendarCallback(code: string): Promise<ApiResponse> {
+    return this.request('/calendar/google/callback', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    });
+  }
+
+  async getCalendars(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/calendar/calendars');
+  }
+
+  async createCalendarEvent(eventData: {
+    summary: string;
+    description?: string;
+    start: { dateTime: string; timeZone?: string };
+    end: { dateTime: string; timeZone?: string };
+    attendees?: { email: string }[];
+  }): Promise<ApiResponse<any>> {
+    return this.request<any>('/calendar/events', {
+      method: 'POST',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async getCalendarEvents(options?: {
+    timeMin?: string;
+    timeMax?: string;
+    maxResults?: number;
+  }): Promise<ApiResponse<any[]>> {
+    const params = new URLSearchParams();
+    if (options?.timeMin) params.append('timeMin', options.timeMin);
+    if (options?.timeMax) params.append('timeMax', options.timeMax);
+    if (options?.maxResults) params.append('maxResults', options.maxResults.toString());
+
+    return this.request<any[]>(`/calendar/events?${params.toString()}`);
+  }
+
+  async getFreeBusy(timeMin: string, timeMax: string): Promise<ApiResponse<any>> {
+    return this.request<any>('/calendar/freebusy', {
+      method: 'POST',
+      body: JSON.stringify({ timeMin, timeMax }),
+    });
+  }
 }
 
 export const api = new ApiService();
