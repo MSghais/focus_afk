@@ -16,15 +16,15 @@ interface TaskCardProps {
   compact?: boolean;
 }
 
-export default function TaskCard({ 
-  task, 
-  onEdit, 
-  onComplete, 
-  onArchive, 
-  onDelete, 
+export default function TaskCard({
+  task,
+  onEdit,
+  onComplete,
+  onArchive,
+  onDelete,
   onDuplicate,
   className = '',
-  compact = false 
+  compact = false
 }: TaskCardProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
@@ -103,11 +103,9 @@ export default function TaskCard({
 
   return (
     <div
-      className={`${styles.taskCard} ${className} ${
-        taskStatus === 'completed' ? styles.completed : ''
-      } ${taskStatus === 'archived' ? styles.archived : ''} ${
-        compact ? styles.compact : ''
-      }`}
+      className={`${styles.taskCard} ${className} ${taskStatus === 'completed' ? styles.completed : ''
+        } ${taskStatus === 'archived' ? styles.archived : ''} ${compact ? styles.compact : ''
+        }`}
     >
       {/* Task Header */}
       <div className={styles.taskHeader}>
@@ -129,7 +127,7 @@ export default function TaskCard({
               <h3 className={`${styles.taskTitle} ${task.completed ? styles.strikethrough : ''}`}>
                 {task.title}
               </h3>
-              
+
               {/* Priority Badge */}
               <div className={`${styles.priorityBadge} ${priorityConfig.bgColor} ${priorityConfig.borderColor}`}>
                 <span className={styles.priorityIcon}>{priorityConfig.icon}</span>
@@ -145,7 +143,7 @@ export default function TaskCard({
                   <span>Completed</span>
                 </div>
               )}
-              
+
               {task.isArchived && (
                 <div className={`${styles.statusBadge} ${styles.archivedBadge}`}>
                   <span>📦</span>
@@ -162,14 +160,14 @@ export default function TaskCard({
                   {task.category}
                 </span>
               )}
-              
+
               {task.estimatedMinutes && task.estimatedMinutes > 0 && (
                 <span className={styles.timeEstimate}>
                   <Icon name="clock" />
                   {formatTimeEstimate(task.estimatedMinutes)}
                 </span>
               )}
-              
+
               {task.dueDate && (
                 <span className={styles.dueDate}>
                   <Icon name="calendar" />
@@ -192,7 +190,7 @@ export default function TaskCard({
             <Icon name={showDescription ? "chevron-up" : "chevron-down"} />
             <span>{showDescription ? 'Hide Description' : 'Show Description'}</span>
           </button>
-          
+
           {showDescription && (
             <div className={styles.descriptionContent}>
               <p>{task.description}</p>
@@ -212,7 +210,7 @@ export default function TaskCard({
       {task.estimatedMinutes && task.estimatedMinutes > 0 && (
         <div className={styles.progressContainer}>
           <div className={styles.progressBar}>
-            <div 
+            <div
               className={styles.progressFill}
               style={{ width: `${task.completed ? 100 : 0}%` }}
             />
@@ -234,7 +232,7 @@ export default function TaskCard({
           >
             <Icon name="more" />
           </button>
-          
+
           {showMobileMenu && (
             <div className={styles.mobileMenu}>
               {onEdit && (
@@ -246,7 +244,7 @@ export default function TaskCard({
                   Edit
                 </button>
               )}
-              
+
               {onComplete && (
                 <button
                   onClick={() => onComplete(task)}
@@ -256,7 +254,7 @@ export default function TaskCard({
                   {task.completed ? 'Undo' : 'Complete'}
                 </button>
               )}
-              
+
               {onArchive && !task.isArchived && (
                 <button
                   onClick={() => onArchive(task)}
@@ -266,7 +264,17 @@ export default function TaskCard({
                   Archive
                 </button>
               )}
-              
+
+              {onArchive && task.isArchived && (
+                <button
+                  onClick={() => onArchive(task)}
+                  className={styles.mobileAction}
+                >
+                  <Icon name="archive" />
+                  Unarchive
+                </button>
+              )}
+
               {onDuplicate && (
                 <button
                   onClick={() => onDuplicate(task)}
@@ -276,7 +284,7 @@ export default function TaskCard({
                   Duplicate
                 </button>
               )}
-              
+
               {onDelete && (
                 <button
                   onClick={() => onDelete(task)}
@@ -302,20 +310,19 @@ export default function TaskCard({
               <span>Edit</span>
             </button>
           )}
-          
+
           {onComplete && (
             <button
               onClick={() => onComplete(task)}
-              className={`${styles.actionButton} ${
-                task.completed ? styles.undoButton : styles.completeButton
-              }`}
+              className={`${styles.actionButton} ${task.completed ? styles.undoButton : styles.completeButton
+                }`}
               title={task.completed ? 'Mark as incomplete' : 'Mark as complete'}
             >
               <Icon name={task.completed ? "undo" : "check"} />
               <span>{task.completed ? 'Undo' : 'Complete'}</span>
             </button>
           )}
-          
+
           {onArchive && !task.isArchived && (
             <button
               onClick={() => onArchive(task)}
@@ -326,7 +333,7 @@ export default function TaskCard({
               <span>Archive</span>
             </button>
           )}
-          
+
           {onDuplicate && (
             <button
               onClick={() => onDuplicate(task)}
@@ -337,7 +344,7 @@ export default function TaskCard({
               <span>Duplicate</span>
             </button>
           )}
-          
+
           {onDelete && (
             <button
               onClick={() => onDelete(task)}

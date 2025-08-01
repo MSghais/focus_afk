@@ -169,7 +169,7 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
 
   const handleArchiveTask = async (task: Task) => {
     if (task.id) {
-      await updateTask(task.id, { ...task, isArchived: true });
+      await updateTask(task.id, { ...task, isArchived: !task.isArchived });
     }
   };
 

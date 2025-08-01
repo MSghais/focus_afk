@@ -96,7 +96,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
             category: task.category,
             dueDate: task.dueDate,
             estimatedMinutes: task.estimatedMinutes,
-            isArchived: true
+            isArchived: !task.isArchived
         });
 
         setEditingTask(null);
@@ -240,21 +240,19 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                     <div className="flex border border-gray-200 rounded-lg overflow-hidden">
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`px-3 py-2 text-sm font-medium transition ${
-                                viewMode === 'list'
-                                    ? 'bg-[var(--brand-primary)] text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                            }`}
+                            className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'list'
+                                ? 'bg-[var(--brand-primary)] text-white'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                }`}
                         >
                             List
                         </button>
                         <button
                             onClick={() => setViewMode('calendar')}
-                            className={`px-3 py-2 text-sm font-medium transition ${
-                                viewMode === 'calendar'
-                                    ? 'bg-[var(--brand-primary)] text-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                            }`}
+                            className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'calendar'
+                                ? 'bg-[var(--brand-primary)] text-white'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                }`}
                         >
                             Calendar
                         </button>
@@ -487,7 +485,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 </div>
                             </div>
                         )}
-                        
+
                         {filteredTasks.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
                                 <p className="text-lg mb-2">
@@ -498,188 +496,213 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 </p>
                             </div>
                         ) : (
-                    <div
-                        className="space-y-4"
-                    >
-                        {filteredTasks.map((task) => (
                             <div
-                                key={task.id}
-                                className={`p-4 border rounded-lg transition-all ${task.completed
-                                        ? 'bg-gray-500 border-gray-200 opacity-90'
-                                        : task.isArchived
-                                            ? 'bg-gray-500 border-gray-200 opacity-90'
-                                            : 'hover:shadow-md'
-                                    }`}
+                                className="space-y-4"
                             >
-                                {editingTask?.id === task.id ? (
-                                    <form onSubmit={handleUpdateTask} className="space-y-3">
-                                        <input
-                                            type="text"
-                                            value={editingTask?.title || ''}
-                                            onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
-                                            className="w-full p-2 border rounded-md font-medium"
-                                            required
-                                        />
-                                        <textarea
-                                            value={editingTask?.description || ''}
-                                            onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
-                                            className="w-full p-2 border rounded-md text-sm"
-                                            rows={2}
-                                        />
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={editingTask?.priority}
-                                                onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
-                                                className="p-2 border rounded-md text-sm"
-                                            >
-                                                <option value="low">Low</option>
-                                                <option value="medium">Medium</option>
-                                                <option value="high">High</option>
-                                            </select>
-                                            <input
-                                                type="text"
-                                                value={editingTask?.category || ''}
-                                                onChange={(e) =>
-                                                    setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
-                                                }
-                                                className="p-2 border rounded-md text-sm"
-                                                placeholder="Category"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Due Date</label>
-                                            <input
-                                                type="date"
-                                                value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
-                                                onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
-                                                className="w-full p-2 border rounded-md"
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="submit"
-                                                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setEditingTask(null)}
-                                                className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
+                                {filteredTasks.map((task) => (
+                                    <div
+                                        key={task.id}
+                                        className={`p-4 border rounded-lg transition-all ${task.completed
+                                            ? 'bg-gray-500 border-gray-200 opacity-90'
+                                            : task.isArchived
+                                                ? 'bg-gray-500 border-gray-200 opacity-90'
+                                                : 'hover:shadow-md'
+                                            }`}
+                                    >
+                                        {editingTask?.id === task.id ? (
+                                            <form onSubmit={handleUpdateTask} className="space-y-3">
                                                 <input
-                                                    type="checkbox"
-                                                    checked={task.completed}
-                                                    onChange={async () => {
-                                                        console.log('toggleTaskComplete', task.id);
-                                                        if (task.id) {
-                                                            console.log('task.id', task.id);
-                                                            const id = typeof task.id === 'string' ? task.id : String(task.id);
-                                                            const res = await toggleTaskComplete(id, !task.completed);
-                                                            console.log('res', res);
-
-                                                            showToast({
-                                                                message: res ? 'Task completed' : 'Task uncompleted',
-                                                                description: res ? 'Task completed successfully' : 'Task uncompleted successfully',
-                                                                type: 'success',
-                                                                duration: 3000
-                                                            });
-                                                        }
-                                                    }}
-                                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                                    type="text"
+                                                    value={editingTask?.title || ''}
+                                                    onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                                                    className="w-full p-2 border rounded-md font-medium"
+                                                    required
                                                 />
-                                                <h3 className={`font-medium ${task.completed ? 'line-through' : ''}`}>
-                                                    {task.title}
-                                                </h3>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                                                    {task.priority}
-                                                </span>
-                                                {task.category && (
-                                                    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
-                                                        {task.category}
-                                                    </span>
-                                                )}
-                                                {task.completed && (
-                                                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
-                                                        ✓ Completed
-                                                    </span>
-                                                )}
-                                                {task.isArchived && (
-                                                    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500 font-medium">
-                                                        📦 Archived
-                                                    </span>
-                                                )}
-                                            </div>
-                                            {task.description && (
-                                                <p className="text-gray-600 text-sm mb-2 ml-7">{task.description}</p>
-                                            )}
-                                            <div className="flex items-center gap-4 text-xs text-gray-500 ml-7">
-                                                {task.dueDate && (
-                                                    <span>Due: {formatDate(task.dueDate)}</span>
-                                                )}
-                                                {task.estimatedMinutes && task.estimatedMinutes > 0 && (
-                                                    <span>Est: {task.estimatedMinutes}m</span>
-                                                )}
-                                                <span>Created: {formatDate(task.createdAt)}</span>
-                                            </div>
-                                        </div>
-                                        <div
-                                            // className="flex flex-wrap gap-2 ml-0 sm:ml-4"
-                                            className="grid grid-cols-2 gap-2 ml-0 sm:ml-4"
+                                                <textarea
+                                                    value={editingTask?.description || ''}
+                                                    onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                                                    className="w-full p-2 border rounded-md text-sm"
+                                                    rows={2}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <select
+                                                        value={editingTask?.priority}
+                                                        onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                                                        className="p-2 border rounded-md text-sm"
+                                                    >
+                                                        <option value="low">Low</option>
+                                                        <option value="medium">Medium</option>
+                                                        <option value="high">High</option>
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        value={editingTask?.category || ''}
+                                                        onChange={(e) =>
+                                                            setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                                        }
+                                                        className="p-2 border rounded-md text-sm"
+                                                        placeholder="Category"
+                                                    />
+                                                </div>
 
-                                        >
-                                            <ButtonPrimary
-                                                className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
-                                            >
-                                                <Link
-                                                    href={`/deep/${task.id}`}
-                                                    className="flex items-center gap-2"
+                                                <div>
+                                                    <label className="block text-sm font-medium mb-1">Due Date</label>
+                                                    <input
+                                                        type="date"
+                                                        value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                                                        onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                                                        className="w-full p-2 border rounded-md"
+                                                    />
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="submit"
+                                                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditingTask(null)}
+                                                        className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        ) : (
+                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-3 mb-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={task.completed}
+                                                            onChange={async () => {
+                                                                console.log('toggleTaskComplete', task.id);
+                                                                if (task.id) {
+                                                                    console.log('task.id', task.id);
+                                                                    const id = typeof task.id === 'string' ? task.id : String(task.id);
+                                                                    const res = await toggleTaskComplete(id, !task.completed);
+                                                                    console.log('res', res);
+
+                                                                    showToast({
+                                                                        message: res ? 'Task completed' : 'Task uncompleted',
+                                                                        description: res ? 'Task completed successfully' : 'Task uncompleted successfully',
+                                                                        type: 'success',
+                                                                        duration: 3000
+                                                                    });
+                                                                }
+                                                            }}
+                                                            className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                                        />
+                                                        <h3 className={`font-medium ${task.completed ? 'line-through' : ''}`}>
+                                                            {task.title}
+                                                        </h3>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
+                                                            {task.priority}
+                                                        </span>
+                                                        {task.category && (
+                                                            <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+                                                                {task.category}
+                                                            </span>
+                                                        )}
+                                                        {task.completed && (
+                                                            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
+                                                                ✓ Completed
+                                                            </span>
+                                                        )}
+                                                        {task.isArchived && (
+                                                            <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500 font-medium">
+                                                                📦 Archived
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {task.description && (
+                                                        <p className="text-gray-600 text-sm mb-2 ml-7">{task.description}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-4 text-xs text-gray-500 ml-7">
+                                                        {task.dueDate && (
+                                                            <span>Due: {formatDate(task.dueDate)}</span>
+                                                        )}
+                                                        {task.estimatedMinutes && task.estimatedMinutes > 0 && (
+                                                            <span>Est: {task.estimatedMinutes}m</span>
+                                                        )}
+                                                        <span>Created: {formatDate(task.createdAt)}</span>
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    // className="flex flex-wrap gap-2 ml-0 sm:ml-4"
+                                                    className="grid grid-cols-2 gap-2 ml-0 sm:ml-4 space-y-2"
+
                                                 >
-                                                    🎯
-                                                    Deep
-                                                </Link>
-                                            </ButtonPrimary>
+                                                    <ButtonPrimary
+                                                        className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
+                                                    >
+                                                        <Link
+                                                            href={`/deep/${task.id}`}
+                                                            className="flex items-center gap-2"
+                                                        >
+                                                            🎯
+                                                            Deep
+                                                        </Link>
+                                                    </ButtonPrimary>
 
-                                            <button
-                                                onClick={() => setEditingTask(task)}
-                                                className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
-                                            >
-                                                ✏️ Edit
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    if (task.id) {
-                                                        handleDeleteTask(task.id);
-                                                    }
-                                                }}
-                                                className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                            <div>
-                                                <button onClick={() => handleArchiveTask(task)}>
-                                                    Archive
-                                                </button>
+                                                    <button
+                                                        className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
+                                                        onClick={async () => {
+                                                            if (task.id) {
+                                                                const res = await toggleTaskComplete(task.id, !task.completed);
+
+                                                                showToast({
+                                                                    message: res ? 'Task completed' : 'Task uncompleted',
+                                                                    description: res ? 'Task completed successfully' : 'Task uncompleted successfully',
+                                                                    type: 'success',
+                                                                    duration: 3000
+                                                                });
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Icon name={task.completed ? "undo" : "check"} />
+                                                        {task.completed ? 'Undo' : 'Complete'}
+                                                    </button>
+                                                    
+                                                    <button
+                                                        onClick={() => setEditingTask(task)}
+                                                        className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
+                                                    >
+                                                        ✏️ Edit
+                                                    </button>
+                                              
+
+                                                    <button
+                                                        onClick={() => {
+                                                            if (task.id) {
+                                                                handleDeleteTask(task.id);
+                                                            }
+                                                        }}
+                                                        className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
+                                                    >
+                                                        🗑️ Delete
+                                                    </button>
+                                                    <div>
+                                                        <button
+                                                            className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
+
+                                                            onClick={() => handleArchiveTask(task)}>
+                                                            <Icon name="archive" />
+                                                            Archive
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+
                                             </div>
-                                        </div>
-
-
+                                        )}
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                )}
+                        )}
                     </>
                 ) : (
                     /* Calendar View */
