@@ -520,6 +520,285 @@ export const setupWebSocket = (io: Server) => {
             }
           });
 
+          // Add handler for task-based quest generation
+          socket.on('request_task_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const taskQuests = await enhancedQuestService.generatePriorityQuestSuggestions(userId, userAddress);
+                socket.emit('task_quests_response', {
+                  quests: taskQuests,
+                  message: 'Task-based quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating task quests:', error);
+              socket.emit('task_quests_response', {
+                quests: [],
+                message: 'Failed to generate task quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for focus-based quest generation
+          socket.on('request_focus_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const userContext = await enhancedQuestService['buildUserContext'](userId, userAddress);
+                const vectorContext = await enhancedQuestService['getVectorContext'](userId, userContext);
+                const focusQuests = await enhancedQuestService['generateFocusSessionQuests'](userContext, vectorContext);
+                socket.emit('focus_quests_response', {
+                  quests: focusQuests,
+                  message: 'Focus-based quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating focus quests:', error);
+              socket.emit('focus_quests_response', {
+                quests: [],
+                message: 'Failed to generate focus quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for goal-based quest generation
+          socket.on('request_goal_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const userContext = await enhancedQuestService['buildUserContext'](userId, userAddress);
+                const vectorContext = await enhancedQuestService['getVectorContext'](userId, userContext);
+                const goalQuests = await enhancedQuestService['generateGoalProgressQuests'](userContext, vectorContext);
+                socket.emit('goal_quests_response', {
+                  quests: goalQuests,
+                  message: 'Goal-based quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating goal quests:', error);
+              socket.emit('goal_quests_response', {
+                quests: [],
+                message: 'Failed to generate goal quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for quick win quest generation
+          socket.on('request_quick_win_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const userContext = await enhancedQuestService['buildUserContext'](userId, userAddress);
+                const vectorContext = await enhancedQuestService['getVectorContext'](userId, userContext);
+                const quickWinQuests = await enhancedQuestService['generateQuickWinQuests'](userContext, vectorContext);
+                socket.emit('quick_win_quests_response', {
+                  quests: quickWinQuests,
+                  message: 'Quick win quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating quick win quests:', error);
+              socket.emit('quick_win_quests_response', {
+                quests: [],
+                message: 'Failed to generate quick win quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for learning quest generation
+          socket.on('request_learning_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const learningQuests = await enhancedQuestService.createGenericQuest({
+                  userId,
+                  userAddress,
+                  name: '📚 Learning Explorer',
+                  description: 'Dive into a new topic or skill for 30 minutes',
+                  category: 'learning',
+                  difficulty: 2,
+                  rewardXp: 120,
+                  rewardTokens: 12,
+                  completionCriteria: { type: 'duration', target: 30, unit: 'minutes' },
+                  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+                  tags: ['learning', 'skill-development'],
+                  priority: 'medium'
+                });
+                socket.emit('learning_quests_response', {
+                  quests: [learningQuests],
+                  message: 'Learning quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating learning quests:', error);
+              socket.emit('learning_quests_response', {
+                quests: [],
+                message: 'Failed to generate learning quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for wellness quest generation
+          socket.on('request_wellness_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const wellnessQuests = await enhancedQuestService.createGenericQuest({
+                  userId,
+                  userAddress,
+                  name: '🧘 Wellness Break',
+                  description: 'Take a 15-minute wellness break - stretch, meditate, or go for a walk',
+                  category: 'custom',
+                  difficulty: 1,
+                  rewardXp: 80,
+                  rewardTokens: 8,
+                  completionCriteria: { type: 'duration', target: 15, unit: 'minutes' },
+                  expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+                  tags: ['wellness', 'self-care'],
+                  priority: 'high'
+                });
+                socket.emit('wellness_quests_response', {
+                  quests: [wellnessQuests],
+                  message: 'Wellness quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating wellness quests:', error);
+              socket.emit('wellness_quests_response', {
+                quests: [],
+                message: 'Failed to generate wellness quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for social quest generation
+          socket.on('request_social_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const socialQuests = await enhancedQuestService.createGenericQuest({
+                  userId,
+                  userAddress,
+                  name: '🤝 Social Connection',
+                  description: 'Reach out to a colleague or friend for a quick chat or collaboration',
+                  category: 'social',
+                  difficulty: 2,
+                  rewardXp: 100,
+                  rewardTokens: 10,
+                  completionCriteria: { type: 'count', target: 1 },
+                  expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
+                  tags: ['social', 'networking'],
+                  priority: 'medium'
+                });
+                socket.emit('social_quests_response', {
+                  quests: [socialQuests],
+                  message: 'Social quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating social quests:', error);
+              socket.emit('social_quests_response', {
+                quests: [],
+                message: 'Failed to generate social quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for streak-based quest generation
+          socket.on('request_streak_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const userContext = await enhancedQuestService['buildUserContext'](userId, userAddress);
+                const vectorContext = await enhancedQuestService['getVectorContext'](userId, userContext);
+                const streakQuests = await enhancedQuestService['generateStreakMilestoneQuests'](userContext, vectorContext);
+                socket.emit('streak_quests_response', {
+                  quests: streakQuests,
+                  message: 'Streak-based quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating streak quests:', error);
+              socket.emit('streak_quests_response', {
+                quests: [],
+                message: 'Failed to generate streak quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for note-based quest generation
+          socket.on('request_note_quests', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              const userAddress = socket.data.user?.userAddress;
+              
+              if (userId && userAddress) {
+                const userContext = await enhancedQuestService['buildUserContext'](userId, userAddress);
+                const vectorContext = await enhancedQuestService['getVectorContext'](userId, userContext);
+                const noteQuests = await enhancedQuestService['generateNoteCreationQuests'](userContext, vectorContext);
+                socket.emit('note_quests_response', {
+                  quests: noteQuests,
+                  message: 'Note-based quests generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating note quests:', error);
+              socket.emit('note_quests_response', {
+                quests: [],
+                message: 'Failed to generate note quests',
+                error: error.message
+              });
+            }
+          });
+
+          // Add handler for goal-based task suggestion quests
+          socket.on('request_goal_task_suggestions', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              // const userAddress = socket.data.user?.userAddress;
+              
+              if (userId ) {
+                const goalTaskQuests = await enhancedQuestService.generateGoalBasedTaskSuggestions(userId,);
+                socket.emit('goal_task_suggestions_response', {
+                  quests: goalTaskQuests,
+                  message: 'Goal-based task suggestions generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating goal-based task suggestions:', error);
+              socket.emit('goal_task_suggestions_response', {
+                quests: [],
+                message: 'Failed to generate goal-based task suggestions',
+                error: error.message
+              });
+            }
+          });
+
           // Add handler for contextual quest requests
           socket.on('request_contextual_quests', async (triggerPoint: string) => {
             try {

@@ -198,7 +198,6 @@ export class VectorStoreManager {
         title: note.title,
         topics: note.topics,
         aiTopics: note.aiTopics,
-        type: note.type,
         difficulty: note.difficulty,
         isNotebook: note.isNotebook,
         sourceCount: note.noteSources.length
@@ -528,7 +527,7 @@ export class VectorStoreManager {
     );
 
     return results
-      .filter(([_, score]) => score >= this.config.similarityThreshold)
+      .filter(([_, score]) => score >= (this.config.similarityThreshold || 0.7))
       .map(([doc, score]) => ({
         document: {
           id: doc.metadata.originalId,

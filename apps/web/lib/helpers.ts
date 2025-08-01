@@ -16,7 +16,7 @@ export const tryMarkdownToHtml = (text: string) => {
         return textRendered;
     } catch (error) {
         console.error("Error rendering markdown", error);
-        return undefined;
+        return "";
     }
 }
 

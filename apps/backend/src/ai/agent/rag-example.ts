@@ -144,7 +144,22 @@ export class RAGSystemExample {
         
         const context = await vectorStore.buildContextString({
           user: { userId },
-          app: { tasks: [], goals: [], timerSessions: [] },
+          app: { 
+            tasks: [], 
+            goals: [], 
+            timerSessions: [],
+            quests: [],
+            badges: [],
+            settings: null,
+            gamification: {
+              level: 1,
+              xp: 0,
+              focusPoints: 0,
+              energy: 100,
+              maxEnergy: 100,
+              focusStreak: 0
+            }
+          },
           conversation: [],
           sessionId: 'test',
           agentType: AgentType.GENERAL,

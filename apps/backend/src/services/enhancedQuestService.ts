@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { PineconeService } from '../ai/memory/pinecone.service';
 import { EnhancedContextManager } from '../ai/memory/enhancedContextManager';
 import { GamificationService } from './gamification.service';
+import { AiService } from '../ai/ai';
 
 export interface QuestTemplate {
   id: string;
@@ -71,6 +72,8 @@ export interface GeneratedQuest {
 export class EnhancedQuestService {
   private questTemplates: Map<string, QuestTemplate> = new Map();
   private adaptiveQuestPrompts: Map<string, string> = new Map();
+  private questIdCounter: number = 0;
+  private aiService: AiService;
 
   constructor(
     private readonly prisma: PrismaClient,
@@ -78,8 +81,17 @@ export class EnhancedQuestService {
     private readonly enhancedContextManager: EnhancedContextManager,
     private readonly gamificationService: GamificationService
   ) {
+    this.aiService = new AiService();
     this.initializeQuestTemplates();
     this.initializeAdaptivePrompts();
+  }
+
+  // Generate unique quest ID
+  private generateUniqueQuestId(prefix: string, userId: string): string {
+    this.questIdCounter++;
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `${prefix}_${userId}_${timestamp}_${this.questIdCounter}_${random}`;
   }
 
   private initializeQuestTemplates(): void {
@@ -178,8 +190,10 @@ export class EnhancedQuestService {
     tags?: string[];
     priority?: 'low' | 'medium' | 'high';
   }): Promise<GeneratedQuest> {
+    const now = new Date();
+    
     const quest: GeneratedQuest = {
-      id: `generic_${questData.userId}_${Date.now()}`,
+      id: this.generateUniqueQuestId('generic', questData.userId),
       userId: questData.userId,
       templateId: 'generic',
       name: questData.name,
@@ -192,20 +206,17 @@ export class EnhancedQuestService {
       rewardXp: questData.rewardXp,
       rewardTokens: questData.rewardTokens,
       difficulty: questData.difficulty,
-      createdAt: new Date(),
+      createdAt: now,
       expiresAt: questData.expiresAt,
       meta: {
         template: 'generic',
         completionCriteria: questData.completionCriteria,
         tags: questData.tags || [],
-        priority: questData.priority || 'medium',
-        createdBy: 'user'
+        priority: questData.priority || 'medium'
       }
     };
 
-    // Save to database
     await this.saveQuestsToDatabase([quest]);
-
     return quest;
   }
 
@@ -218,45 +229,33 @@ export class EnhancedQuestService {
     difficulty?: 1 | 2 | 3 | 4 | 5;
     expiresAt?: Date;
   }): Promise<GeneratedQuest> {
-    const questDetails = {
-      name: `${questData.suggestionType.charAt(0).toUpperCase() + questData.suggestionType.slice(1)} Challenge`,
-      description: `Complete a ${questData.suggestionType} activity based on AI analysis of your patterns.`,
-      category: 'custom',
-      difficulty: questData.difficulty || 2,
-      rewardXp: 100,
-      rewardTokens: 10,
-      completionCriteria: { type: 'count', target: 1 }
-    };
-
+    const now = new Date();
+    
     const quest: GeneratedQuest = {
-      id: `suggestion_${questData.userId}_${Date.now()}`,
+      id: this.generateUniqueQuestId('suggestion', questData.userId),
       userId: questData.userId,
-      templateId: `suggestion_${questData.suggestionType}`,
-      name: questDetails.name,
-      description: questDetails.description,
+      templateId: 'suggestion',
+      name: `AI Suggestion: ${questData.suggestionType}`,
+      description: questData.aiReasoning,
       type: 'suggestion',
-      category: questDetails.category,
+      category: questData.suggestionType,
       status: 'active',
       progress: 0,
-      goal: questDetails.completionCriteria.target,
-      rewardXp: questDetails.rewardXp,
-      rewardTokens: questDetails.rewardTokens,
-      difficulty: questDetails.difficulty,
-      createdAt: new Date(),
+      goal: 1,
+      rewardXp: 50,
+      rewardTokens: 5,
+      difficulty: questData.difficulty || 2,
+      createdAt: now,
       expiresAt: questData.expiresAt,
       meta: {
-        template: `suggestion_${questData.suggestionType}`,
+        template: 'suggestion',
         suggestionType: questData.suggestionType,
         context: questData.context,
-        aiReasoning: questData.aiReasoning,
-        completionCriteria: questDetails.completionCriteria,
-        createdBy: 'ai'
+        aiReasoning: questData.aiReasoning
       }
     };
 
-    // Save to database
     await this.saveQuestsToDatabase([quest]);
-
     return quest;
   }
 
@@ -886,24 +885,51 @@ export class EnhancedQuestService {
 
   private async saveQuestsToDatabase(quests: GeneratedQuest[]): Promise<void> {
     for (const quest of quests) {
-      await this.prisma.quests.create({
-        data: {
-          id: quest.id,
-          userId: quest.userId,
-          type: quest.type,
-          name: quest.name,
-          description: quest.description,
-          // category: quest.category,
-          difficulty: quest.difficulty,
-          rewardXp: quest.rewardXp,
-          // rewardTokens: quest.rewardTokens,
-          isCompleted: 'false',
-          progress: quest.progress,
-          // goal: quest.goal,
-          // expiresAt: quest.expiresAt,
-          meta: quest.meta
-        }
-      });
+      try {
+        await this.prisma.quests.upsert({
+          where: { id: quest.id },
+          update: {
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            progress: quest.progress,
+            meta: quest.meta
+          },
+          create: {
+            id: quest.id,
+            userId: quest.userId,
+            type: quest.type,
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            isCompleted: 'false',
+            progress: quest.progress,
+            meta: quest.meta
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to save quest ${quest.id}:`, error);
+        // Generate a new unique ID and try again
+        const newId = this.generateUniqueQuestId(quest.type, quest.userId);
+        quest.id = newId;
+        
+        await this.prisma.quests.create({
+          data: {
+            id: quest.id,
+            userId: quest.userId,
+            type: quest.type,
+            name: quest.name,
+            description: quest.description,
+            difficulty: quest.difficulty,
+            rewardXp: quest.rewardXp,
+            isCompleted: 'false',
+            progress: quest.progress,
+            meta: quest.meta
+          }
+        });
+      }
     }
   }
 
@@ -1534,6 +1560,505 @@ export class EnhancedQuestService {
       }
     });
 
+    return quests;
+  }
+
+  // Generate goal-based task suggestion quests using LLM
+  async generateGoalBasedTaskSuggestions(userId: string): Promise<GeneratedQuest[]> {
+    try {
+      console.log(`🎯 Starting AI-powered goal-based task suggestions for user: ${userId}`);
+      
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          goals: {
+            where: { completed: false },
+            orderBy: { createdAt: 'desc' }
+          },
+          tasks: {
+            where: { completed: false },
+            orderBy: { createdAt: 'desc' }
+          },
+          notes: {
+            orderBy: { createdAt: 'desc' },
+            take: 10
+          },
+          timerSessions: {
+            orderBy: { createdAt: 'desc' },
+            take: 20
+          }
+        }
+      });
+
+      if (!user || user.goals.length === 0) {
+        console.log(`❌ No active goals found for user: ${userId}`);
+        return [];
+      }
+
+      console.log(`📊 User context - Goals: ${user.goals.length}, Tasks: ${user.tasks.length}, Notes: ${user.notes.length}, Focus Sessions: ${user.timerSessions.length}`);
+
+      const quests: GeneratedQuest[] = [];
+      const now = new Date();
+
+      // Generate AI-powered quests for each goal
+      for (const goal of user.goals.slice(0, 3)) { // Limit to 3 goals to avoid overwhelming
+        console.log(`🤖 Generating AI quests for goal: "${goal.title}"`);
+        const aiQuests = await this.generateAIEnhancedGoalQuests(goal, user, now);
+        console.log(`✅ Generated ${aiQuests.length} AI quests for goal: "${goal.title}"`);
+        quests.push(...aiQuests);
+      }
+
+      // Create a general goal exploration quest using AI
+      console.log(`🔍 Generating AI exploration quest for ${user.goals.length} goals`);
+      const explorationQuest = await this.generateAIExplorationQuest(user, now);
+      if (explorationQuest) {
+        console.log(`✅ Generated AI exploration quest: "${explorationQuest.name}"`);
+        quests.push(explorationQuest);
+      }
+
+      console.log(`💾 Saving ${quests.length} AI-generated quests to database`);
+      await this.saveQuestsToDatabase(quests);
+      
+      console.log(`🎉 Successfully generated ${quests.length} AI-powered quest suggestions for user: ${userId}`);
+      return quests;
+    } catch (error) {
+      console.error('❌ Error generating goal-based task suggestions:', error);
+      // Fallback to basic quests if AI fails
+      console.log(`🔄 Falling back to basic quests for user: ${userId}`);
+      return this.generateFallbackGoalQuests(userId,);
+    }
+  }
+
+  private async generateAIEnhancedGoalQuests(goal: any, user: any, now: Date): Promise<GeneratedQuest[]> {
+    try {
+      console.log(`🤖 Starting AI quest generation for goal: "${goal.title}"`);
+      
+      // Build context for AI
+      const context = this.buildGoalContext(goal, user);
+      console.log(`📝 Built context for goal "${goal.title}":`, context.substring(0, 200) + '...');
+      
+      // Generate AI-powered quest suggestions
+      console.log(`🚀 Calling AI service for goal: "${goal.title}"`);
+      const aiResponse = await this.aiService.generateTextLlm({
+        model: 'openai/gpt-4o-mini',
+        systemPrompt: `You are an expert productivity coach and goal achievement specialist. Your task is to generate 3-4 specific, actionable quest suggestions for a user's goal based on their current progress and task context.
+
+IMPORTANT CONTEXT ANALYSIS:
+- Analyze the user's current progress (${goal.progress || 0}%)
+- Review linked tasks to understand what's been accomplished
+- Identify gaps in the goal achievement process
+- Consider unlinked tasks that could be relevant
+- Assess the user's activity patterns and focus consistency
+
+QUEST GENERATION STRATEGY:
+1. **Progress-Based Quests**: Create quests that build on completed tasks
+2. **Gap-Filling Quests**: Identify missing steps and create quests to fill them
+3. **Integration Quests**: Suggest linking unlinked tasks to the goal
+4. **Next-Step Quests**: Focus on the immediate next actions needed
+
+QUEST REQUIREMENTS:
+- SPECIFIC and actionable based on current progress
+- ALIGNED with the user's actual task completion patterns
+- VARIED in difficulty (easy, medium, hard) based on current step
+- REALISTIC given the user's activity level and focus patterns
+- MOTIVATING and engaging with clear progress indicators
+
+For each quest, provide:
+- A catchy name with emoji that reflects the current progress stage
+- A detailed description explaining what to do and why it's the next logical step
+- Suggested difficulty (1-5) based on current progress
+- Suggested reward (XP and tokens) proportional to effort
+- Time estimate based on user's typical task completion patterns
+- Specific action steps that build on existing progress
+- Progress stage indicator (e.g., "Foundation", "Development", "Completion")
+
+Format your response as a JSON array with this structure:
+[
+  {
+    "name": "Quest name with emoji",
+    "description": "Detailed description explaining the next step and its importance",
+    "difficulty": 1-5,
+    "rewardXp": number,
+    "rewardTokens": number,
+    "timeEstimate": "X minutes/hours",
+    "actionSteps": ["Step 1", "Step 2", "Step 3"],
+    "questType": "progress|gap_fill|integration|next_step",
+    "progressStage": "foundation|development|refinement|completion"
+  }
+]
+
+Focus on creating quests that will help the user make the NEXT logical step toward their goal based on their current progress.`,
+        prompt: `Generate 3-4 quest suggestions for the goal: "${goal.title}"
+
+Current Progress: ${goal.progress || 0}%
+Progress Stage: ${Math.max(1, Math.floor((goal.progress || 0) / 20))} of 5
+
+User context: ${context}
+
+Based on this detailed context, create quests that:
+1. Build on what the user has already accomplished
+2. Fill gaps in their goal achievement process
+3. Integrate relevant unlinked tasks
+4. Provide clear next steps toward goal completion
+
+Focus on the user's current progress stage and create quests that are the logical next steps.`
+      });
+
+      if (!aiResponse || !aiResponse.text) {
+        console.error(`❌ AI response failed for goal: "${goal.title}"`);
+        throw new Error('AI response failed');
+      }
+
+      console.log(`📄 AI Response for goal "${goal.title}":`, aiResponse.text.substring(0, 300) + '...');
+
+      // Parse AI response
+      const aiQuests = this.parseAIQuestResponse(aiResponse.text, goal, user.id, now);
+      console.log(`✅ Parsed ${aiQuests.length} AI quests for goal: "${goal.title}"`);
+      
+      return aiQuests;
+
+    } catch (error) {
+      console.error(`❌ Error generating AI-enhanced quests for goal: "${goal.title}"`, error);
+      // Fallback to basic quests
+      console.log(`🔄 Falling back to basic quests for goal: "${goal.title}"`);
+      return this.createGoalBasedTaskQuests(goal, user, now);
+    }
+  }
+
+  private buildGoalContext(goal: any, user: any): string {
+    const activityLevel = this.assessUserActivityLevel(user);
+    
+    // Get tasks linked to this specific goal
+    const linkedTasks = user.tasks.filter((task: any) => 
+      task.goalIds && task.goalIds.includes(goal.id)
+    );
+    
+    // Get tasks not linked to any goal (potential candidates)
+    const unlinkedTasks = user.tasks.filter((task: any) => 
+      !task.goalIds || task.goalIds.length === 0
+    );
+    
+    // Get recent tasks (last 20) for broader context
+    const recentTasks = user.tasks.slice(0, 20);
+    
+    // Analyze task completion patterns
+    const completedTasks = user.tasks.filter((task: any) => task.completed);
+    const pendingTasks = user.tasks.filter((task: any) => !task.completed);
+    
+    // Get recent focus sessions for productivity context
+    const recentSessions = user.timerSessions.slice(0, 10);
+    const totalFocusTime = recentSessions.reduce((total: number, session: any) => 
+      total + (session.duration || 0), 0
+    );
+    
+    // Get recent notes for context
+    const recentNotes = user.notes.slice(0, 10);
+    
+    let context = `User Activity Level: ${activityLevel}
+
+GOAL DETAILS:
+- Title: "${goal.title}"
+- Description: "${goal.description || 'No description provided'}"
+- Progress: ${goal.progress || 0}%
+- Created: ${goal.createdAt}
+- Target Date: ${goal.targetDate || 'No target date'}
+
+TASK ANALYSIS:
+Linked Tasks (${linkedTasks.length}):
+${linkedTasks.map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - ${task.description || 'No description'}`
+).join('\n')}
+
+Unlinked Tasks (${unlinkedTasks.length}):
+${unlinkedTasks.slice(0, 10).map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - ${task.description || 'No description'}`
+).join('\n')}
+
+Recent Tasks (Last 20):
+${recentTasks.map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - Category: ${task.category || 'None'}`
+).join('\n')}
+
+TASK STATISTICS:
+- Total Tasks: ${user.tasks.length}
+- Completed: ${completedTasks.length}
+- Pending: ${pendingTasks.length}
+- Completion Rate: ${user.tasks.length > 0 ? Math.round((completedTasks.length / user.tasks.length) * 100) : 0}%
+
+FOCUS SESSIONS:
+Recent Sessions (Last 10):
+${recentSessions.map((session: any, index: number) => 
+  `${index + 1}. ${session.duration || 0} minutes - ${session.createdAt}`
+).join('\n')}
+
+Total Focus Time: ${Math.round(totalFocusTime / 60)} minutes
+
+RECENT NOTES:
+${recentNotes.map((note: any, index: number) => 
+  `${index + 1}. "${note.title || 'Untitled'}" - ${note.content?.substring(0, 100) || 'No content'}...`
+).join('\n')}
+
+CURRENT PROGRESS ANALYSIS:
+- Goal Progress: ${goal.progress || 0}%
+- Linked Tasks Completed: ${linkedTasks.filter((t: any) => t.completed).length}/${linkedTasks.length}
+- Recent Activity: ${activityLevel} level
+- Focus Consistency: ${recentSessions.length > 0 ? 'Good' : 'Needs improvement'}
+
+NEXT STEPS CONTEXT:
+Based on the current progress, the user is at step ${Math.max(1, Math.floor((goal.progress || 0) / 20))} of approximately 5 steps toward this goal.`;
+
+    return context;
+  }
+
+  private assessUserActivityLevel(user: any): string {
+    const taskCount = user.tasks.length;
+    const noteCount = user.notes.length;
+    const sessionCount = user.timerSessions.length;
+    
+    if (taskCount > 10 && sessionCount > 10) return 'High - Very active user';
+    if (taskCount > 5 && sessionCount > 5) return 'Medium - Moderately active user';
+    return 'Low - New or inactive user';
+  }
+
+  private parseAIQuestResponse(aiText: string, goal: any, userId: string, now: Date): GeneratedQuest[] {
+    try {
+      // Extract JSON from AI response
+      const jsonMatch = aiText.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error('No JSON array found in AI response');
+      }
+
+      const questData = JSON.parse(jsonMatch[0]);
+      const quests: GeneratedQuest[] = [];
+
+      for (const data of questData) {
+        const quest: GeneratedQuest = {
+          id: this.generateUniqueQuestId(`ai_${data.questType}`, userId),
+          userId,
+          templateId: `ai_${data.questType}`,
+          name: data.name,
+          description: data.description,
+          type: 'ai_enhanced',
+          category: 'goals',
+          status: 'active',
+          progress: 0,
+          goal: data.actionSteps?.length || 1,
+          rewardXp: data.rewardXp || 100,
+          rewardTokens: data.rewardTokens || 10,
+          difficulty: data.difficulty || 2,
+          createdAt: now,
+          expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          meta: {
+            template: `ai_${data.questType}`,
+            goalId: goal.id,
+            goalTitle: goal.title,
+            questType: data.questType,
+            timeEstimate: data.timeEstimate,
+            actionSteps: data.actionSteps || [],
+            aiGenerated: true,
+            completionCriteria: { type: 'count', target: data.actionSteps?.length || 1 },
+            priority: 'medium'
+          }
+        };
+
+        quests.push(quest);
+      }
+
+      return quests;
+    } catch (error) {
+      console.error('Error parsing AI quest response:', error);
+      return [];
+    }
+  }
+
+  private async generateAIExplorationQuest(user: any, now: Date): Promise<GeneratedQuest | null> {
+    try {
+      console.log(`🔍 Generating AI exploration quest for ${user.goals.length} goals`);
+      
+      const context = `User has ${user.goals.length} active goals and ${user.tasks.length} tasks. Recent activity level: ${this.assessUserActivityLevel(user)}.`;
+      
+      const aiResponse = await this.aiService.generateTextLlm({
+        model: 'openai/gpt-4o-mini',
+        systemPrompt: `You are an expert productivity coach. Generate 1 comprehensive quest that helps the user explore and make progress across all their goals.
+
+Create a quest that:
+- Integrates multiple goals
+- Provides a holistic approach to productivity
+- Is engaging and motivating
+- Has clear action steps
+
+Format as JSON:
+{
+  "name": "Quest name with emoji",
+  "description": "Comprehensive description",
+  "difficulty": 1-5,
+  "rewardXp": number,
+  "rewardTokens": number,
+  "timeEstimate": "X minutes/hours",
+  "actionSteps": ["Step 1", "Step 2", "Step 3"],
+  "questType": "exploration",
+  "progressStage": "holistic"
+}`,
+        prompt: `Generate 1 exploration quest for user with ${user.goals.length} goals and ${user.tasks.length} tasks.
+
+Context: ${context}`
+      });
+
+      if (!aiResponse || !aiResponse.text) {
+        console.error('❌ AI exploration quest response failed');
+        return null;
+      }
+
+      console.log(`📄 AI Exploration Response:`, aiResponse.text.substring(0, 300) + '...');
+
+      const quests = this.parseAIQuestResponse(aiResponse.text, null, user.id, now);
+      return quests.length > 0 ? quests[0] : null;
+
+    } catch (error) {
+      console.error('❌ Error generating AI exploration quest:', error);
+      return null;
+    }
+  }
+
+  private generateFallbackGoalQuests(userId: string): GeneratedQuest[] {
+    // Fallback to basic quests if AI fails
+    const now = new Date();
+    const quest: GeneratedQuest = {
+      id: this.generateUniqueQuestId('fallback_goal', userId),
+      userId,
+      templateId: 'fallback_goal',
+      name: '🎯 Goal Achievement Quest',
+      description: 'Work on your goals and make progress toward achieving them. Even small steps count!',
+      type: 'fallback',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 100,
+      rewardTokens: 10,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+      meta: {
+        template: 'fallback_goal',
+        aiGenerated: false,
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'medium'
+      }
+    };
+
+    return [quest];
+  }
+
+  private async createGoalBasedTaskQuests(goal: any, user: any, now: Date): Promise<GeneratedQuest[]> {
+    const quests: GeneratedQuest[] = [];
+    const userId = user.id;
+
+    // Quest 1: Break down goal into subtasks
+    const breakdownQuest: GeneratedQuest = {
+      id: this.generateUniqueQuestId('goal_breakdown', userId),
+      userId,
+      templateId: 'goal_breakdown',
+      name: `📋 Break Down: ${goal.title}`,
+      description: `Create 3-5 actionable subtasks to help you achieve "${goal.title}". Think about the specific steps needed to reach this goal.`,
+      type: 'goal_breakdown',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 3,
+      rewardXp: 120,
+      rewardTokens: 12,
+      difficulty: 2,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days
+      meta: {
+        template: 'goal_breakdown',
+        goalId: goal.id,
+        goalTitle: goal.title,
+        completionCriteria: { type: 'count', target: 3 },
+        priority: 'medium'
+      }
+    };
+
+    // Quest 2: Research and planning quest
+    const researchQuest: GeneratedQuest = {
+      id: this.generateUniqueQuestId('goal_research', userId),
+      userId,
+      templateId: 'goal_research',
+      name: `🔍 Research: ${goal.title}`,
+      description: `Spend 30 minutes researching best practices, tools, or resources to help you achieve "${goal.title}". Take notes on what you learn.`,
+      type: 'goal_research',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 30,
+      rewardXp: 100,
+      rewardTokens: 10,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days
+      meta: {
+        template: 'goal_research',
+        goalId: goal.id,
+        goalTitle: goal.title,
+        completionCriteria: { type: 'duration', target: 30, unit: 'minutes' },
+        priority: 'medium'
+      }
+    };
+
+    // Quest 3: First step action quest
+    const firstStepQuest: GeneratedQuest = {
+      id: this.generateUniqueQuestId('goal_first_step', userId),
+      userId,
+      templateId: 'goal_first_step',
+      name: `🚀 First Step: ${goal.title}`,
+      description: `Take the first concrete action toward "${goal.title}". Even a small step counts - the key is to start!`,
+      type: 'goal_first_step',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 80,
+      rewardTokens: 8,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days
+      meta: {
+        template: 'goal_first_step',
+        goalId: goal.id,
+        goalTitle: goal.title,
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'high'
+      }
+    };
+
+    // Quest 4: Progress tracking quest
+    const progressQuest: GeneratedQuest = {
+      id: this.generateUniqueQuestId('goal_progress', userId),
+      userId,
+      templateId: 'goal_progress',
+      name: `📊 Track Progress: ${goal.title}`,
+      description: `Review your progress on "${goal.title}" and update your goal status. Reflect on what's working and what needs adjustment.`,
+      type: 'goal_progress',
+      category: 'goals',
+      status: 'active',
+      progress: 0,
+      goal: 1,
+      rewardXp: 60,
+      rewardTokens: 6,
+      difficulty: 1,
+      createdAt: now,
+      expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      meta: {
+        template: 'goal_progress',
+        goalId: goal.id,
+        goalTitle: goal.title,
+        completionCriteria: { type: 'count', target: 1 },
+        priority: 'low'
+      }
+    };
+
+    quests.push(breakdownQuest, researchQuest, firstStepQuest, progressQuest);
     return quests;
   }
 

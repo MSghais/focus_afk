@@ -292,7 +292,7 @@ export class KnowledgeRetrievalTool extends StructuredTool {
       }
 
       // Generate recommendations if requested
-      let recommendations = null;
+      let recommendations: string[] | null = null;
       if (input.includeRecommendations) {
         recommendations = this.generateRecommendations(searchResults, input.topic);
       }
@@ -356,7 +356,7 @@ export class KnowledgeRetrievalTool extends StructuredTool {
   }
 
   private generateRecommendations(searchResults: any[], topic: string): string[] {
-    const recommendations = [];
+    const recommendations: string[] = [];
 
     // Analyze task-related recommendations
     const tasks = searchResults.filter(r => r.document.type === 'task');
