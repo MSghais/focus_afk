@@ -236,10 +236,46 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
 
                     <button
-                        onClick={() => setShowFilters(!showFilters)}
+                        onClick={() => {
+                            setShowFilters(!showFilters);
+                            // setShowAddForm(false);
+                            showModal(<div className="mb-6 space-y-4">
+                                <TaskFilter
+                                    tasks={tasks}
+                                    onFilterChange={setFilteredTasks}
+                                    customOrder={customOrder}
+                                    onCustomOrderChange={setCustomOrder}
+                                    className="mb-4"
+                                />
+                                <TaskOrderManager
+                                    tasks={tasks}
+                                    onOrderChange={setCustomOrder}
+                                    className="mb-4"
+                                />
+                            </div>)
+                        }}
                         className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
                     >
                         <Icon name="filter" />
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            const hasCompleted = filteredTasks.some(t => t.completed);
+                            const hasArchived = filteredTasks.some(t => t.isArchived);
+
+                            if (hasCompleted || hasArchived) {
+                                // Hide completed and archived
+                                setFilteredTasks(tasks.filter(t => !t.completed && !t.isArchived));
+                            } else {
+                                // Show all
+                                setFilteredTasks(tasks);
+                            }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
+                        title="Toggle completed/archived tasks"
+                    >
+                        {filteredTasks.some(t => t.completed || t.isArchived) ? '👁️ Hide' : '👁️ Show All'}
                     </button>
 
 
@@ -398,6 +434,32 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
             {/* Tasks List */}
             <div className="flex-1 overflow-y-auto">
+                {/* Status Indicator */}
+                {filteredTasks.length > 0 && (
+                    <div className="mb-4 p-3 border border-gray-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">
+                                    Showing {filteredTasks.length} of {tasks.length} tasks
+                                </span>
+                                {filteredTasks.some(t => t.completed) && (
+                                    <span className="px-2 py-1 text-green-800 text-xs rounded-full">
+                                        Includes completed
+                                    </span>
+                                )}
+                                {filteredTasks.some(t => t.isArchived) && (
+                                    <span className="px-2 py-1 text-orange-800 text-xs rounded-full">
+                                        Includes archived
+                                    </span>
+                                )}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                                {filteredTasks.filter(t => t.completed).length} completed, {filteredTasks.filter(t => t.isArchived).length} archived
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {filteredTasks.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                         <p className="text-lg mb-2">
@@ -414,7 +476,11 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         {filteredTasks.map((task) => (
                             <div
                                 key={task.id}
-                                className={`p-4 border rounded-lg transition-all ${task.completed ? 'bg-gray-500 opacity-75' : 'hover:shadow-md'
+                                className={`p-4 border rounded-lg transition-all ${task.completed
+                                        ? 'bg-gray-500 border-gray-200 opacity-90'
+                                        : task.isArchived
+                                            ? 'bg-gray-500 border-gray-200 opacity-90'
+                                            : 'hover:shadow-md'
                                     }`}
                             >
                                 {editingTask?.id === task.id ? (
@@ -511,8 +577,18 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                     {task.priority}
                                                 </span>
                                                 {task.category && (
-                                                    <span className="px-2 py-1 rounded-full text-xs">
+                                                    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
                                                         {task.category}
+                                                    </span>
+                                                )}
+                                                {task.completed && (
+                                                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium">
+                                                        ✓ Completed
+                                                    </span>
+                                                )}
+                                                {task.isArchived && (
+                                                    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500 font-medium">
+                                                        📦 Archived
                                                     </span>
                                                 )}
                                             </div>
@@ -529,7 +605,11 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                 <span>Created: {formatDate(task.createdAt)}</span>
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap gap-2 ml-0 sm:ml-4">
+                                        <div
+                                            // className="flex flex-wrap gap-2 ml-0 sm:ml-4"
+                                            className="grid grid-cols-2 gap-2 ml-0 sm:ml-4"
+
+                                        >
                                             <ButtonPrimary
                                                 className="px-2 py-1 text-purple-600 hover:bg-purple-50 rounded text-sm font-medium"
                                             >
@@ -538,7 +618,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                     className="flex items-center gap-2"
                                                 >
                                                     🎯
-                                                    Go DEEP
+                                                    Deep
                                                 </Link>
                                             </ButtonPrimary>
 
@@ -558,13 +638,14 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                             >
                                                 🗑️ Delete
                                             </button>
+                                            <div>
+                                                <button onClick={() => handleArchiveTask(task)}>
+                                                    Archive
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <button onClick={() => handleArchiveTask(task)}>
-                                                Archive
-                                            </button>
-                                        </div>
+
                                     </div>
                                 )}
                             </div>

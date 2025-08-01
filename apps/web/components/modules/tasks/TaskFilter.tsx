@@ -262,7 +262,7 @@ export default function TaskFilter({ tasks, onFilterChange, customOrder = [], on
       {isExpanded && (
         <div className="space-y-4">
           {/* Quick Filters Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
             <button
               onClick={() => updateFilter({ completionFilter: 'incomplete' })}
               className={`px-3 py-1 text-sm rounded-md transition ${
@@ -272,6 +272,26 @@ export default function TaskFilter({ tasks, onFilterChange, customOrder = [], on
               }`}
             >
               Active
+            </button>
+            <button
+              onClick={() => updateFilter({ completionFilter: 'completed' })}
+              className={`px-3 py-1 text-sm rounded-md transition ${
+                filterOptions.completionFilter === 'completed'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Completed
+            </button>
+            <button
+              onClick={() => updateFilter({ archivedFilter: 'archived' })}
+              className={`px-3 py-1 text-sm rounded-md transition ${
+                filterOptions.archivedFilter === 'archived'
+                  ? 'bg-orange-100 text-orange-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Archived
             </button>
             <button
               onClick={() => updateFilter({ dueDateFilter: 'overdue' })}
@@ -302,6 +322,26 @@ export default function TaskFilter({ tasks, onFilterChange, customOrder = [], on
               }`}
             >
               High Priority
+            </button>
+            <button
+              onClick={() => updateFilter({ 
+                completionFilter: 'all', 
+                archivedFilter: 'all',
+                dueDateFilter: 'all',
+                createdDateFilter: 'all',
+                priorityFilter: 'all'
+              })}
+              className={`px-3 py-1 text-sm rounded-md transition ${
+                filterOptions.completionFilter === 'all' && 
+                filterOptions.archivedFilter === 'all' &&
+                filterOptions.dueDateFilter === 'all' &&
+                filterOptions.createdDateFilter === 'all' &&
+                filterOptions.priorityFilter === 'all'
+                  ? 'bg-purple-100 text-purple-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Show All
             </button>
           </div>
 
