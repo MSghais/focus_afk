@@ -14,7 +14,7 @@ import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
 import TaskFilter, { TaskFilterOptions } from './TaskFilter';
 import TaskOrderManager from './TaskOrderManager';
-import TaskCalendar from './TaskCalendar';
+import TaskCalendarEnhanced from './TaskCalendarEnhanced';
 
 
 interface ITasksOverviewProps {
@@ -684,13 +684,13 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                 ) : (
                     /* Calendar View */
                     <div className="h-full">
-                        <TaskCalendar
+                        <TaskCalendarEnhanced
                             tasks={filteredTasks}
-                            onTaskClick={(task) => {
+                            onTaskClick={(task: Task) => {
                                 // Handle task click - could open edit modal or task details
                                 setEditingTask(task);
                             }}
-                            onTaskDrop={async (taskId, newDate) => {
+                            onTaskDrop={async (taskId: string, newDate: Date) => {
                                 // Handle task drop - update due date
                                 const task = tasks.find(t => t.id === taskId);
                                 if (task) {

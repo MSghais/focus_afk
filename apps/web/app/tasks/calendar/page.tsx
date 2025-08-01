@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
-import TaskCalendar from '../../../components/modules/tasks/TaskCalendar';
+import TaskCalendarEnhanced from '../../../components/modules/tasks/TaskCalendarEnhanced';
 import { Task } from '../../../types';
 import { useUIStore } from '../../../store/uiStore';
 
@@ -73,12 +73,12 @@ export default function TasksCalendarPage() {
             </div>
 
             <div className="flex-1 min-h-0">
-                <TaskCalendar
-                    tasks={filteredTasks}
-                    onTaskClick={handleTaskClick}
-                    onTaskDrop={handleTaskDrop}
-                    className="h-full"
-                />
+                            <TaskCalendarEnhanced
+                tasks={filteredTasks}
+                onTaskClick={handleTaskClick}
+                onTaskDrop={handleTaskDrop}
+                className="h-full"
+            />
             </div>
         </div>
     );
