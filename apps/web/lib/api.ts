@@ -20,9 +20,13 @@ class ApiService {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string> || {}),
     };
+
+    // Only set Content-Type to application/json if there's a body
+    if (options.body) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     const token = this.getAuthToken();
     // console.log('🔐 API Request - Endpoint:', endpoint);

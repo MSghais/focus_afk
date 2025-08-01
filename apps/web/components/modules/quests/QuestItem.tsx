@@ -221,7 +221,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          {/* <div className="mt-3 flex flex-wrap gap-2">
             <button 
               className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition"
               onClick={(e) => {
@@ -258,7 +258,7 @@ const QuestItem: React.FC<IQuestItemProps> = ({
             >
               Request Enhanced Quests
             </button>
-          </div>
+          </div> */}
         </div>
       )}
     </div>

@@ -261,24 +261,33 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
     deleteTask: async (id) => {
-      const idNum = typeof id === 'string' ? parseInt(id) : id;
-      await dbUtils.deleteTask(idNum);
+      // Try to delete from local database (this will handle both numeric and string IDs)
+      await dbUtils.deleteTask(id);
+      
+      // Remove from local store
       set((state) => ({
         tasks: state.tasks.filter((task) => task.id !== id),
       }));
 
-      // If authenticated, also delete from backend
-      if (isUserAuthenticated()) {
+      // Only attempt backend deletion if the task has a string ID (CUID from backend)
+      // Numeric IDs are local-only tasks that don't exist on the backend
+      if (isUserAuthenticated() && typeof id === 'string') {
         try {
           const token = getJwtToken();
           if (token) {
-            const idStr = typeof id === 'string' ? id : id.toString();
-            await api.deleteTask(idStr);
+            await api.deleteTask(id);
             console.log('✅ Task deletion synced to backend');
           }
-        } catch (err) {
-          console.error('❌ Failed to sync task deletion to backend:', err);
+        } catch (err: any) {
+          // Handle 404 errors gracefully (task doesn't exist on backend)
+          if (err.message && err.message.includes('404')) {
+            console.log('ℹ️ Task not found on backend (likely already deleted):', id);
+          } else {
+            console.error('❌ Failed to sync task deletion to backend:', err);
+          }
         }
+      } else if (isUserAuthenticated() && typeof id === 'number') {
+        console.log('ℹ️ Local-only task deleted (no backend sync needed):', id);
       }
     },
 
