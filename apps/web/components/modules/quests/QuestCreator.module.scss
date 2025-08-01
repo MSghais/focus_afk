@@ -558,6 +558,11 @@
     border-color: #06b6d4;
     &:hover { border-color: #0891b2; }
   }
+
+  &.orange {
+    border-color: #f97316;
+    &:hover { border-color: #ea580c; }
+  }
 }
 
 .questIcon {
@@ -663,6 +668,383 @@
   &:hover {
     border-color: var(--primary-color);
     background: var(--primary-bg);
+    transform: translateY(-1px);
+  }
+}
+
+.goalSuggestionsInfo {
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+
+    li {
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      font-size: 0.9rem;
+
+      strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+    }
+  }
+} 
+
+// AI Quest Viewer Styles
+.statsSection {
+  margin-bottom: 24px;
+}
+
+.statCard {
+  background: var(--background-primary);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+.statLabel {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.statValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.filterSection {
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.filterButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  padding: 8px 16px;
+  border: 2px solid var(--border-color);
+  background: var(--background-primary);
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+
+  &:hover {
+    border-color: var(--primary-color);
+    background: var(--primary-bg);
+  }
+
+  &.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+  }
+}
+
+.questListSection {
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.noQuests {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.questCard {
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+  }
+}
+
+.questHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.questType {
+  .typeLabel {
+    background: var(--background-secondary);
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+}
+
+.questDescription {
+  margin: 8px 0 12px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.questMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.metaLabel {
+  color: var(--text-secondary);
+}
+
+.metaValue {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.questDetailsSection {
+  h3 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.questDetails {
+  background: var(--background-primary);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border-color);
+}
+
+.detailHeader {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+}
+
+.detailMeta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.typeBadge, .difficultyBadge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.typeBadge {
+  background: var(--background-secondary);
+  color: var(--text-secondary);
+}
+
+.difficultyBadge {
+  color: white;
+}
+
+.detailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailSection {
+  h5 {
+    margin: 0 0 8px 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.rewardsGrid {
+  display: flex;
+  gap: 16px;
+}
+
+.rewardItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.rewardIcon {
+  font-size: 1.1rem;
+}
+
+.rewardValue {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.aiDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aiDetailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aiLabel {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.aiValue {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.actionSteps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-primary);
+
+  li {
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+} 
+
+// Modal Styles
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: var(--background-secondary);
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.aiViewerButton {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+
+  &:hover {
+    background: var(--primary-hover);
     transform: translateY(-1px);
   }
 } 

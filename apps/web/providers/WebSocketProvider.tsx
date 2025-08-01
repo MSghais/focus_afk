@@ -24,6 +24,7 @@ interface WebSocketContextType {
   requestSocialQuests: () => void;
   requestStreakQuests: () => void;
   requestNoteQuests: () => void;
+  requestGoalTaskSuggestions: () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -43,6 +44,7 @@ const WebSocketContext = createContext<WebSocketContextType>({
   requestSocialQuests: () => {},
   requestStreakQuests: () => {},
   requestNoteQuests: () => {},
+  requestGoalTaskSuggestions: () => {},
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
@@ -132,6 +134,13 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const requestNoteQuests = () => {
     if (authedSocketRef.current) {
       authedSocketRef.current.emit('request_note_quests');
+    }
+  };
+
+  // Function to request goal-based task suggestions
+  const requestGoalTaskSuggestions = () => {
+    if (authedSocketRef.current) {
+      authedSocketRef.current.emit('request_goal_task_suggestions');
     }
   };
 
@@ -485,6 +494,31 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       });
 
+      // Handle goal-based task suggestions response
+      authedSocket.on('goal_task_suggestions_response', (response: {
+        quests: Quest[];
+        message: string;
+        error?: string;
+      }) => {
+        console.log('Goal-based task suggestions response:', response);
+        if (response.quests && response.quests.length > 0) {
+          setQuestSuggestions(response.quests);
+          showToast({
+            type: 'success',
+            message: response.message,
+            description: 'Goal-Based Task Suggestions Generated',
+            duration: 4000
+          });
+        } else if (response.error) {
+          showToast({
+            type: 'error',
+            message: response.error,
+            description: 'Goal-Based Task Suggestions Generation Failed',
+            duration: 4000
+          });
+        }
+      });
+
       // authedSocket.on('disconnect', () => setIsAuthedConnected(false));
       authedSocket.on('connect_error', (err) => {
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -521,6 +555,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         requestSocialQuests,
         requestStreakQuests,
         requestNoteQuests,
+        requestGoalTaskSuggestions,
       }}
     >
       {children}

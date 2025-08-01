@@ -23,7 +23,7 @@ interface QuestSuggestion {
 }
 
 export default function QuestCreator({ userId, userAddress, onQuestCreated, onClose }: QuestCreatorProps) {
-  const [questType, setQuestType] = useState<'generic' | 'suggestion' | 'priority' | 'task' | 'focus' | 'goal' | 'quick_win' | 'learning' | 'wellness' | 'social' | 'streak' | 'note'>('priority');
+  const [questType, setQuestType] = useState<'generic' | 'suggestion' | 'priority' | 'task' | 'focus' | 'goal' | 'quick_win' | 'learning' | 'wellness' | 'social' | 'streak' | 'note' | 'goal_task_suggestions'>('priority');
   const [suggestions, setSuggestions] = useState<QuestSuggestion[]>([]);
   const [taskSummary, setTaskSummary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,8 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
     requestWellnessQuests, 
     requestSocialQuests, 
     requestStreakQuests, 
-    requestNoteQuests 
+    requestNoteQuests,
+    requestGoalTaskSuggestions
   } = useWebSocket();
 
   // Generic quest form state
@@ -319,6 +320,13 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
     setTimeout(() => setLoading(false), 2000);
   };
 
+  const generateGoalTaskSuggestions = () => {
+    setLoading(true);
+    setError(null);
+    requestGoalTaskSuggestions();
+    setTimeout(() => setLoading(false), 2000);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -395,6 +403,12 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
           onClick={() => setQuestType('note')}
         >
           📝 Note Quests
+        </button>
+        <button
+          className={`${styles.typeButton} ${questType === 'goal_task_suggestions' ? styles.active : ''}`}
+          onClick={() => setQuestType('goal_task_suggestions')}
+        >
+          🎯 Goal-Based Task Suggestions
         </button>
         <button
           className={`${styles.typeButton} ${questType === 'generic' ? styles.active : ''}`}
@@ -664,6 +678,32 @@ export default function QuestCreator({ userId, userAddress, onQuestCreated, onCl
             disabled={loading}
           >
             {loading ? '📝 Generating Note Quests...' : '📝 Generate Note Quests'}
+          </button>
+        </div>
+      )}
+
+      {/* Goal-Based Task Suggestions Generation */}
+      {questType === 'goal_task_suggestions' && (
+        <div className={styles.questSection}>
+          <h3>🎯 Goal-Based Task Suggestions</h3>
+          <p className={styles.description}>
+            Generate interesting task suggestions based on your current goals. The system will analyze your goals and create actionable quests to help you achieve them.
+          </p>
+          <div className={styles.goalSuggestionsInfo}>
+            <h4>What you'll get:</h4>
+            <ul>
+              <li>📋 <strong>Goal Breakdown Quests:</strong> Break down your goals into actionable subtasks</li>
+              <li>🔍 <strong>Research Quests:</strong> Find resources and best practices for your goals</li>
+              <li>🚀 <strong>First Step Quests:</strong> Take concrete actions toward your goals</li>
+              <li>📊 <strong>Progress Tracking Quests:</strong> Monitor and reflect on your progress</li>
+            </ul>
+          </div>
+          <button
+            className={styles.generateButton}
+            onClick={generateGoalTaskSuggestions}
+            disabled={loading}
+          >
+            {loading ? '🎯 Generating Goal-Based Task Suggestions...' : '🎯 Generate Goal-Based Task Suggestions'}
           </button>
         </div>
       )}

@@ -1,10 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useWebSocket } from '../../../providers/WebSocketProvider';
+import { useWebSocketStore } from '../../../store/websocket';
+import AIQuestViewer from './AIQuestViewer';
 import styles from './QuestCreator.module.scss';
 
 export default function QuestGenerationDemo() {
+  const [showAIViewer, setShowAIViewer] = useState(false);
+  const { questSuggestions } = useWebSocketStore();
+  
   const {
     requestTaskQuests,
     requestFocusQuests,
@@ -16,7 +21,8 @@ export default function QuestGenerationDemo() {
     requestStreakQuests,
     requestNoteQuests,
     requestEnhancedQuests,
-    requestContextualQuests
+    requestContextualQuests,
+    requestGoalTaskSuggestions
   } = useWebSocket();
 
   const questTypes = [
@@ -84,6 +90,13 @@ export default function QuestGenerationDemo() {
       color: 'gray'
     },
     {
+      name: 'Goal-Based Task Suggestions',
+      description: 'Generate interesting tasks based on your goals',
+      icon: '🎯',
+      action: requestGoalTaskSuggestions,
+      color: 'orange'
+    },
+    {
       name: 'Enhanced Quests',
       description: 'Generate advanced AI-powered quests',
       icon: '🤖',
@@ -97,6 +110,16 @@ export default function QuestGenerationDemo() {
       <div className={styles.header}>
         <h2>🎯 Quest Generation Demo</h2>
         <p>Click any button below to generate different types of quests via WebSocket</p>
+        
+        {/* AI Quest Viewer Button */}
+        {questSuggestions && questSuggestions.length > 0 && (
+          <button
+            className={styles.aiViewerButton}
+            onClick={() => setShowAIViewer(true)}
+          >
+            🤖 View AI-Generated Quests ({questSuggestions.length})
+          </button>
+        )}
       </div>
 
       <div className={styles.questGrid}>
@@ -157,6 +180,18 @@ export default function QuestGenerationDemo() {
           </button>
         </div>
       </div>
+
+      {/* AI Quest Viewer Modal */}
+      {showAIViewer && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <AIQuestViewer 
+              quests={questSuggestions || []} 
+              onClose={() => setShowAIViewer(false)} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

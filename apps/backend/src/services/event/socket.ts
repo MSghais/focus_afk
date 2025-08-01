@@ -776,6 +776,29 @@ export const setupWebSocket = (io: Server) => {
             }
           });
 
+          // Add handler for goal-based task suggestion quests
+          socket.on('request_goal_task_suggestions', async () => {
+            try {
+              const userId = socket.data.user?.id;
+              // const userAddress = socket.data.user?.userAddress;
+              
+              if (userId ) {
+                const goalTaskQuests = await enhancedQuestService.generateGoalBasedTaskSuggestions(userId,);
+                socket.emit('goal_task_suggestions_response', {
+                  quests: goalTaskQuests,
+                  message: 'Goal-based task suggestions generated successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error generating goal-based task suggestions:', error);
+              socket.emit('goal_task_suggestions_response', {
+                quests: [],
+                message: 'Failed to generate goal-based task suggestions',
+                error: error.message
+              });
+            }
+          });
+
           // Add handler for contextual quest requests
           socket.on('request_contextual_quests', async (triggerPoint: string) => {
             try {
