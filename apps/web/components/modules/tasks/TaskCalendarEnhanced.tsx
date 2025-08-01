@@ -7,6 +7,7 @@ import { useUIStore } from '../../../store/uiStore';
 import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/task-calendar.module.scss';
 import CreateTaskEnhanced from './CreateTaskEnhanced';
+import TaskCard from './TaskCard';
 
 interface TaskCalendarEnhancedProps {
   tasks: Task[];
@@ -233,77 +234,27 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
           
           <div className="space-y-4">
             {dayTasks.map((task) => (
-              <div
+              <TaskCard
                 key={task.id}
-                className={`p-4 border rounded-lg ${
-                  task.completed ? 'bg-gray-50 opacity-75' : 'bg-white'
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={() => handleCompleteTask(task)}
-                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                      />
-                      <h3 className={`font-medium ${task.completed ? 'line-through' : ''}`}>
-                        {task.title}
-                      </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                      {task.completed && <span className="text-green-600">✓</span>}
-                      {task.isArchived && <span className="text-gray-500">📦</span>}
-                    </div>
-                    {task.description && (
-                      <p className="text-gray-600 text-sm ml-7 mb-2">{task.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 text-xs text-gray-500 ml-7">
-                      {task.category && <span>Category: {task.category}</span>}
-                      {task.estimatedMinutes && task.estimatedMinutes > 0 && (
-                        <span>Est: {task.estimatedMinutes}m</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 ml-4">
-                    <button
-                      onClick={() => handleEditTask(task)}
-                      className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded text-sm"
-                      title="Edit task"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleCompleteTask(task)}
-                      className={`px-3 py-1 rounded text-sm ${
-                        task.completed 
-                          ? 'text-orange-600 hover:bg-orange-50' 
-                          : 'text-green-600 hover:bg-green-50'
-                      }`}
-                      title={task.completed ? 'Mark incomplete' : 'Mark complete'}
-                    >
-                      {task.completed ? '↩️ Undo' : '✓ Complete'}
-                    </button>
-                    <button
-                      onClick={() => handleArchiveTask(task)}
-                      className="px-3 py-1 text-gray-600 hover:bg-gray-50 rounded text-sm"
-                      title="Archive task"
-                    >
-                      📦 Archive
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTask(task)}
-                      className="px-3 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
-                      title="Delete task"
-                    >
-                      🗑️ Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
+                task={task}
+                onEdit={handleEditTask}
+                onComplete={handleCompleteTask}
+                onArchive={handleArchiveTask}
+                onDelete={handleDeleteTask}
+                onDuplicate={(task) => {
+                  // Handle duplicate task
+                  const duplicatedTask = {
+                    ...task,
+                    title: `${task.title} (Copy)`,
+                    completed: false,
+                    isArchived: false,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  };
+                  delete duplicatedTask.id;
+                  addTask(duplicatedTask);
+                }}
+              />
             ))}
           </div>
         </div>
@@ -343,7 +294,7 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
           </button>
         </div>
 
-        <div className={styles.viewToggle}>
+        {/* <div className={styles.viewToggle}>
           <button
             onClick={() => setViewMode('month')}
             className={`${styles.viewButton} ${viewMode === 'month' ? styles.active : ''}`}
@@ -356,7 +307,7 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
           >
             Week
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* Calendar Grid */}
