@@ -1641,48 +1641,67 @@ export class EnhancedQuestService {
       console.log(`🚀 Calling AI service for goal: "${goal.title}"`);
       const aiResponse = await this.aiService.generateTextLlm({
         model: 'openai/gpt-4o-mini',
-        systemPrompt: `You are an expert productivity coach and goal achievement specialist. Your task is to generate 3-4 specific, actionable quest suggestions for a user's goal.
+        systemPrompt: `You are an expert productivity coach and goal achievement specialist. Your task is to generate 3-4 specific, actionable quest suggestions for a user's goal based on their current progress and task context.
 
-Context about the user:
-- User has ${user.tasks.length} active tasks
-- User has ${user.notes.length} notes
-- User has completed ${user.timerSessions.length} focus sessions
-- User's goal: "${goal.title}"
-- Goal description: "${goal.description || 'No description provided'}"
+IMPORTANT CONTEXT ANALYSIS:
+- Analyze the user's current progress (${goal.progress || 0}%)
+- Review linked tasks to understand what's been accomplished
+- Identify gaps in the goal achievement process
+- Consider unlinked tasks that could be relevant
+- Assess the user's activity patterns and focus consistency
 
-Generate quest suggestions that are:
-1. SPECIFIC and actionable
-2. ALIGNED with the user's goal
-3. VARIED in difficulty (easy, medium, hard)
-4. REALISTIC given the user's current activity level
-5. MOTIVATING and engaging
+QUEST GENERATION STRATEGY:
+1. **Progress-Based Quests**: Create quests that build on completed tasks
+2. **Gap-Filling Quests**: Identify missing steps and create quests to fill them
+3. **Integration Quests**: Suggest linking unlinked tasks to the goal
+4. **Next-Step Quests**: Focus on the immediate next actions needed
+
+QUEST REQUIREMENTS:
+- SPECIFIC and actionable based on current progress
+- ALIGNED with the user's actual task completion patterns
+- VARIED in difficulty (easy, medium, hard) based on current step
+- REALISTIC given the user's activity level and focus patterns
+- MOTIVATING and engaging with clear progress indicators
 
 For each quest, provide:
-- A catchy name with emoji
-- A detailed description explaining what to do
-- Suggested difficulty (1-5)
-- Suggested reward (XP and tokens)
-- Time estimate
-- Specific action steps
+- A catchy name with emoji that reflects the current progress stage
+- A detailed description explaining what to do and why it's the next logical step
+- Suggested difficulty (1-5) based on current progress
+- Suggested reward (XP and tokens) proportional to effort
+- Time estimate based on user's typical task completion patterns
+- Specific action steps that build on existing progress
+- Progress stage indicator (e.g., "Foundation", "Development", "Completion")
 
 Format your response as a JSON array with this structure:
 [
   {
     "name": "Quest name with emoji",
-    "description": "Detailed description of what to do",
+    "description": "Detailed description explaining the next step and its importance",
     "difficulty": 1-5,
     "rewardXp": number,
     "rewardTokens": number,
     "timeEstimate": "X minutes/hours",
     "actionSteps": ["Step 1", "Step 2", "Step 3"],
-    "questType": "breakdown|research|action|progress"
+    "questType": "progress|gap_fill|integration|next_step",
+    "progressStage": "foundation|development|refinement|completion"
   }
-]`,
+]
+
+Focus on creating quests that will help the user make the NEXT logical step toward their goal based on their current progress.`,
         prompt: `Generate 3-4 quest suggestions for the goal: "${goal.title}"
+
+Current Progress: ${goal.progress || 0}%
+Progress Stage: ${Math.max(1, Math.floor((goal.progress || 0) / 20))} of 5
 
 User context: ${context}
 
-Focus on creating quests that will help the user make real progress toward this specific goal. Make them engaging and varied in approach.`
+Based on this detailed context, create quests that:
+1. Build on what the user has already accomplished
+2. Fill gaps in their goal achievement process
+3. Integrate relevant unlinked tasks
+4. Provide clear next steps toward goal completion
+
+Focus on the user's current progress stage and create quests that are the logical next steps.`
       });
 
       if (!aiResponse || !aiResponse.text) {
@@ -1707,18 +1726,88 @@ Focus on creating quests that will help the user make real progress toward this 
   }
 
   private buildGoalContext(goal: any, user: any): string {
-    const recentTasks = user.tasks.slice(0, 5).map((t: any) => t.title).join(', ');
-    const recentNotes = user.notes.slice(0, 3).map((n: any) => n.title || 'Untitled note').join(', ');
-    const focusSessions = user.timerSessions.length;
+    const activityLevel = this.assessUserActivityLevel(user);
     
-    return `
-Goal: ${goal.title}
-Goal Description: ${goal.description || 'No description'}
-Recent Tasks: ${recentTasks || 'No recent tasks'}
-Recent Notes: ${recentNotes || 'No recent notes'}
-Focus Sessions: ${focusSessions} completed
-User Activity Level: ${this.assessUserActivityLevel(user)}
-    `.trim();
+    // Get tasks linked to this specific goal
+    const linkedTasks = user.tasks.filter((task: any) => 
+      task.goalIds && task.goalIds.includes(goal.id)
+    );
+    
+    // Get tasks not linked to any goal (potential candidates)
+    const unlinkedTasks = user.tasks.filter((task: any) => 
+      !task.goalIds || task.goalIds.length === 0
+    );
+    
+    // Get recent tasks (last 20) for broader context
+    const recentTasks = user.tasks.slice(0, 20);
+    
+    // Analyze task completion patterns
+    const completedTasks = user.tasks.filter((task: any) => task.completed);
+    const pendingTasks = user.tasks.filter((task: any) => !task.completed);
+    
+    // Get recent focus sessions for productivity context
+    const recentSessions = user.timerSessions.slice(0, 10);
+    const totalFocusTime = recentSessions.reduce((total: number, session: any) => 
+      total + (session.duration || 0), 0
+    );
+    
+    // Get recent notes for context
+    const recentNotes = user.notes.slice(0, 10);
+    
+    let context = `User Activity Level: ${activityLevel}
+
+GOAL DETAILS:
+- Title: "${goal.title}"
+- Description: "${goal.description || 'No description provided'}"
+- Progress: ${goal.progress || 0}%
+- Created: ${goal.createdAt}
+- Target Date: ${goal.targetDate || 'No target date'}
+
+TASK ANALYSIS:
+Linked Tasks (${linkedTasks.length}):
+${linkedTasks.map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - ${task.description || 'No description'}`
+).join('\n')}
+
+Unlinked Tasks (${unlinkedTasks.length}):
+${unlinkedTasks.slice(0, 10).map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - ${task.description || 'No description'}`
+).join('\n')}
+
+Recent Tasks (Last 20):
+${recentTasks.map((task: any, index: number) => 
+  `${index + 1}. "${task.title}" - ${task.completed ? '✅ Completed' : '⏳ Pending'} - Category: ${task.category || 'None'}`
+).join('\n')}
+
+TASK STATISTICS:
+- Total Tasks: ${user.tasks.length}
+- Completed: ${completedTasks.length}
+- Pending: ${pendingTasks.length}
+- Completion Rate: ${user.tasks.length > 0 ? Math.round((completedTasks.length / user.tasks.length) * 100) : 0}%
+
+FOCUS SESSIONS:
+Recent Sessions (Last 10):
+${recentSessions.map((session: any, index: number) => 
+  `${index + 1}. ${session.duration || 0} minutes - ${session.createdAt}`
+).join('\n')}
+
+Total Focus Time: ${Math.round(totalFocusTime / 60)} minutes
+
+RECENT NOTES:
+${recentNotes.map((note: any, index: number) => 
+  `${index + 1}. "${note.title || 'Untitled'}" - ${note.content?.substring(0, 100) || 'No content'}...`
+).join('\n')}
+
+CURRENT PROGRESS ANALYSIS:
+- Goal Progress: ${goal.progress || 0}%
+- Linked Tasks Completed: ${linkedTasks.filter((t: any) => t.completed).length}/${linkedTasks.length}
+- Recent Activity: ${activityLevel} level
+- Focus Consistency: ${recentSessions.length > 0 ? 'Good' : 'Needs improvement'}
+
+NEXT STEPS CONTEXT:
+Based on the current progress, the user is at step ${Math.max(1, Math.floor((goal.progress || 0) / 20))} of approximately 5 steps toward this goal.`;
+
+    return context;
   }
 
   private assessUserActivityLevel(user: any): string {
@@ -1784,71 +1873,49 @@ User Activity Level: ${this.assessUserActivityLevel(user)}
 
   private async generateAIExplorationQuest(user: any, now: Date): Promise<GeneratedQuest | null> {
     try {
+      console.log(`🔍 Generating AI exploration quest for ${user.goals.length} goals`);
+      
+      const context = `User has ${user.goals.length} active goals and ${user.tasks.length} tasks. Recent activity level: ${this.assessUserActivityLevel(user)}.`;
+      
       const aiResponse = await this.aiService.generateTextLlm({
         model: 'openai/gpt-4o-mini',
-        systemPrompt: `You are an expert productivity coach. Generate a single comprehensive goal exploration quest that helps users analyze and break down all their active goals.
+        systemPrompt: `You are an expert productivity coach. Generate 1 comprehensive quest that helps the user explore and make progress across all their goals.
 
-The user has ${user.goals.length} active goals:
-${user.goals.map((g: any) => `- ${g.title}: ${g.description || 'No description'}`).join('\n')}
-
-Create ONE quest that:
-1. Encourages the user to review all their goals
-2. Helps them identify priorities and connections between goals
-3. Suggests a systematic approach to goal achievement
-4. Is engaging and motivating
+Create a quest that:
+- Integrates multiple goals
+- Provides a holistic approach to productivity
+- Is engaging and motivating
+- Has clear action steps
 
 Format as JSON:
 {
   "name": "Quest name with emoji",
-  "description": "Detailed description",
+  "description": "Comprehensive description",
   "difficulty": 1-5,
   "rewardXp": number,
   "rewardTokens": number,
-  "goal": number,
-  "actionSteps": ["Step 1", "Step 2", "Step 3"]
+  "timeEstimate": "X minutes/hours",
+  "actionSteps": ["Step 1", "Step 2", "Step 3"],
+  "questType": "exploration",
+  "progressStage": "holistic"
 }`,
-        prompt: `Generate a goal exploration quest for a user with ${user.goals.length} active goals. Make it comprehensive and actionable.`
+        prompt: `Generate 1 exploration quest for user with ${user.goals.length} goals and ${user.tasks.length} tasks.
+
+Context: ${context}`
       });
 
       if (!aiResponse || !aiResponse.text) {
+        console.error('❌ AI exploration quest response failed');
         return null;
       }
 
-      const jsonMatch = aiResponse.text.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        return null;
-      }
+      console.log(`📄 AI Exploration Response:`, aiResponse.text.substring(0, 300) + '...');
 
-      const data = JSON.parse(jsonMatch[0]);
-      
-      return {
-        id: this.generateUniqueQuestId('ai_exploration', user.id),
-        userId: user.id,
-        templateId: 'ai_exploration',
-        name: data.name,
-        description: data.description,
-        type: 'ai_enhanced',
-        category: 'goals',
-        status: 'active',
-        progress: 0,
-        goal: data.goal || user.goals.length,
-        rewardXp: data.rewardXp || 150,
-        rewardTokens: data.rewardTokens || 15,
-        difficulty: data.difficulty || 2,
-        createdAt: now,
-        expiresAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
-        meta: {
-          template: 'ai_exploration',
-          goalCount: user.goals.length,
-          actionSteps: data.actionSteps || [],
-          aiGenerated: true,
-          completionCriteria: { type: 'count', target: data.goal || user.goals.length },
-          priority: 'high'
-        }
-      };
+      const quests = this.parseAIQuestResponse(aiResponse.text, null, user.id, now);
+      return quests.length > 0 ? quests[0] : null;
 
     } catch (error) {
-      console.error('Error generating AI exploration quest:', error);
+      console.error('❌ Error generating AI exploration quest:', error);
       return null;
     }
   }

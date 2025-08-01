@@ -128,9 +128,9 @@ export default function AIQuestViewer({ quests, onClose }: AIQuestViewerProps) {
                     <span className={styles.metaLabel}>Difficulty:</span>
                     <span 
                       className={styles.metaValue}
-                      style={{ color: getDifficultyColor(quest.difficulty || 2) }}
+                      style={{ color: getDifficultyColor(2) }}
                     >
-                      {quest.difficulty || 2}/5
+                      2/5
                     </span>
                   </div>
                   <div className={styles.metaItem}>
@@ -161,9 +161,9 @@ export default function AIQuestViewer({ quests, onClose }: AIQuestViewerProps) {
                 </span>
                 <span 
                   className={styles.difficultyBadge}
-                  style={{ backgroundColor: getDifficultyColor(selectedQuest.difficulty || 2) }}
+                  style={{ backgroundColor: getDifficultyColor(2) }}
                 >
-                  Difficulty: {selectedQuest.difficulty || 2}/5
+                  Difficulty: 2/5
                 </span>
               </div>
             </div>
@@ -192,10 +192,12 @@ export default function AIQuestViewer({ quests, onClose }: AIQuestViewerProps) {
                     <span className={styles.rewardIcon}>⭐</span>
                     <span className={styles.rewardValue}>{selectedQuest.rewardXp} XP</span>
                   </div>
-                  <div className={styles.rewardItem}>
-                    <span className={styles.rewardIcon}>🪙</span>
-                    <span className={styles.rewardValue}>{selectedQuest.rewardTokens || 0} Tokens</span>
-                  </div>
+                  {selectedQuest.rewardBadge && (
+                    <div className={styles.rewardItem}>
+                      <span className={styles.rewardIcon}>🏅</span>
+                      <span className={styles.rewardValue}>{selectedQuest.rewardBadge}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -204,26 +206,40 @@ export default function AIQuestViewer({ quests, onClose }: AIQuestViewerProps) {
                 <div className={styles.detailSection}>
                   <h5>🤖 AI Details</h5>
                   <div className={styles.aiDetails}>
-                    {selectedQuest.meta.timeEstimate && (
+                    {selectedQuest.meta.enhanced && (
                       <div className={styles.aiDetailItem}>
-                        <span className={styles.aiLabel}>⏱️ Time Estimate:</span>
-                        <span className={styles.aiValue}>{selectedQuest.meta.timeEstimate}</span>
+                        <span className={styles.aiLabel}>🤖 AI Enhanced:</span>
+                        <span className={styles.aiValue}>✅ Yes</span>
                       </div>
                     )}
-                    {selectedQuest.meta.actionSteps && selectedQuest.meta.actionSteps.length > 0 && (
+                    {selectedQuest.meta.personalized && (
                       <div className={styles.aiDetailItem}>
-                        <span className={styles.aiLabel}>📋 Action Steps:</span>
-                        <ul className={styles.actionSteps}>
-                          {selectedQuest.meta.actionSteps.map((step: string, index: number) => (
-                            <li key={index}>{step}</li>
-                          ))}
-                        </ul>
+                        <span className={styles.aiLabel}>👤 Personalized:</span>
+                        <span className={styles.aiValue}>✅ Yes</span>
                       </div>
                     )}
-                    {selectedQuest.meta.questType && (
+                    {selectedQuest.meta.tailored && (
                       <div className={styles.aiDetailItem}>
-                        <span className={styles.aiLabel}>🎯 Quest Type:</span>
-                        <span className={styles.aiValue}>{selectedQuest.meta.questType}</span>
+                        <span className={styles.aiLabel}>🎯 Tailored:</span>
+                        <span className={styles.aiValue}>✅ Yes</span>
+                      </div>
+                    )}
+                    {selectedQuest.meta.category && (
+                      <div className={styles.aiDetailItem}>
+                        <span className={styles.aiLabel}>📂 Category:</span>
+                        <span className={styles.aiValue}>{selectedQuest.meta.category}</span>
+                      </div>
+                    )}
+                    {selectedQuest.meta.generatedAt && (
+                      <div className={styles.aiDetailItem}>
+                        <span className={styles.aiLabel}>🕒 Generated:</span>
+                        <span className={styles.aiValue}>{new Date(selectedQuest.meta.generatedAt).toLocaleString()}</span>
+                      </div>
+                    )}
+                    {selectedQuest.meta.vectorContextUsed && (
+                      <div className={styles.aiDetailItem}>
+                        <span className={styles.aiLabel}>🧠 Context Used:</span>
+                        <span className={styles.aiValue}>✅ Vector Context</span>
                       </div>
                     )}
                   </div>
