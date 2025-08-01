@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" | "filter" | "sort" | "chevron-up" | "chevron-down" | "drag" | "sort-asc" | "sort-desc" ;
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" | "filter" | "sort" | "chevron-up" | "chevron-down" | "drag" | "sort-asc" | "sort-desc" | "chevron-left" | "chevron-right" | "close" ;
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   add: (
@@ -194,6 +194,22 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     <>
       <path d="M3 6h18M6 12h12M9 18h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <polyline points="6,9 12,15 18,9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "chevron-left": (
+    <>
+      <polyline points="15,18 9,12 15,6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "chevron-right": (
+    <>
+      <polyline points="9,18 15,12 9,6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "close": (
+    <>
+      <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </>
   )
 };
