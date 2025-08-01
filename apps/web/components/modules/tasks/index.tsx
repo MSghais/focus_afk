@@ -206,7 +206,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
     return (
         <div className="w-full h-full flex flex-col p-2 md:p-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6">
+            <div className="flex flex-col sm:flex-col sm:justify-between sm:items-center gap-2 mb-6">
                 <div className="flex flex-row gap-2">
                     <div>
                         <h1 className="text-2xl font-bold">Tasks</h1>
@@ -214,8 +214,6 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                             Tasks are the core of your focus and productivity. They help you break down your goals into actionable steps.
                         </p>
                     </div>
-
-
 
                 </div>
                 <div className="flex gap-2">
