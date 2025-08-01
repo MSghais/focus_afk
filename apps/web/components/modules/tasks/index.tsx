@@ -12,6 +12,8 @@ import { ButtonPrimary } from '../../small/buttons';
 import { Task } from '../../../types';
 import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
+import TaskFilter, { TaskFilterOptions } from './TaskFilter';
+import TaskOrderManager from './TaskOrderManager';
 
 
 interface ITasksOverviewProps {
@@ -33,6 +35,9 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
     const [syncing, setSyncing] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
+    const [customOrder, setCustomOrder] = useState<string[]>([]);
+    const [showFilters, setShowFilters] = useState(false);
 
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,9 +83,31 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
         setEditingTask(null);
     };
 
+    const handleArchiveTask = async (task: Task) => {
+        if (!task.id) return;
+
+        logClickedEvent('task_archive');
+        await updateTask(task.id, {
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            category: task.category,
+            dueDate: task.dueDate,
+            estimatedMinutes: task.estimatedMinutes,
+            isArchived: true
+        });
+
+        setEditingTask(null);
+    };
+
     useEffect(() => {
         handleRefreshTasks();
     }, []);
+
+    // Update filtered tasks when tasks change
+    useEffect(() => {
+        setFilteredTasks(tasks);
+    }, [tasks]);
 
     const handleDeleteTask = async (id: string | number) => {
         if (confirm('Are you sure you want to delete this task?')) {
@@ -201,15 +228,20 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
                     <button
                         onClick={() => setShowAddForm(!showAddForm)}
-                        className="flex items-center gap-2 px-4 py-2 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                        className="border border-[var(--brand-primary)] flex items-center gap-2 px-4 py-2 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-secondary)] transition"
                     >
                         <Icon name="add" />
                         Add
                     </button>
 
-                    <button>
-                        
+
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
+                    >
+                        <Icon name="filter" />
                     </button>
+
 
                     <button onClick={() =>
                         showModal(<div className="flex flex-col gap-2">
@@ -259,6 +291,24 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                 </div>
             </div>
             {error && <div className="text-red-600 mb-2">{error}</div>}
+
+            {/* Filter Components */}
+            {showFilters && (
+                <div className="mb-6 space-y-4">
+                    <TaskFilter
+                        tasks={tasks}
+                        onFilterChange={setFilteredTasks}
+                        customOrder={customOrder}
+                        onCustomOrderChange={setCustomOrder}
+                        className="mb-4"
+                    />
+                    <TaskOrderManager
+                        tasks={tasks}
+                        onOrderChange={setCustomOrder}
+                        className="mb-4"
+                    />
+                </div>
+            )}
 
             {/* Add Task Form */}
             {showAddForm && (
@@ -348,16 +398,20 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
             {/* Tasks List */}
             <div className="flex-1 overflow-y-auto">
-                {tasks.length === 0 ? (
+                {filteredTasks.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                        <p className="text-lg mb-2">No tasks yet</p>
-                        <p className="text-sm">Create your first task to get started!</p>
+                        <p className="text-lg mb-2">
+                            {tasks.length === 0 ? 'No tasks yet' : 'No tasks match your filters'}
+                        </p>
+                        <p className="text-sm">
+                            {tasks.length === 0 ? 'Create your first task to get started!' : 'Try adjusting your filters or search terms.'}
+                        </p>
                     </div>
                 ) : (
                     <div
                         className="space-y-4"
                     >
-                        {tasks.map((task) => (
+                        {filteredTasks.map((task) => (
                             <div
                                 key={task.id}
                                 className={`p-4 border rounded-lg transition-all ${task.completed ? 'bg-gray-500 opacity-75' : 'hover:shadow-md'
@@ -503,6 +557,12 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                 className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
                                             >
                                                 🗑️ Delete
+                                            </button>
+                                        </div>
+
+                                        <div>
+                                            <button onClick={() => handleArchiveTask(task)}>
+                                                Archive
                                             </button>
                                         </div>
                                     </div>

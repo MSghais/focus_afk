@@ -1,6 +1,6 @@
 import React from "react";
 
-type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" ;
+type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" | "filter" | "sort" | "chevron-up" | "chevron-down" | "drag" | "sort-asc" | "sort-desc" ;
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   add: (
@@ -152,6 +152,48 @@ const iconPaths: Record<IconName, React.ReactNode> = {
       <path d="M19 21v-2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2" fill="none" stroke="currentColor" strokeWidth="2"/>
       <path d="M22 9l-10-7-10 7L2 11v12h20V11L22 9z" fill="none" stroke="currentColor" strokeWidth="2"/>
       <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" strokeWidth="2"/>
+    </>
+  ),
+  filter: (
+    <>
+      <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  sort: (
+    <>
+      <path d="M3 6h18M6 12h12M9 18h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "chevron-up": (
+    <>
+      <polyline points="18,15 12,9 6,15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "chevron-down": (
+    <>
+      <polyline points="6,9 12,15 18,9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  drag: (
+    <>
+      <circle cx="9" cy="5" r="1" fill="currentColor"/>
+      <circle cx="9" cy="12" r="1" fill="currentColor"/>
+      <circle cx="9" cy="19" r="1" fill="currentColor"/>
+      <circle cx="15" cy="5" r="1" fill="currentColor"/>
+      <circle cx="15" cy="12" r="1" fill="currentColor"/>
+      <circle cx="15" cy="19" r="1" fill="currentColor"/>
+    </>
+  ),
+  "sort-asc": (
+    <>
+      <path d="M3 6h18M6 12h12M9 18h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline points="18,15 12,9 6,15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </>
+  ),
+  "sort-desc": (
+    <>
+      <path d="M3 6h18M6 12h12M9 18h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <polyline points="6,9 12,15 18,9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </>
   )
 };

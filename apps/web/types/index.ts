@@ -69,6 +69,7 @@ export interface Task {
     actualMinutes?: number;
     goalId?: number; 
     goalIds?: number[];
+    isArchived?: boolean;   
 }
 
 export interface Goal {
