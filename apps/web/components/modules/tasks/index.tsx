@@ -13,8 +13,12 @@ import { Task } from '../../../types';
 import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
 
-export default function Tasks() {
-    const { showModal , showToast} = useUIStore();
+
+interface ITasksOverviewProps {
+    isViewGoalsRedirect?: boolean;
+}
+export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewProps) {
+    const { showModal, showToast } = useUIStore();
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
         title: '',
@@ -187,19 +191,25 @@ export default function Tasks() {
                 </div>
                 <div className="flex gap-2">
 
-                    <div className="flex flex-col gap-2">
-                        <Link href="/goals" className="flex flex-row gap-2 text-sm text-gray-500 shadow-md p-2 rounded-lg hover:bg-gray-100 transition border border-gray-200 max-w-20 max-h-auto text-center">
-                            🎯 Goals
-                        </Link>
-                    </div>
+                    {isViewGoalsRedirect && (
+                        <div className="flex flex-col gap-2">
+                            <Link href="/goals" className="flex flex-row gap-2 text-sm text-gray-500 shadow-md p-2 rounded-lg hover:bg-gray-100 transition border border-gray-200 max-w-20 max-h-auto text-center">
+                                🎯 Goals
+                            </Link>
+                        </div>
+                    )}
 
                     <button
-                                onClick={() => setShowAddForm(!showAddForm)}
-                                className="flex items-center gap-2 px-4 py-2 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-secondary)] transition"
-                            >
-                                <Icon name="add" />
-                                Add
-                            </button>
+                        onClick={() => setShowAddForm(!showAddForm)}
+                        className="flex items-center gap-2 px-4 py-2 text-[var(--brand-primary)] rounded-lg hover:bg-[var(--brand-secondary)] transition"
+                    >
+                        <Icon name="add" />
+                        Add
+                    </button>
+
+                    <button>
+                        
+                    </button>
 
                     <button onClick={() =>
                         showModal(<div className="flex flex-col gap-2">
@@ -344,8 +354,8 @@ export default function Tasks() {
                         <p className="text-sm">Create your first task to get started!</p>
                     </div>
                 ) : (
-                    <div 
-                    className="space-y-4"
+                    <div
+                        className="space-y-4"
                     >
                         {tasks.map((task) => (
                             <div
@@ -388,6 +398,17 @@ export default function Tasks() {
                                                 placeholder="Category"
                                             />
                                         </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Due Date</label>
+                                            <input
+                                                type="date"
+                                                value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                                                onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                                                className="w-full p-2 border rounded-md"
+                                            />
+                                        </div>
+
                                         <div className="flex gap-2">
                                             <button
                                                 type="submit"
@@ -415,7 +436,7 @@ export default function Tasks() {
                                                         console.log('toggleTaskComplete', task.id);
                                                         if (task.id) {
                                                             console.log('task.id', task.id);
-                                                            const id = typeof task.id === 'string' ?    task.id : String(task.id);
+                                                            const id = typeof task.id === 'string' ? task.id : String(task.id);
                                                             const res = await toggleTaskComplete(id, !task.completed);
                                                             console.log('res', res);
 
