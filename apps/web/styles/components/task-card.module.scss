@@ -1,0 +1,617 @@
+.taskCard {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--brand-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  // Completed state
+  &.completed {
+    background: var(--afk-success-alpha);
+    border-color: var(--afk-success);
+    opacity: 0.8;
+
+    .taskTitle {
+      text-decoration: line-through;
+      color: var(--text-secondary);
+    }
+
+    .taskDescription {
+      color: var(--text-secondary);
+    }
+
+    .checkbox {
+      background-color: var(--afk-success);
+      border-color: var(--afk-success);
+    }
+  }
+
+  // Archived state
+  &.archived {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    opacity: 0.6;
+
+    .taskTitle {
+      color: var(--text-secondary);
+    }
+
+    .taskDescription {
+      color: var(--text-secondary);
+    }
+  }
+
+  // Compact mode
+  &.compact {
+    padding: 0.75rem;
+
+    .taskHeader {
+      margin-bottom: 0.5rem;
+    }
+
+    .descriptionSection {
+      display: none;
+    }
+
+    .compactDescription {
+      display: block;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+  }
+
+  .compactDescription {
+    display: none;
+  }
+
+  .taskHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    width: 100%;
+
+    .taskMain {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 0; // Allow text truncation
+    }
+
+    .checkboxContainer {
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+
+      .checkbox {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.25rem;
+        background-color: var(--bg-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        appearance: none;
+        position: relative;
+
+        &:checked {
+          background-color: var(--afk-success);
+          border-color: var(--afk-success);
+
+          &::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+          }
+        }
+
+        &:hover {
+          border-color: var(--afk-success);
+        }
+
+        &:focus {
+          outline: none;
+          ring: 2px;
+          ring-color: var(--afk-success);
+          ring-offset: 2px;
+        }
+      }
+    }
+
+    .taskInfo {
+      flex: 1;
+      min-width: 0;
+
+      .taskTitleRow {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+
+        .taskTitle {
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0;
+          line-height: 1.4;
+          flex: 1;
+          min-width: 0;
+
+          &.strikethrough {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+          }
+        }
+
+        .priorityBadge {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.5rem;
+          font-size: 0.75rem;
+          font-weight: 500;
+          flex-shrink: 0;
+
+          .priorityIcon {
+            font-size: 0.875rem;
+          }
+
+          .priorityText {
+            text-transform: capitalize;
+          }
+        }
+
+        .statusBadge {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.5rem;
+          font-size: 0.75rem;
+          font-weight: 500;
+          flex-shrink: 0;
+
+          &.completedBadge {
+            background: var(--afk-success-alpha);
+            color: var(--afk-success);
+            border: 1px solid var(--afk-success);
+          }
+
+          &.archivedBadge {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+          }
+        }
+      }
+
+      .taskMeta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+
+        .category,
+        .timeEstimate,
+        .dueDate {
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          padding: 0.25rem 0.5rem;
+          background: var(--bg-secondary);
+          border-radius: 0.375rem;
+          border: 1px solid var(--border-color);
+        }
+      }
+    }
+  }
+
+  // Description Section
+  .descriptionSection {
+    margin-bottom: 0.75rem;
+
+    .descriptionToggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.375rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      justify-content: flex-start;
+
+      &:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--brand-primary);
+      }
+
+      &:focus {
+        outline: 2px solid var(--brand-primary);
+        outline-offset: 2px;
+      }
+    }
+
+    .descriptionContent {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+
+      p {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+    }
+  }
+
+  // Progress Container
+  .progressContainer {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+
+    .progressBar {
+      width: 100%;
+      height: 0.25rem;
+      background: var(--bg-tertiary);
+      border-radius: 0.125rem;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+
+      .progressFill {
+        height: 100%;
+        background: var(--afk-success);
+        transition: width 0.3s ease;
+      }
+    }
+
+    .progressText {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+  }
+
+  // Action Buttons Bottom
+  .actionButtonsBottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+
+    .mobileActions {
+      display: none;
+      position: relative;
+
+      .mobileMenuButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.375rem;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--bg-hover);
+          border-color: var(--brand-primary);
+          color: var(--text-primary);
+        }
+      }
+
+      .mobileMenu {
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10;
+        min-width: 150px;
+        padding: 0.5rem 0;
+        margin-bottom: 0.25rem;
+
+        .mobileAction {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          border: none;
+          background: none;
+          color: var(--text-primary);
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+
+          &:hover {
+            background: var(--bg-hover);
+          }
+
+          &.deleteAction {
+            color: var(--afk-error);
+          }
+        }
+      }
+    }
+
+    .desktopActions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      flex: 1;
+
+      .actionButton {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 0.375rem;
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+
+        &:hover {
+          background: var(--bg-hover);
+          border-color: var(--brand-primary);
+          color: var(--text-primary);
+        }
+
+        &.editButton {
+          &:hover {
+            border-color: var(--afk-info);
+            color: var(--afk-info);
+          }
+        }
+
+        &.completeButton {
+          &:hover {
+            border-color: var(--afk-success);
+            color: var(--afk-success);
+          }
+        }
+
+        &.undoButton {
+          &:hover {
+            border-color: var(--afk-warning);
+            color: var(--afk-warning);
+          }
+        }
+
+        &.archiveButton {
+          &:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+          }
+        }
+
+        &.duplicateButton {
+          &:hover {
+            border-color: var(--afk-info);
+            color: var(--afk-info);
+          }
+        }
+
+        &.deleteButton {
+          &:hover {
+            border-color: var(--afk-error);
+            color: var(--afk-error);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .taskCard {
+    padding: 0.75rem;
+
+    .taskHeader {
+      gap: 0.5rem;
+      flex-direction: column;
+      align-items: stretch;
+
+      .taskMain {
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .taskInfo {
+        .taskTitleRow {
+          gap: 0.25rem;
+          margin-bottom: 0.25rem;
+
+          .taskTitle {
+            font-size: 0.875rem;
+            width: 100%;
+          }
+
+          .priorityBadge,
+          .statusBadge {
+            padding: 0.125rem 0.375rem;
+            font-size: 0.625rem;
+          }
+        }
+
+        .taskMeta {
+          gap: 0.5rem;
+          font-size: 0.625rem;
+
+          .category,
+          .timeEstimate,
+          .dueDate {
+            padding: 0.125rem 0.375rem;
+          }
+        }
+      }
+    }
+
+    .descriptionSection {
+      .descriptionToggle {
+        padding: 0.375rem;
+        font-size: 0.75rem;
+      }
+
+      .descriptionContent {
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+
+        p {
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    .progressContainer {
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+
+      .progressText {
+        font-size: 0.625rem;
+      }
+    }
+
+    .actionButtonsBottom {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+
+      .mobileActions {
+        display: block;
+        align-self: flex-end;
+      }
+
+      .desktopActions {
+        display: none;
+      }
+    }
+  }
+}
+
+// Tablet adjustments
+@media (min-width: 769px) and (max-width: 1024px) {
+  .taskCard {
+    .actionButtonsBottom {
+      .desktopActions {
+        .actionButton {
+          padding: 0.375rem 0.5rem;
+          font-size: 0.625rem;
+
+          span {
+            display: none; // Hide text on tablet, show only icons
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .taskCard {
+    &.completed {
+      background: rgba(var(--afk-success-rgb), 0.1);
+    }
+
+    &.archived {
+      background: rgba(var(--text-secondary-rgb), 0.05);
+    }
+
+    .taskHeader {
+      .checkboxContainer {
+        .checkbox {
+          &:checked {
+            background-color: var(--afk-success);
+          }
+        }
+      }
+    }
+
+    .descriptionSection {
+      .descriptionToggle {
+        background: var(--bg-tertiary);
+      }
+
+      .descriptionContent {
+        background: var(--bg-tertiary);
+      }
+    }
+  }
+}
+
+// Focus states for accessibility
+.taskCard {
+  &:focus-within {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+  }
+
+  .actionButton:focus,
+  .mobileMenuButton:focus,
+  .checkbox:focus,
+  .descriptionToggle:focus {
+    outline: 2px solid var(--brand-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Animation for mobile menu
+.mobileMenu {
+  animation: slideIn 0.2s ease-out;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+} 
