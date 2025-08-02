@@ -23,7 +23,8 @@ export class GoogleCalendarService {
   // Encrypt sensitive data before storing
   private encrypt(text: string): string {
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher('aes-256-cbc', this.ENCRYPTION_KEY);
+    // Use createCipheriv instead of deprecated createCipher
+    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(this.ENCRYPTION_KEY), iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     return iv.toString('hex') + ':' + encrypted;
@@ -34,7 +35,8 @@ export class GoogleCalendarService {
     const textParts = encryptedText.split(':');
     const iv = Buffer.from(textParts.shift()!, 'hex');
     const encryptedData = textParts.join(':');
-    const decipher = crypto.createDecipher('aes-256-cbc', this.ENCRYPTION_KEY);
+    // Use createDecipheriv instead of deprecated createDecipher
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(this.ENCRYPTION_KEY), iv);
     let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
@@ -118,7 +120,7 @@ export class GoogleCalendarService {
       const encryptedAccessToken = this.encrypt(tokens.access_token);
       console.log('  - Access token encrypted successfully');
       
-      let encryptedRefreshToken = null;
+      let encryptedRefreshToken: string | null = null;
       if (tokens.refresh_token) {
         console.log('  - Encrypting refresh token...');
         encryptedRefreshToken = this.encrypt(tokens.refresh_token);
@@ -382,11 +384,12 @@ export class GoogleCalendarService {
     end: { dateTime: string; timeZone?: string };
     attendees?: { email: string }[];
     reminders?: { useDefault: boolean };
+    calendarId?: string;
   }): Promise<calendar_v3.Schema$Event> {
     const calendar = await this.getCalendarClient(userId);
     
     const response = await calendar.events.insert({
-      calendarId: 'primary',
+      calendarId: eventData.calendarId || 'primary',
       requestBody: eventData
     });
 
@@ -400,16 +403,17 @@ export class GoogleCalendarService {
     maxResults?: number;
     singleEvents?: boolean;
     orderBy?: string;
+    calendarId?: string;
   } = {}): Promise<calendar_v3.Schema$Event[]> {
     const calendar = await this.getCalendarClient(userId);
     
     const response = await calendar.events.list({
-      calendarId: 'primary',
+      calendarId: options.calendarId || 'primary',
       timeMin: options.timeMin || new Date().toISOString(),
       timeMax: options.timeMax,
       maxResults: options.maxResults || 10,
       singleEvents: options.singleEvents || true,
-      orderBy: options.orderBy || 'startTime'
+      orderBy: options.orderBy || 'startTime',
     });
 
     return response.data.items || [];

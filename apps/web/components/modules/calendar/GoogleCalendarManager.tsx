@@ -111,9 +111,10 @@ export default function GoogleCalendarManager() {
     try {
       setLoadingEvents(true);
       const response = await api.getCalendarEvents({
-        timeMin: new Date(dateRange.start).toISOString(),
-        timeMax: new Date(dateRange.end + 'T23:59:59').toISOString(),
-        maxResults: 50
+        timeMin: dateRange.start ? new Date(dateRange.start).toISOString() : undefined,
+        timeMax: dateRange.end ? new Date(dateRange.end + 'T23:59:59').toISOString() : undefined,
+        maxResults: 50,
+        calendarId: selectedCalendar
       });
 
       if (response.success && response.data) {
@@ -293,7 +294,7 @@ export default function GoogleCalendarManager() {
               onClick={() => setSelectedCalendar(calendar.id)}
               className={`p-3 border rounded-lg text-left transition-colors ${
                 selectedCalendar === calendar.id
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-blue-500 border border-2 border-[var(--brand-primary)]'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -313,7 +314,7 @@ export default function GoogleCalendarManager() {
       {selectedCalendar && (
         <div className="mb-6 p-4 border rounded-lg">
           <h2 className="text-lg font-medium mb-4">Date Range</h2>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Start Date</label>
               <input
@@ -336,10 +337,10 @@ export default function GoogleCalendarManager() {
               <ButtonPrimary
                 onClick={loadEvents}
                 disabled={loadingEvents}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm"
               >
                 <Icon name="refresh" />
-                {loadingEvents ? 'Loading...' : 'Load Events'}
+                {loadingEvents ? 'Loading...' : 'Load'}
               </ButtonPrimary>
             </div>
           </div>
@@ -355,7 +356,7 @@ export default function GoogleCalendarManager() {
             </h2>
             <ButtonPrimary
               onClick={saveAllEventsAsTasks}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              className="flex items-center gap-2 "
             >
               <Icon name="add" />
               Save All as Tasks
@@ -416,7 +417,7 @@ export default function GoogleCalendarManager() {
       {selectedCalendar && !loadingEvents && events.length === 0 && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-6xl mb-4">📅</div>
+            {/* <div className="text-6xl mb-4">📅</div> */}
             <h3 className="text-lg font-medium mb-2">No Events Found</h3>
             <p className="text-gray-600">
               No events found in the selected date range. Try adjusting the dates or selecting a different calendar.

@@ -1334,12 +1334,13 @@ class ApiService {
     timeMin?: string;
     timeMax?: string;
     maxResults?: number;
+    calendarId?: string;
   }): Promise<ApiResponse<any[]>> {
     const params = new URLSearchParams();
     if (options?.timeMin) params.append('timeMin', options.timeMin);
     if (options?.timeMax) params.append('timeMax', options.timeMax);
     if (options?.maxResults) params.append('maxResults', options.maxResults.toString());
-
+    if (options?.calendarId) params.append('calendarId', options.calendarId);
     return this.request<any[]>(`/calendar/events?${params.toString()}`);
   }
 

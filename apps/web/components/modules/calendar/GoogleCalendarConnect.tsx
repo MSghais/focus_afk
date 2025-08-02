@@ -235,7 +235,7 @@ export default function GoogleCalendarConnect() {
       {connectionStatus.isConnected ? (
         <div className="space-y-6">
           {/* Connection Status */}
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 border  rounded-lg">
             <div className="flex items-center gap-2 mb-3">
               <Icon name="check" />
               <span className="font-medium text-green-800">Connected</span>
@@ -260,7 +260,7 @@ export default function GoogleCalendarConnect() {
               <ButtonPrimary
                 onClick={refreshToken}
                 disabled={refreshing}
-                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+                className="flex items-center gap-2  hover:bg-orange-700"
               >
                 <Icon name="refresh" />
                 {refreshing ? 'Refreshing...' : 'Refresh Token'}
@@ -269,7 +269,7 @@ export default function GoogleCalendarConnect() {
             
             <ButtonPrimary
               onClick={disconnectGoogleCalendar}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
+              className="flex items-center gap-2  hover:bg-red-700"
             >
               <Icon name="close" />
               Disconnect
@@ -277,8 +277,8 @@ export default function GoogleCalendarConnect() {
           </div>
 
           {/* Security Info */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-800 mb-2">🔒 Security Information</h3>
+          <div className="p-4 border border-blue-200 rounded-lg">
+            <h3 className="font-medium  mb-2">🔒 Security Information</h3>
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• Your access tokens are encrypted before storage</li>
               <li>• Tokens are automatically refreshed when needed</li>

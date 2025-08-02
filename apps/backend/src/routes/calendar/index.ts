@@ -23,33 +23,51 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
   // Handle Google Calendar OAuth callback
   fastify.post('/google/callback', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
+      console.log('🔄 Backend: Handling Google OAuth callback...');
+      
       const { code } = request.body as { code: string };
       const userId = request.user?.id;
 
-      
+      console.log('  - Received code:', code ? `${code.substring(0, 20)}...` : 'null');
+      console.log('  - User ID:', userId);
+
       if (!userId) {
+        console.log('  - ❌ User not authenticated');
         return reply.status(401).send({ 
           success: false, 
           error: 'User not authenticated' 
         });
       }
 
+      console.log('  - ✅ User authenticated, exchanging code for tokens...');
+      
       // Exchange code for tokens
       const tokens = await googleCalendarService.getTokensFromCode(code);
+      
+      console.log('  - ✅ Tokens received from Google:');
+      console.log('    * Has access token:', !!tokens.access_token);
+      console.log('    * Has refresh token:', !!tokens.refresh_token);
+      console.log('    * Expiry date:', tokens.expiry_date ? new Date(tokens.expiry_date) : 'No expiry');
+      
+      console.log('  - ✅ Storing tokens in database...');
 
-      console.log('tokens', tokens);
       // Store tokens securely in database
       await googleCalendarService.storeTokens(userId, tokens);
+      
+      console.log('  - ✅ Tokens stored successfully, returning success response');
 
       return { 
         success: true, 
         message: 'Google Calendar connected successfully' 
       };
     } catch (error) {
-      console.error('Error handling Google callback:', error);
+      console.error('❌ Backend: Error handling Google callback:', error);
+      console.error('  - Error name:', error.name);
+      console.error('  - Error message:', error.message);
+      
       return reply.status(500).send({ 
         success: false, 
-        error: 'Failed to connect Google Calendar' 
+        error: error.message || 'Failed to connect Google Calendar' 
       });
     }
   });
@@ -184,7 +202,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
   fastify.get('/events', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
-      const { timeMin, timeMax, maxResults } = request.query as any;
+      const { timeMin, timeMax, maxResults, calendarId } = request.query as any;
 
       if (!userId) {
         return reply.status(401).send({ 
@@ -196,7 +214,8 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
       const events = await googleCalendarService.getEvents(userId, {
         timeMin,
         timeMax,
-        maxResults: parseInt(maxResults) || 10
+        maxResults: parseInt(maxResults) || 10,
+        calendarId
       });
 
       return { success: true, data: events };
