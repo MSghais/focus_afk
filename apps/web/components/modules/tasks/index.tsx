@@ -15,6 +15,7 @@ import { useUIStore } from '../../../store/uiStore';
 import TaskFilter, { TaskFilterOptions } from './TaskFilter';
 import TaskOrderManager from './TaskOrderManager';
 import TaskCalendarEnhanced from './TaskCalendarEnhanced';
+import { api } from '../../../lib/api';
 
 
 interface ITasksOverviewProps {
@@ -194,6 +195,51 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString();
+    };
+
+    const syncTaskToCalendar = async (task: Task) => {
+        if (!task.dueDate) {
+            showToast({
+                message: 'Cannot sync task',
+                description: 'Task must have a due date to sync to calendar',
+                type: 'error',
+                duration: 3000
+            });
+            return;
+        }
+
+        try {
+            const startTime = new Date(task.dueDate);
+            const endTime = new Date(startTime.getTime() + (task.estimatedMinutes || 30) * 60 * 1000);
+
+            await api.createCalendarEvent({
+                summary: task.title,
+                description: task.description || `Task: ${task.title}`,
+                start: {
+                    dateTime: startTime.toISOString(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                },
+                end: {
+                    dateTime: endTime.toISOString(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                }
+            });
+
+            showToast({
+                message: 'Task synced to calendar',
+                description: 'Task has been added to your Google Calendar',
+                type: 'success',
+                duration: 3000
+            });
+        } catch (error) {
+            console.error('Failed to sync task to calendar:', error);
+            showToast({
+                message: 'Failed to sync task',
+                description: 'Please check your Google Calendar connection',
+                type: 'error',
+                duration: 5000
+            });
+        }
     };
 
     if (loading.tasks) {
@@ -683,6 +729,17 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                     >
                                                         🗑️ Delete
                                                     </button>
+                                                    
+                                                    {task.dueDate && (
+                                                        <button
+                                                            onClick={() => syncTaskToCalendar(task)}
+                                                            className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
+                                                            title="Sync to Google Calendar"
+                                                        >
+                                                            📅 Sync
+                                                        </button>
+                                                    )}
+                                                    
                                                     <div>
                                                         <button
                                                             className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"

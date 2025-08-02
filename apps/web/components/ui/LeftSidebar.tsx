@@ -21,6 +21,7 @@ const LeftSidebar = () => {
     { id: 'journal', label: 'Journal', icon: '📝' },
     { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'goals', label: 'Goals', icon: '🎯' },
+    { id: 'calendar/manager', label: 'Calendar', icon: '📅' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     { id: 'profile', label: 'Profile', icon: '👤' },
     // { id: 'learning', label: 'Learning', icon: '🎓' },
