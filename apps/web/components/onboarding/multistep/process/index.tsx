@@ -15,7 +15,7 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 'welcome',
-    title: 'Welcome to FocusFi',
+    title: 'Welcome to Focus AFK',
     subtitle: 'Your Journey to Focused Success',
     description: 'Transform your productivity with AI-powered focus tools, goal tracking, and gamified achievements.',
     image: '/circles.svg',
@@ -49,7 +49,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: 'ready',
     title: "You're All Set!",
     subtitle: 'Ready to Focus and Succeed',
-    description: 'Your personalized focus environment is ready. Start your first focused session and begin your journey to success.',
+    description: 'Take control back',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop',
     actionText: 'Start Focusing'
   }
@@ -107,7 +107,7 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
   }
 
   return (
-    <div className={styles.container}>
+    <div >
       {/* Progress Bar */}
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>

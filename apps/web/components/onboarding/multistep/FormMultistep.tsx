@@ -10,7 +10,9 @@ import { Goal } from "../../../types";
 import { useUIStore } from "../../../store/uiStore";
 
 import { logClickedEvent } from '../../../lib/analytics';
-import router from "next/router";
+import { useRouter } from "next/navigation";
+import PrivyUser from "../../profile/PrivyUser";
+import ProfileUser from "../../profile/ProfileUser";
 
 interface Step {
   id: string;
@@ -26,6 +28,12 @@ const STEPS: Step[] = [
     title: 'Welcome',
     description: 'Get started with FocusFi',
     component: OnboardingProcess
+  },
+  {
+    id: 'login',
+    title: 'Login',
+    description: 'Login to your account',
+    component: PrivyUser
   },
   {
     id: 'goals',
@@ -53,21 +61,23 @@ interface FormMultistepProps {
   showOnboarding?: boolean;
 }
 
-export default function FormMultistep({ 
-  onComplete, 
+export default function FormMultistep({
+  onComplete,
   onStepChange,
-  showOnboarding = true 
+  showOnboarding = true
 }: FormMultistepProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const { userConnected, isAuthenticated } = useAuthStore();
   const { tasks, addGoal, addTask } = useFocusAFKStore();
   const { showToast } = useUIStore();
+  const router = useRouter();
   // Skip onboarding if not needed
   useEffect(() => {
     if (!showOnboarding && currentStep === 0) {
       setCurrentStep(1);
     }
   }, [showOnboarding, currentStep]);
+
 
   const handleNext = () => {
     console.log("currentStep", currentStep);
@@ -77,14 +87,14 @@ export default function FormMultistep({
       onStepChange?.(nextStep);
 
       console.log("nextStep", nextStep);
-      if( nextStep === 3 ) {
-        router.push("/timer")
-        onComplete?.();
+      if (nextStep === 5) {
+        // router.push("/timer")
+        // onComplete?.();
       }
     } else {
-      showToast( {message: "Onboarding complete", type: "success"} );
-      onComplete?.();
-      router.push("/timer")
+      // showToast( {message: "Onboarding complete", type: "success"} );
+      // onComplete?.();
+      // router.push("/timer")
 
     }
   };
@@ -117,11 +127,19 @@ export default function FormMultistep({
       category: goal.category,
       relatedTasks: goal.relatedTasks,
     });
-    if( newGoal ) {
-      showToast( {message: "Goal created successfully", type: "success"} );
+    if (newGoal) {
+      showToast({ message: "Goal created successfully", type: "success" });
     }
   };
 
+
+  const handleOnboardEnd = () => {
+    logClickedEvent('onboarding_complete');
+    showToast({ message: "Onboarding complete", type: "success" });
+    localStorage?.setItem('onboarding_complete', 'true');
+    onComplete?.();
+    router.push("/timer")
+  }
   const currentStepData = STEPS[currentStep];
   const isLastStep = currentStep === STEPS.length - 1;
   const isFirstStep = currentStep === 0;
@@ -129,20 +147,21 @@ export default function FormMultistep({
   // If it's the onboarding step, render the onboarding process
   if (currentStep === 0 && showOnboarding) {
     return (
-      <OnboardingProcess 
+      <OnboardingProcess
         onComplete={handleOnboardingComplete}
         onStepChange={(stepIndex) => onStepChange?.(stepIndex)}
       />
     );
   }
 
+  console.log("currentStep", currentStep);
   return (
     <div className={styles.container}>
       {/* Progress Header */}
       <div className={styles.header}>
         <div className={styles.progressContainer}>
           <div className={styles.progressBar}>
-            <div 
+            <div
               className={styles.progressFill}
               style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
             />
@@ -164,9 +183,19 @@ export default function FormMultistep({
           </div>
 
           {/* Step Component */}
+
           <div className={styles.stepComponent}>
             {currentStep === 1 && (
-              <GoalCreate 
+              <div>
+                <ProfileUser isLoggoutViewActive={true} />
+                <button onClick={() => {
+                  logClickedEvent('onboarding_skip_login');
+                  handleNext();
+                }}>Skip</button>
+              </div>
+            )}
+            {currentStep === 2 && (
+              <GoalCreate
                 onNext={handleNext}
                 tasks={tasks.map((task) => ({
                   id: task.id || '',
@@ -175,30 +204,29 @@ export default function FormMultistep({
                 onCreate={handleCreateGoal}
               />
             )}
-            
-            {currentStep === 2 && (
-              <CreateTask onNext={handleNext} />
-            )}
-            
+
             {currentStep === 3 && (
+              <CreateTask onNext={() => {
+                logClickedEvent('onboarding_create_task');
+                handleNext();
+              }} />
+            )}
+
+            {currentStep === 4 && (
               <div className={styles.completionStep}>
                 <div className={styles.completionIcon}>
                   <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                   </svg>
                 </div>
                 <h2 className={styles.completionTitle}>You're All Set!</h2>
                 <p className={styles.completionDescription}>
                   Your focus environment is ready. Start your first focused session and begin your journey to success.
                 </p>
-                <button 
+                <button
                   className={styles.completionButton}
-                  onClick={() => {
-                    onComplete?.();
-                    showToast( {message: "Onboarding complete", type: "success"} );
-                    router.push("/timer")
-                  }}
+                  onClick={handleOnboardEnd}
                 >
                   Start Focusing
                 </button>
@@ -212,27 +240,27 @@ export default function FormMultistep({
       <div className={styles.navigation}>
         <div className={styles.navButtons}>
           {!isFirstStep && (
-            <button 
+            <button
               className={styles.backButton}
               onClick={handlePrevious}
               aria-label="Previous step"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Back
             </button>
           )}
-          
+
           {!isLastStep && (
-            <button 
+            <button
               className={styles.nextButton}
               onClick={handleNext}
               aria-label="Next step"
             >
               Next
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )}
@@ -250,7 +278,7 @@ export default function FormMultistep({
               <span className={styles.indicatorNumber}>
                 {index < currentStep ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
                   index + 1
