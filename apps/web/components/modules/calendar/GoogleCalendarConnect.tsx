@@ -6,6 +6,7 @@ import { useUIStore } from '../../../store/uiStore';
 import { ButtonPrimary } from '../../small/buttons';
 import { Icon } from '../../small/icons';
 import { isUserAuthenticated } from '../../../lib/auth';
+import { useAuthStore } from '../../../store/auth';
 
 interface ConnectionStatus {
   isConnected: boolean;
@@ -22,6 +23,7 @@ export default function GoogleCalendarConnect() {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [showOAuthHelp, setShowOAuthHelp] = useState(false);
 
+  const { isGoogleCalendarConnected ,setIsGoogleCalendarConnected} = useAuthStore();
   useEffect(() => {
     checkConnectionStatus();
 
@@ -46,6 +48,7 @@ export default function GoogleCalendarConnect() {
       const response = await api.getGoogleCalendarStatus();
       if (response.success && response.data) {
         setConnectionStatus(response.data);
+        setIsGoogleCalendarConnected(response.data.isConnected);
       }
     } catch (error) {
       console.error('Failed to check connection status:', error);

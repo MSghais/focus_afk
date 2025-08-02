@@ -103,7 +103,7 @@ export default function TaskCard({
 
   return (
     <div
-      className={`${styles.taskCard} ${className} ${taskStatus === 'completed' ? styles.completed : ''
+      className={`${styles.taskCard} border border-gray-200 ${className} ${taskStatus === 'completed' ? styles.completed : ''
         } ${taskStatus === 'archived' ? styles.archived : ''} ${compact ? styles.compact : ''
         }`}
     >

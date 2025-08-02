@@ -8,6 +8,8 @@ import { ButtonPrimary } from '../../small/buttons';
 import { Icon } from '../../small/icons';
 import { isUserAuthenticated } from '../../../lib/auth';
 import { Task } from '../../../types';
+import ProfileUser from '../../profile/ProfileUser';
+import { useAuthStore } from '../../../store/auth';
 
 interface GoogleCalendar {
   id: string;
@@ -44,6 +46,7 @@ interface GoogleCalendarEvent {
 
 export default function GoogleCalendarManager() {
   const { addTask } = useFocusAFKStore();
+  const { isGoogleCalendarConnected, setIsGoogleCalendarConnected } = useAuthStore();
   const { showToast } = useUIStore();
   const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState<string>('');
@@ -70,6 +73,7 @@ export default function GoogleCalendarManager() {
       const statusResponse = await api.getGoogleCalendarStatus();
       if (statusResponse.success) {
         setIsConnected(statusResponse.data?.isConnected || false);
+        setIsGoogleCalendarConnected(statusResponse.data?.isConnected || false);
         
         if (statusResponse.data?.isConnected) {
           // Load calendars
@@ -248,6 +252,7 @@ export default function GoogleCalendarManager() {
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
           <p className="text-lg mb-4">Please login to manage Google Calendar</p>
+          <ProfileUser />
         </div>
       </div>
     );

@@ -108,6 +108,8 @@ export default function GoogleCallbackPage() {
           if (window.opener) {
             window.opener.postMessage({ type: 'GOOGLE_CALENDAR_CONNECTED' }, '*');
           }
+
+          localStorage?.setItem('isGoogleCalendarConnected', 'true');
           
           // Close the popup after a delay
           setTimeout(() => {
