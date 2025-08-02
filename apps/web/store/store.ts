@@ -63,7 +63,7 @@ interface FocusAFKStore {
   syncTasksToBackend: () => Promise<any>;
 
   // Actions - Goals
-  addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addGoal: (goal: Omit<Goal, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Goal | undefined | null>;
   updateGoal: (id: string | number, updates: Partial<Omit<Goal, 'id' | 'createdAt'>>) => Promise<void>;
   deleteGoal: (id: number) => Promise<void>;
   updateGoalProgress: (id: string | number, progress: number) => Promise<void>;
@@ -403,7 +403,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
     },
 
     // Goal actions
-    addGoal: async (goal) => {
+    addGoal: async (goal):Promise<Goal | undefined | null> => {
       const id = await dbUtils.addGoal(goal);
       const newGoal = { ...goal, id, createdAt: new Date(), updatedAt: new Date() };
 
@@ -435,6 +435,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           ...state.goals,
         ],
       }));
+      return newGoal;
     },
 
     updateGoal: async (id: string | number, updates) => {

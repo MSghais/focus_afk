@@ -7,6 +7,10 @@ import CreateTask from "../modules/tasks/CreateTask";
 import Onboarding from "./Onboarding";
 import OnboardingProcess from "./process";
 import styles from './FormMultistep.module.scss';
+import { Goal, Task } from "../../types";
+import { useUIStore } from "../../store/uiStore";
+
+import { logClickedEvent } from '../../lib/analytics';
 
 interface Step {
   id: string;
@@ -56,8 +60,8 @@ export default function FormMultistep({
 }: FormMultistepProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const { userConnected, isAuthenticated } = useAuthStore();
-  const { tasks } = useFocusAFKStore();
-
+  const { tasks, addGoal, addTask } = useFocusAFKStore();
+  const { showToast } = useUIStore();
   // Skip onboarding if not needed
   useEffect(() => {
     if (!showOnboarding && currentStep === 0) {
@@ -92,6 +96,22 @@ export default function FormMultistep({
     handleNext();
   };
 
+  const handleCreateGoal = async (goal: Goal) => {
+    logClickedEvent('goal_create_onboarding');
+    const newGoal = await addGoal({
+      title: goal.title,
+      description: goal.description,
+      targetDate: goal.targetDate,
+      completed: false,
+      progress: 0,
+      category: goal.category,
+      relatedTasks: goal.relatedTasks,
+    });
+    if( newGoal ) {
+      showToast( {message: "Goal created successfully", type: "success"} );
+    }
+  };
+
   const currentStepData = STEPS[currentStep];
   const isLastStep = currentStep === STEPS.length - 1;
   const isFirstStep = currentStep === 0;
@@ -119,7 +139,7 @@ export default function FormMultistep({
           </div>
           <div className={styles.stepInfo}>
             <span className={styles.stepNumber}>Step {currentStep + 1} of {STEPS.length}</span>
-            <span className={styles.stepTitle}>{currentStepData.title}</span>
+            <span className={styles.stepTitle}>{currentStepData?.title}</span>
           </div>
         </div>
       </div>
@@ -129,8 +149,8 @@ export default function FormMultistep({
         <div className={styles.stepContent}>
           {/* Step Header */}
           <div className={styles.stepHeader}>
-            <h1 className={styles.title}>{currentStepData.title}</h1>
-            <p className={styles.description}>{currentStepData.description}</p>
+            <h1 className={styles.title}>{currentStepData?.title}</h1>
+            <p className={styles.description}>{currentStepData?.description}</p>
           </div>
 
           {/* Step Component */}
@@ -142,6 +162,7 @@ export default function FormMultistep({
                   id: task.id || '',
                   title: task.title || ''
                 }))}
+                onCreate={handleCreateGoal}
               />
             )}
             

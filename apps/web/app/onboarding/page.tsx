@@ -3,14 +3,16 @@ import { useState } from 'react';
 import FormMultistep from '../../components/onboarding/FormMultistep';
 import OnboardingProcess from '../../components/onboarding/process';
 import styles from './onboarding.module.scss';
+import { OnboardingFun } from '../../components/onboarding/fun';
 
 export default function OnboardingPage() {
   const [showMultistep, setShowMultistep] = useState(false);
   const [showProcess, setShowProcess] = useState(false);
+  const [showFun, setShowFun] = useState(false);
 
   const handleComplete = () => {
     // Redirect to dashboard or main app
-    window.location.href = '/dashboard';
+    // window.location.href = '/dashboard';
   };
 
   const handleStepChange = (stepIndex: number) => {
@@ -35,6 +37,16 @@ export default function OnboardingPage() {
           <button 
             className={styles.demoButton}
             onClick={() => {
+              setShowFun(true);
+              setShowMultistep(false);
+              setShowProcess(false);
+            }}
+          >
+            Show Fun Form
+          </button>
+          <button 
+            className={styles.demoButton}
+            onClick={() => {
               setShowProcess(true);
               setShowMultistep(false);
             }}
@@ -46,6 +58,7 @@ export default function OnboardingPage() {
             onClick={() => {
               setShowMultistep(false);
               setShowProcess(false);
+              setShowFun(false);
             }}
           >
             Hide All
@@ -76,7 +89,13 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {!showMultistep && !showProcess && (
+        {showFun && (
+          <div className={styles.componentContainer}>
+            <OnboardingFun onComplete={handleComplete} />
+          </div>
+        )}
+
+        {!showMultistep && !showProcess && !showFun && (
           <div className={styles.welcomeMessage}>
             <h1 className={styles.welcomeTitle}>Welcome to FocusFi</h1>
             <p className={styles.welcomeText}>
