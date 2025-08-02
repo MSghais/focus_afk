@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import GoalList from './GoalList';
-import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
+import GoalCreate, { Task as CreateTask } from './GoalCreate';
 import { useFocusAFKStore } from '../../../store/store';
 import { ButtonPrimary } from '../../small/buttons';
 import { Goal, Task } from '../../../types';
@@ -37,23 +37,26 @@ export default function GoalsOverview({}: GoalsOverviewProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { goals, tasks, addGoal, loadGoals, loadTasks, syncGoalsToBackend } = useFocusAFKStore();
-  const { showModal } = useUIStore();
+  const { showModal, showToast } = useUIStore();
 
   useEffect(() => {
     loadGoals();
     loadTasks();
   }, [loadGoals, loadTasks]);
 
-  const handleCreate = async (goal: GoalFormData) => {
-    await addGoal({
-      title: goal.name,
+  const handleCreate = async (goal: Goal) => {
+    const newGoal = await addGoal({
+      title: goal.title,
       description: goal.description,
-      targetDate: goal.targetDate ? new Date(goal.targetDate) : undefined,
+      targetDate: goal.targetDate,
       completed: false,
       progress: 0,
-      category: goal.type,
-      relatedTasks: goal.linkedTaskIds.map(id => typeof id === 'string' ? parseInt(id) : id),
+      category: goal.category,
+      relatedTasks: goal.relatedTasks,
     });
+    if( newGoal ) {
+      showToast( {message: "Goal created successfully", type: "success"} );
+    }
     setShowCreate(false);
     await loadGoals();
   };

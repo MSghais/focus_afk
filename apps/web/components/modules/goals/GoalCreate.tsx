@@ -1,5 +1,15 @@
+'use client';
 import { useState } from 'react';
 import { logClickedEvent } from '../../../lib/analytics';
+import { Goal } from '../../../types';
+
+// export interface GoalFormData {
+//   name: string;
+//   type: string;
+//   description: string;
+//   targetDate: string;
+//   linkedTaskIds: (number | string)[];
+// }
 
 export interface Task {
   id: number | string;
@@ -8,18 +18,18 @@ export interface Task {
 
 export interface GoalCreateProps {
   tasks: Task[];
-  onCreate?: (goal: GoalFormData) => void;
+  onCreate?: (goal: Goal) => void;
   onCancel?: () => void;
   onNext?: () => void;
 }
 
-export interface GoalFormData {
-  name: string;
-  type: string;
-  description: string;
-  targetDate: string;
-  linkedTaskIds: (number | string)[];
-}
+// export interface GoalFormData {
+//   name: string;
+//   type: string;
+//   description: string;
+//   targetDate: string;
+//   linkedTaskIds: (number | string)[];
+// }
 
 const GOAL_TYPES = ["Goal", "KPI", "Aim"];
 
@@ -42,7 +52,13 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext }: G
     e.preventDefault();
     if (!name.trim()) return;
     logClickedEvent('goal_create');
-    onCreate && onCreate({ name, type, description, targetDate, linkedTaskIds });
+    onCreate && onCreate({
+      title: name, description, targetDate: new Date(targetDate),
+      completed: false, progress: 0, category: type,
+      relatedTasks: linkedTaskIds.map(id => typeof id === 'string' ? parseInt(id) : id),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
     onNext && onNext();
   };
 

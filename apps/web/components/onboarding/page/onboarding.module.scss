@@ -1,0 +1,188 @@
+.container {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+}
+
+.demoControls {
+  padding: 2rem;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.demoTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.demoButton {
+  background: var(--brand-primary);
+  color: var(--foreground);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--brand-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.componentArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 0;
+}
+
+.componentContainer {
+  width: 100%;
+  max-width: 800px;
+  background: var(--background);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+}
+
+.componentTitle {
+  padding: 1.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--feed-hover);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.welcomeMessage {
+  text-align: center;
+  max-width: 600px;
+  padding: 2rem;
+}
+
+.welcomeTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcomeText {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--foreground);
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  text-align: left;
+}
+
+.featureList li {
+  padding: 1rem;
+  background: var(--feed-hover);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--foreground);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--brand-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .demoControls {
+    padding: 1.5rem 1rem;
+  }
+
+  .demoTitle {
+    font-size: 1.25rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .demoButton {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .componentArea {
+    padding: 1rem;
+  }
+
+  .welcomeTitle {
+    font-size: 2rem;
+  }
+
+  .welcomeText {
+    font-size: 1rem;
+  }
+
+  .featureList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .demoControls {
+    padding: 1rem 0.5rem;
+  }
+
+  .componentArea {
+    padding: 0.5rem;
+  }
+
+  .welcomeMessage {
+    padding: 1rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.75rem;
+  }
+
+  .featureList li {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+} 
