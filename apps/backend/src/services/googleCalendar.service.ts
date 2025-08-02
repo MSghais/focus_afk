@@ -1,11 +1,13 @@
 import { calendar_v3, google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaClient } from '@prisma/client';
+import crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
 export class GoogleCalendarService {
   private oauth2Client: OAuth2Client;
+  private readonly ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-fallback-encryption-key-32-chars-long';
 
   constructor() {
     // Use the backend URL for the redirect URI
@@ -16,6 +18,26 @@ export class GoogleCalendarService {
       process.env.GOOGLE_CLIENT_SECRET,
       redirectUri
     );
+  }
+
+  // Encrypt sensitive data before storing
+  private encrypt(text: string): string {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher('aes-256-cbc', this.ENCRYPTION_KEY);
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return iv.toString('hex') + ':' + encrypted;
+  }
+
+  // Decrypt sensitive data after retrieving
+  private decrypt(encryptedText: string): string {
+    const textParts = encryptedText.split(':');
+    const iv = Buffer.from(textParts.shift()!, 'hex');
+    const encryptedData = textParts.join(':');
+    const decipher = crypto.createDecipher('aes-256-cbc', this.ENCRYPTION_KEY);
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
   }
 
   // Generate authorization URL
@@ -33,7 +55,7 @@ export class GoogleCalendarService {
     });
   }
 
-  // Exchange authorization code for tokens
+  // Exchange authorization code for tokens and store securely
   async getTokensFromCode(code: string): Promise<{
     access_token: string;
     refresh_token?: string;
@@ -58,28 +80,190 @@ export class GoogleCalendarService {
     }
   }
 
+  // Store tokens securely in database
+  async storeTokens(userId: string, tokens: {
+    access_token: string;
+    refresh_token?: string;
+    expiry_date?: number;
+  }): Promise<void> {
+    try {
+      // Encrypt sensitive tokens before storing
+      const encryptedAccessToken = this.encrypt(tokens.access_token);
+      const encryptedRefreshToken = tokens.refresh_token ? this.encrypt(tokens.refresh_token) : null;
+
+      await prisma.socialAccount.upsert({
+        where: {
+          userId_platform: {
+            userId,
+            platform: 'google_calendar'
+          }
+        },
+        update: {
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          updatedAt: new Date(),
+          metadata: {
+            lastTokenRefresh: new Date().toISOString(),
+            tokenSource: 'oauth_flow'
+          }
+        },
+        create: {
+          userId,
+          platform: 'google_calendar',
+          accountId: 'primary',
+          accessToken: encryptedAccessToken,
+          refreshToken: encryptedRefreshToken,
+          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+          metadata: {
+            lastTokenRefresh: new Date().toISOString(),
+            tokenSource: 'oauth_flow'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error storing tokens:', error);
+      throw new Error('Failed to store tokens securely');
+    }
+  }
+
+  // Get stored tokens and decrypt them
+  private async getStoredTokens(userId: string): Promise<{
+    accessToken: string;
+    refreshToken?: string;
+    expiresAt?: Date;
+  } | null> {
+    try {
+      const socialAccount = await prisma.socialAccount.findUnique({
+        where: {
+          userId_platform: {
+            userId,
+            platform: 'google_calendar'
+          }
+        }
+      });
+
+      if (!socialAccount?.accessToken) {
+        return null;
+      }
+
+      // Decrypt tokens
+      const decryptedAccessToken = this.decrypt(socialAccount.accessToken);
+      const decryptedRefreshToken = socialAccount.refreshToken ? this.decrypt(socialAccount.refreshToken) : undefined;
+
+      return {
+        accessToken: decryptedAccessToken,
+        refreshToken: decryptedRefreshToken,
+        expiresAt: socialAccount.expiresAt || undefined
+      };
+    } catch (error) {
+      console.error('Error retrieving stored tokens:', error);
+      return null;
+    }
+  }
+
   // Create calendar client with user's tokens
   private async getCalendarClient(userId: string): Promise<calendar_v3.Calendar> {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { socialAccounts: true }
-    });
-
-    const googleAccount = user?.socialAccounts.find(
-      account => account.platform === 'google_calendar'
-    );
-
-    if (!googleAccount?.accessToken) {
+    const tokens = await this.getStoredTokens(userId);
+    
+    if (!tokens?.accessToken) {
       throw new Error('Google Calendar not connected');
     }
 
-    this.oauth2Client.setCredentials({
-      access_token: googleAccount.accessToken,
-      refresh_token: googleAccount.refreshToken || undefined,
-      expiry_date: googleAccount.expiresAt?.getTime()
-    });
+    // Check if token is expired and refresh if needed
+    if (tokens.expiresAt && tokens.expiresAt < new Date()) {
+      if (!tokens.refreshToken) {
+        throw new Error('Access token expired and no refresh token available');
+      }
+      
+      // Refresh the token
+      await this.refreshAccessToken(userId);
+      
+      // Get the refreshed tokens
+      const refreshedTokens = await this.getStoredTokens(userId);
+      if (!refreshedTokens?.accessToken) {
+        throw new Error('Failed to refresh access token');
+      }
+      
+      this.oauth2Client.setCredentials({
+        access_token: refreshedTokens.accessToken,
+        refresh_token: refreshedTokens.refreshToken,
+        expiry_date: refreshedTokens.expiresAt?.getTime() || undefined
+      });
+    } else {
+      this.oauth2Client.setCredentials({
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        expiry_date: tokens.expiresAt?.getTime() || undefined
+      });
+    }
 
     return google.calendar({ version: 'v3', auth: this.oauth2Client });
+  }
+
+  // Refresh access token
+  async refreshAccessToken(userId: string): Promise<boolean> {
+    try {
+      const tokens = await this.getStoredTokens(userId);
+      
+      if (!tokens?.refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      this.oauth2Client.setCredentials({
+        refresh_token: tokens.refreshToken
+      });
+
+      const { credentials } = await this.oauth2Client.refreshAccessToken();
+      
+      if (credentials.access_token) {
+        // Store the refreshed tokens
+        await this.storeTokens(userId, {
+          access_token: credentials.access_token,
+          refresh_token: credentials.refresh_token || tokens.refreshToken,
+          expiry_date: credentials.expiry_date || undefined
+        });
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Failed to refresh access token:', error);
+      return false;
+    }
+  }
+
+  // Delete Google Calendar connection
+  async deleteConnection(userId: string): Promise<boolean> {
+    try {
+      // Revoke tokens with Google
+      const tokens = await this.getStoredTokens(userId);
+      if (tokens?.accessToken) {
+        try {
+          this.oauth2Client.setCredentials({
+            access_token: tokens.accessToken
+          });
+          await this.oauth2Client.revokeCredentials();
+        } catch (revokeError) {
+          console.warn('Failed to revoke tokens with Google:', revokeError);
+          // Continue with deletion even if revocation fails
+        }
+      }
+
+      // Delete from database
+      await prisma.socialAccount.deleteMany({
+        where: {
+          userId,
+          platform: 'google_calendar'
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting Google Calendar connection:', error);
+      return false;
+    }
   }
 
   // Get user's calendars
@@ -171,82 +355,49 @@ export class GoogleCalendarService {
     return response.data;
   }
 
-  // Refresh access token if expired
-  async refreshAccessToken(userId: string): Promise<boolean> {
-    try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { socialAccounts: true }
-      });
-
-      const googleAccount = user?.socialAccounts.find(
-        account => account.platform === 'google_calendar'
-      );
-
-      if (!googleAccount?.refreshToken) {
-        throw new Error('No refresh token available');
-      }
-
-      this.oauth2Client.setCredentials({
-        refresh_token: googleAccount.refreshToken
-      });
-
-      const { credentials } = await this.oauth2Client.refreshAccessToken();
-      
-      if (credentials.access_token) {
-        // Update the stored tokens
-        await prisma.socialAccount.update({
-          where: { id: googleAccount.id },
-          data: {
-            accessToken: credentials.access_token,
-            expiresAt: credentials.expiry_date ? new Date(credentials.expiry_date) : null,
-            updatedAt: new Date()
-          }
-        });
-
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Failed to refresh access token:', error);
-      return false;
-    }
-  }
-
   // Check if user has Google Calendar connected
   async isConnected(userId: string): Promise<boolean> {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: { socialAccounts: true }
-      });
-
-      const googleAccount = user?.socialAccounts.find(
-        account => account.platform === 'google_calendar'
-      );
-
-      return !!(googleAccount?.accessToken);
+      const tokens = await this.getStoredTokens(userId);
+      return !!(tokens?.accessToken);
     } catch (error) {
       console.error('Error checking Google Calendar connection:', error);
       return false;
     }
   }
 
-  // Disconnect Google Calendar
-  async disconnect(userId: string): Promise<boolean> {
+  // Get connection status with details
+  async getConnectionStatus(userId: string): Promise<{
+    isConnected: boolean;
+    lastSync?: string;
+    expiresAt?: string;
+    needsRefresh?: boolean;
+  }> {
     try {
-      await prisma.socialAccount.deleteMany({
+      const socialAccount = await prisma.socialAccount.findUnique({
         where: {
-          userId,
-          platform: 'google_calendar'
+          userId_platform: {
+            userId,
+            platform: 'google_calendar'
+          }
         }
       });
 
-      return true;
+      if (!socialAccount) {
+        return { isConnected: false };
+      }
+
+      const needsRefresh = socialAccount.expiresAt ? socialAccount.expiresAt < new Date() : false;
+
+      return {
+        isConnected: true,
+        lastSync: socialAccount.updatedAt.toISOString(),
+        expiresAt: socialAccount.expiresAt?.toISOString(),
+        needsRefresh
+      };
     } catch (error) {
-      console.error('Error disconnecting Google Calendar:', error);
-      return false;
+      console.error('Error getting connection status:', error);
+      return { isConnected: false };
     }
   }
 } 

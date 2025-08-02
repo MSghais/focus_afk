@@ -36,29 +36,8 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
       // Exchange code for tokens
       const tokens = await googleCalendarService.getTokensFromCode(code);
 
-      // Save or update social account
-      await prisma.socialAccount.upsert({
-        where: {
-          userId_platform: {
-            userId,
-            platform: 'google_calendar'
-          }
-        },
-        update: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-          updatedAt: new Date()
-        },
-        create: {
-          userId,
-          platform: 'google_calendar',
-          accountId: 'primary',
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null
-        }
-      });
+      // Store tokens securely in database
+      await googleCalendarService.storeTokens(userId, tokens);
 
       return { 
         success: true, 
@@ -73,7 +52,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Check connection status
+  // Check connection status with details
   fastify.get('/google/status', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
@@ -84,8 +63,8 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const isConnected = await googleCalendarService.isConnected(userId);
-      return { success: true, data: { isConnected } };
+      const status = await googleCalendarService.getConnectionStatus(userId);
+      return { success: true, data: status };
     } catch (error) {
       console.error('Error checking connection status:', error);
       return reply.status(500).send({ 
@@ -95,7 +74,36 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Disconnect Google Calendar
+  // Refresh access token
+  fastify.post('/google/refresh', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.status(401).send({ 
+          success: false, 
+          error: 'User not authenticated' 
+        });
+      }
+
+      const success = await googleCalendarService.refreshAccessToken(userId);
+      if (success) {
+        return { success: true, message: 'Access token refreshed successfully' };
+      } else {
+        return reply.status(400).send({ 
+          success: false, 
+          error: 'Failed to refresh access token' 
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+      return reply.status(500).send({ 
+        success: false, 
+        error: 'Failed to refresh access token' 
+      });
+    }
+  });
+
+  // Delete Google Calendar connection (secure deletion)
   fastify.delete('/google/disconnect', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
@@ -106,7 +114,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const success = await googleCalendarService.disconnect(userId);
+      const success = await googleCalendarService.deleteConnection(userId);
       if (success) {
         return { success: true, message: 'Google Calendar disconnected successfully' };
       } else {

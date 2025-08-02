@@ -1287,8 +1287,24 @@ class ApiService {
     });
   }
 
-  async getGoogleCalendarStatus(): Promise<ApiResponse<{ isConnected: boolean }>> {
-    return this.request<{ isConnected: boolean }>('/calendar/google/status');
+  async getGoogleCalendarStatus(): Promise<ApiResponse<{
+    isConnected: boolean;
+    lastSync?: string;
+    expiresAt?: string;
+    needsRefresh?: boolean;
+  }>> {
+    return this.request<{
+      isConnected: boolean;
+      lastSync?: string;
+      expiresAt?: string;
+      needsRefresh?: boolean;
+    }>('/calendar/google/status');
+  }
+
+  async refreshGoogleCalendarToken(): Promise<ApiResponse> {
+    return this.request('/calendar/google/refresh', {
+      method: 'POST',
+    });
   }
 
   async disconnectGoogleCalendar(): Promise<ApiResponse> {

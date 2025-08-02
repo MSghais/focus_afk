@@ -1,21 +1,21 @@
-# Algorithm backend of AFK
+# Backend of AFK
 
 ## Description
-Express typescript backend.
-Routes for  Algorithm scoring, classication, trending, mindshare of profiles.
-This backend is gonna be link with some Cairo contracts in WIP and connected to the indexer db corresponding:
 
-- AFK_Profile
-- AFK_nostr_fi
+Focus AFK app, MVP stuff
+
+- Tasks
+- Goals
+- Notes
+- AI Mentor
+- Chat
+
+
+<!-- Encryption key -->
+openssl rand -hex 16
 
 ## TODO
 
-MVP stuff
-
-- [] algorithm trending Nostr
-- [] Scoring Nostr note algorithms
-- [] Classification Nostr Note with ML
-- [] Classify Nostr note with LLM 
 
 ## Kill process issues
 ```
@@ -28,7 +28,7 @@ sudo kill -9 [ID_RECEIVED_BEFORE]
 
 Copy the .env.example
 
-Init all db corresponding after setup POSTGREES_DB for both: prisma-db, indexer-prisma
+Init all db corresponding after setup POSTGREES_DB 
 
 ##
 ```

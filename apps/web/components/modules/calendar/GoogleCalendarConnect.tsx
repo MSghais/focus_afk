@@ -7,10 +7,18 @@ import { ButtonPrimary } from '../../small/buttons';
 import { Icon } from '../../small/icons';
 import { isUserAuthenticated } from '../../../lib/auth';
 
+interface ConnectionStatus {
+  isConnected: boolean;
+  lastSync?: string;
+  expiresAt?: string;
+  needsRefresh?: boolean;
+}
+
 export default function GoogleCalendarConnect() {
   const { showToast } = useUIStore();
   const [connecting, setConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({ isConnected: false });
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [showOAuthHelp, setShowOAuthHelp] = useState(false);
 
@@ -26,8 +34,8 @@ export default function GoogleCalendarConnect() {
 
     try {
       const response = await api.getGoogleCalendarStatus();
-      if (response.success) {
-        setIsConnected(response.data?.isConnected || false);
+      if (response.success && response.data) {
+        setConnectionStatus(response.data);
       }
     } catch (error) {
       console.error('Failed to check connection status:', error);
@@ -63,7 +71,7 @@ export default function GoogleCalendarConnect() {
             // Check if connection was successful
             await checkConnectionStatus();
             
-            if (isConnected) {
+            if (connectionStatus.isConnected) {
               showToast({
                 message: 'Google Calendar connected!',
                 description: 'You can now sync your tasks and focus sessions',
@@ -123,14 +131,43 @@ export default function GoogleCalendarConnect() {
     }
   };
 
+  const refreshToken = async () => {
+    try {
+      setRefreshing(true);
+      const response = await api.refreshGoogleCalendarToken();
+      
+      if (response.success) {
+        await checkConnectionStatus();
+        showToast({
+          message: 'Token refreshed',
+          description: 'Your access token has been refreshed successfully',
+          type: 'success',
+          duration: 3000
+        });
+      } else {
+        throw new Error('Failed to refresh token');
+      }
+    } catch (error) {
+      console.error('Failed to refresh token:', error);
+      showToast({
+        message: 'Failed to refresh token',
+        description: 'Please try reconnecting your Google Calendar',
+        type: 'error',
+        duration: 5000
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const disconnectGoogleCalendar = async () => {
     try {
       const response = await api.disconnectGoogleCalendar();
       if (response.success) {
-        setIsConnected(false);
+        setConnectionStatus({ isConnected: false });
         showToast({
           message: 'Google Calendar disconnected',
-          description: 'Calendar integration has been removed',
+          description: 'Calendar integration has been removed securely',
           type: 'success',
           duration: 3000
         });
@@ -148,12 +185,16 @@ export default function GoogleCalendarConnect() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
   if (checkingStatus) {
     return (
-      <div className="p-4 border rounded-lg">
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span className="text-sm text-gray-600">Checking connection status...</span>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg">Checking connection status...</p>
         </div>
       </div>
     );
@@ -161,32 +202,61 @@ export default function GoogleCalendarConnect() {
 
   if (!isUserAuthenticated()) {
     return (
-      <div className="p-4 border rounded-lg">
-        <h3 className="text-lg font-medium mb-2">Connect Google Calendar</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Please login to connect your Google Calendar
-        </p>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg mb-4">Please login to connect Google Calendar</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 border rounded-lg">
-      <h3 className="text-lg font-medium mb-2">Google Calendar Integration</h3>
-      <p className="text-sm text-gray-600 mb-4">
-        {isConnected 
-          ? 'Your Google Calendar is connected. You can sync tasks, goals, and focus sessions.'
-          : 'Connect your Google Calendar to sync tasks, goals, and focus sessions automatically.'
-        }
-      </p>
+    <div className="w-full h-full flex flex-col p-2 md:p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Google Calendar Integration</h1>
+        <p className="text-sm text-gray-500">
+          {connectionStatus.isConnected 
+            ? 'Your Google Calendar is connected. You can sync tasks, goals, and focus sessions.'
+            : 'Connect your Google Calendar to sync tasks, goals, and focus sessions automatically.'
+          }
+        </p>
+      </div>
       
-      {isConnected ? (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-green-600">
-            <Icon name="check" />
-            <span className="text-sm font-medium">Connected</span>
+      {connectionStatus.isConnected ? (
+        <div className="space-y-6">
+          {/* Connection Status */}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon name="check" />
+              <span className="font-medium text-green-800">Connected</span>
+            </div>
+            
+            <div className="space-y-2 text-sm text-green-700">
+              {connectionStatus.lastSync && (
+                <div>Last sync: {formatDate(connectionStatus.lastSync)}</div>
+              )}
+              {connectionStatus.expiresAt && (
+                <div>Token expires: {formatDate(connectionStatus.expiresAt)}</div>
+              )}
+              {connectionStatus.needsRefresh && (
+                <div className="text-orange-600 font-medium">⚠️ Token needs refresh</div>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-3">
+            {connectionStatus.needsRefresh && (
+              <ButtonPrimary
+                onClick={refreshToken}
+                disabled={refreshing}
+                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700"
+              >
+                <Icon name="refresh" />
+                {refreshing ? 'Refreshing...' : 'Refresh Token'}
+              </ButtonPrimary>
+            )}
+            
             <ButtonPrimary
               onClick={disconnectGoogleCalendar}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700"
@@ -195,40 +265,51 @@ export default function GoogleCalendarConnect() {
               Disconnect
             </ButtonPrimary>
           </div>
+
+          {/* Security Info */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-medium text-blue-800 mb-2">🔒 Security Information</h3>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Your access tokens are encrypted before storage</li>
+              <li>• Tokens are automatically refreshed when needed</li>
+              <li>• You can revoke access at any time</li>
+              <li>• No calendar data is stored locally</li>
+            </ul>
+          </div>
         </div>
       ) : (
-        <ButtonPrimary
-          onClick={connectGoogleCalendar}
-          disabled={connecting}
-          className="flex items-center gap-2"
-        >
-          <Icon name="calendar" />
-          {connecting ? 'Connecting...' : 'Connect Google Calendar'}
-        </ButtonPrimary>
-      )}
-      
-      {!isConnected && (
-        <div className="mt-4 p-3 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">What you can do:</h4>
-          <ul className="text-xs text-blue-700 space-y-1">
-            <li>• Sync tasks with due dates to your calendar</li>
-            <li>• Block focus time automatically</li>
-            <li>• Import calendar events as tasks</li>
-            <li>• Get availability insights</li>
-          </ul>
+        <div className="space-y-6">
+          <ButtonPrimary
+            onClick={connectGoogleCalendar}
+            disabled={connecting}
+            className="flex items-center gap-2"
+          >
+            <Icon name="calendar" />
+            {connecting ? 'Connecting...' : 'Connect Google Calendar'}
+          </ButtonPrimary>
+          
+          <div className="p-4 border border-blue-200 rounded-lg">
+            <h3 className="font-medium text-blue-800 mb-2">What you can do:</h3>
+            <ul className="text-sm text-blue-700 space-y-1">
+              <li>• Sync tasks with due dates to your calendar</li>
+              <li>• Block focus time automatically</li>
+              <li>• Import calendar events as tasks</li>
+              <li>• Get availability insights</li>
+            </ul>
+          </div>
         </div>
       )}
 
       {/* OAuth Testing Mode Help */}
       {showOAuthHelp && process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mt-6 p-4  border border-yellow-200 rounded-lg">
           <h4 className="text-sm font-medium text-yellow-800 mb-2">
             🔧 OAuth App Setup Required
           </h4>
-          <p className="text-xs text-yellow-700 mb-3">
+          <p className="text-xs mb-3">
             Your Google OAuth app is in testing mode. To connect your calendar:
           </p>
-          <ol className="text-xs text-yellow-700 space-y-1 mb-3">
+          <ol className="text-xs pace-y-1 mb-3">
             <li>1. Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="underline">Google Cloud Console</a></li>
             <li>2. Select your project</li>
             <li>3. Go to "APIs & Services" → "OAuth consent screen"</li>
