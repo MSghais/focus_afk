@@ -1,16 +1,16 @@
 'use client'
 import { useEffect, useState } from "react";
-import { useAuthStore } from "../../store/auth";
-import GoalCreate from "../modules/goals/GoalCreate";
-import { useFocusAFKStore } from "../../store/store";
-import CreateTask from "../modules/tasks/CreateTask";
-import Onboarding from "./Onboarding";
+import { useAuthStore } from "../../../store/auth";
+import GoalCreate from "../../modules/goals/GoalCreate";
+import { useFocusAFKStore } from "../../../store/store";
+import CreateTask from "../../modules/tasks/CreateTask";
 import OnboardingProcess from "./process";
 import styles from './FormMultistep.module.scss';
-import { Goal, Task } from "../../types";
-import { useUIStore } from "../../store/uiStore";
+import { Goal } from "../../../types";
+import { useUIStore } from "../../../store/uiStore";
 
-import { logClickedEvent } from '../../lib/analytics';
+import { logClickedEvent } from '../../../lib/analytics';
+import router from "next/router";
 
 interface Step {
   id: string;
@@ -70,12 +70,22 @@ export default function FormMultistep({
   }, [showOnboarding, currentStep]);
 
   const handleNext = () => {
+    console.log("currentStep", currentStep);
     if (currentStep < STEPS.length - 1) {
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
       onStepChange?.(nextStep);
+
+      console.log("nextStep", nextStep);
+      if( nextStep === 3 ) {
+        router.push("/timer")
+        onComplete?.();
+      }
     } else {
+      showToast( {message: "Onboarding complete", type: "success"} );
       onComplete?.();
+      router.push("/timer")
+
     }
   };
 
@@ -184,7 +194,11 @@ export default function FormMultistep({
                 </p>
                 <button 
                   className={styles.completionButton}
-                  onClick={onComplete}
+                  onClick={() => {
+                    onComplete?.();
+                    showToast( {message: "Onboarding complete", type: "success"} );
+                    router.push("/timer")
+                  }}
                 >
                   Start Focusing
                 </button>

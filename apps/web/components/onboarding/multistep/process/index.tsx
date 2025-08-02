@@ -106,7 +106,7 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
       {/* Progress Bar */}
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>
-          <div 
+          <div
             className={styles.progressFill}
             style={{ width: `${((safeCurrentStep + 1) / ONBOARDING_STEPS.length) * 100}%` }}
           />
@@ -128,9 +128,9 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
         <div className={styles.stepContent}>
           {/* Image */}
           <div className={styles.imageContainer}>
-            <div 
+            <div
               className={styles.image}
-              style={{ 
+              style={{
                 backgroundImage: `url(${currentStepData.image})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center'
@@ -150,20 +150,27 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
       {/* Navigation */}
       <div className={styles.navigation}>
         <div className={styles.navButtons}>
+          {!isLastStep && (
+            <button onClick={handleSkip}
+            className="cursor-pointer p-4"
+            >
+              Skip
+            </button>
+          )}
           {!isFirstStep && (
-            <button 
+            <button
               className={styles.backButton}
               onClick={handlePrevious}
               aria-label="Previous step"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Back
             </button>
           )}
-          
-          <button 
+
+          <button
             className={styles.nextButton}
             onClick={handleNext}
             aria-label={isLastStep ? 'Complete onboarding' : 'Next step'}
@@ -171,7 +178,7 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
             {currentStepData.actionText}
             {!isLastStep && (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             )}
           </button>

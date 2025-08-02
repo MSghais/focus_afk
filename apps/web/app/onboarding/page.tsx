@@ -1,12 +1,12 @@
 'use client'
 import { useState } from 'react';
-import FormMultistep from '../../components/onboarding/FormMultistep';
-import OnboardingProcess from '../../components/onboarding/process';
+import FormMultistep from '../../components/onboarding/multistep/FormMultistep';
+import OnboardingProcess from '../../components/onboarding/multistep/process';
 import styles from './onboarding.module.scss';
 import { OnboardingFun } from '../../components/onboarding/fun';
 
 export default function OnboardingPage() {
-  const [showMultistep, setShowMultistep] = useState(false);
+  const [showMultistep, setShowMultistep] = useState(true);
   const [showProcess, setShowProcess] = useState(false);
   const [showFun, setShowFun] = useState(false);
 
@@ -22,8 +22,7 @@ export default function OnboardingPage() {
   return (
     <div className={styles.container}>
       {/* Demo Controls */}
-      <div className={styles.demoControls}>
-        <h2 className={styles.demoTitle}>Onboarding Components Demo</h2>
+      {/* <div className={styles.demoControls}>
         <div className={styles.buttonGroup}>
           <button 
             className={styles.demoButton}
@@ -64,13 +63,13 @@ export default function OnboardingPage() {
             Hide All
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Component Display */}
       <div className={styles.componentArea}>
         {showMultistep && (
           <div className={styles.componentContainer}>
-            <h3 className={styles.componentTitle}>FormMultistep Component</h3>
+            {/* <h3 className={styles.componentTitle}>FormMultistep Component</h3> */}
             <FormMultistep 
               onComplete={handleComplete}
               onStepChange={handleStepChange}
@@ -94,7 +93,7 @@ export default function OnboardingPage() {
             <OnboardingFun onComplete={handleComplete} />
           </div>
         )}
-
+{/* 
         {!showMultistep && !showProcess && !showFun && (
           <div className={styles.welcomeMessage}>
             <h1 className={styles.welcomeTitle}>Welcome to FocusFi</h1>
@@ -110,7 +109,7 @@ export default function OnboardingPage() {
               <li>🌙 Dark mode support</li>
             </ul>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
