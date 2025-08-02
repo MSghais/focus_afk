@@ -1287,6 +1287,16 @@ class ApiService {
     });
   }
 
+  async getGoogleCalendarStatus(): Promise<ApiResponse<{ isConnected: boolean }>> {
+    return this.request<{ isConnected: boolean }>('/calendar/google/status');
+  }
+
+  async disconnectGoogleCalendar(): Promise<ApiResponse> {
+    return this.request('/calendar/google/disconnect', {
+      method: 'DELETE',
+    });
+  }
+
   async getCalendars(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>('/calendar/calendars');
   }
@@ -1315,6 +1325,19 @@ class ApiService {
     if (options?.maxResults) params.append('maxResults', options.maxResults.toString());
 
     return this.request<any[]>(`/calendar/events?${params.toString()}`);
+  }
+
+  async updateCalendarEvent(eventId: string, eventData: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/calendar/events/${eventId}`, {
+      method: 'PUT',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async deleteCalendarEvent(eventId: string): Promise<ApiResponse> {
+    return this.request(`/calendar/events/${eventId}`, {
+      method: 'DELETE',
+    });
   }
 
   async getFreeBusy(timeMin: string, timeMax: string): Promise<ApiResponse<any>> {

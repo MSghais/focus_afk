@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useFocusAFKStore } from '../../../store/store';
 import { useUIStore } from '../../../store/uiStore';
 import InstallPrompt from '../../ui/InstallPrompt';
+import GoogleCalendarConnect from '../calendar/GoogleCalendarConnect';
 
 export default function Settings() {
 
@@ -124,6 +125,11 @@ export default function Settings() {
                             />
                         </div>
                     </div>
+                </div>
+
+                <div className="p-6 rounded-lg border shadow-sm">
+                    <h2 className="text-xl font-semibold mb-4">Calendar</h2>
+                    <GoogleCalendarConnect />
                 </div>
 
                 {/* Notifications */}

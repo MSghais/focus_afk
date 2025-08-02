@@ -8,10 +8,13 @@ export class GoogleCalendarService {
   private oauth2Client: OAuth2Client;
 
   constructor() {
+    // Use the backend URL for the redirect URI
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/calendar/google/callback';
+    
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback'
+      redirectUri
     );
   }
 
@@ -36,18 +39,23 @@ export class GoogleCalendarService {
     refresh_token?: string;
     expiry_date?: number;
   }> {
-    const { tokens } = await this.oauth2Client.getToken(code);
-    
-    // Ensure we have the required access_token
-    if (!tokens.access_token) {
-      throw new Error('Failed to get access token from Google');
-    }
+    try {
+      const { tokens } = await this.oauth2Client.getToken(code);
+      
+      // Ensure we have the required access_token
+      if (!tokens.access_token) {
+        throw new Error('Failed to get access token from Google');
+      }
 
-    return {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token || undefined,
-      expiry_date: tokens.expiry_date || undefined
-    };
+      return {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || undefined,
+        expiry_date: tokens.expiry_date || undefined
+      };
+    } catch (error) {
+      console.error('Error getting tokens from code:', error);
+      throw new Error(`Failed to exchange code for tokens: ${error.message}`);
+    }
   }
 
   // Create calendar client with user's tokens
