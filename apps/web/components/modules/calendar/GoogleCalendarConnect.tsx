@@ -24,6 +24,16 @@ export default function GoogleCalendarConnect() {
 
   useEffect(() => {
     checkConnectionStatus();
+
+    // Listen for messages from the OAuth callback page
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'GOOGLE_CALENDAR_CONNECTED') {
+        checkConnectionStatus();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   const checkConnectionStatus = async () => {

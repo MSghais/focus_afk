@@ -10,8 +10,8 @@ export class GoogleCalendarService {
   private readonly ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-fallback-encryption-key-32-chars-long';
 
   constructor() {
-    // Use the backend URL for the redirect URI
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/calendar/google/callback';
+    // Use the frontend URL for the redirect URI (Google will redirect to frontend, then frontend calls backend)
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback';
     
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
