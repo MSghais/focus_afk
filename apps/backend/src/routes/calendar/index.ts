@@ -26,6 +26,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
       const { code } = request.body as { code: string };
       const userId = request.user?.id;
 
+      
       if (!userId) {
         return reply.status(401).send({ 
           success: false, 
@@ -36,6 +37,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
       // Exchange code for tokens
       const tokens = await googleCalendarService.getTokensFromCode(code);
 
+      console.log('tokens', tokens);
       // Store tokens securely in database
       await googleCalendarService.storeTokens(userId, tokens);
 

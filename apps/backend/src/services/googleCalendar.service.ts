@@ -62,6 +62,11 @@ export class GoogleCalendarService {
     expiry_date?: number;
   }> {
     try {
+      console.log('🔍 Backend: Exchanging code for tokens...');
+      console.log('  - Code format:', code.startsWith('4/') ? 'Valid' : 'Invalid');
+      console.log('  - Code length:', code.length);
+      console.log('  - Expected redirect URI:', process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback');
+      
       const { tokens } = await this.oauth2Client.getToken(code);
       
       // Ensure we have the required access_token
@@ -69,14 +74,29 @@ export class GoogleCalendarService {
         throw new Error('Failed to get access token from Google');
       }
 
+      console.log('✅ Backend: Successfully exchanged code for tokens');
+      console.log('  - Has access token:', !!tokens.access_token);
+      console.log('  - Has refresh token:', !!tokens.refresh_token);
+      console.log('  - Expires at:', tokens.expiry_date ? new Date(tokens.expiry_date) : 'No expiry');
+
       return {
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token || undefined,
         expiry_date: tokens.expiry_date || undefined
       };
     } catch (error) {
-      console.error('Error getting tokens from code:', error);
-      throw new Error(`Failed to exchange code for tokens: ${error.message}`);
+      console.error('❌ Backend: Error getting tokens from code:', error);
+      
+      // Provide more specific error messages
+      if (error.message?.includes('invalid_grant')) {
+        throw new Error('Authorization code is invalid, expired, or already used. Please try connecting again.');
+      } else if (error.message?.includes('redirect_uri_mismatch')) {
+        throw new Error('Redirect URI mismatch. Please check your Google OAuth configuration.');
+      } else if (error.message?.includes('invalid_client')) {
+        throw new Error('Invalid OAuth client configuration. Please check your Google Cloud Console settings.');
+      } else {
+        throw new Error(`Failed to exchange code for tokens: ${error.message}`);
+      }
     }
   }
 
@@ -87,43 +107,123 @@ export class GoogleCalendarService {
     expiry_date?: number;
   }): Promise<void> {
     try {
+      console.log('🔐 Backend: Starting token storage process...');
+      console.log('  - User ID:', userId);
+      console.log('  - Has access token:', !!tokens.access_token);
+      console.log('  - Has refresh token:', !!tokens.refresh_token);
+      console.log('  - Expiry date:', tokens.expiry_date ? new Date(tokens.expiry_date) : 'No expiry');
+      
       // Encrypt sensitive tokens before storing
+      console.log('  - Encrypting access token...');
       const encryptedAccessToken = this.encrypt(tokens.access_token);
-      const encryptedRefreshToken = tokens.refresh_token ? this.encrypt(tokens.refresh_token) : null;
+      console.log('  - Access token encrypted successfully');
+      
+      let encryptedRefreshToken = null;
+      if (tokens.refresh_token) {
+        console.log('  - Encrypting refresh token...');
+        encryptedRefreshToken = this.encrypt(tokens.refresh_token);
+        console.log('  - Refresh token encrypted successfully');
+      }
 
-      await prisma.socialAccount.upsert({
+      console.log('  - Checking if social account exists...');
+      const existingAccount = await prisma.socialAccount.findUnique({
+        where: {
+          userId_platform: {
+            userId,
+            platform: 'google_calendar'
+          }
+        }
+      });
+
+      if (existingAccount) {
+        console.log('  - Updating existing social account...');
+        await prisma.socialAccount.update({
+          where: {
+            userId_platform: {
+              userId,
+              platform: 'google_calendar'
+            }
+          },
+          data: {
+            accessToken: encryptedAccessToken,
+            refreshToken: encryptedRefreshToken,
+            expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+            updatedAt: new Date(),
+            metadata: {
+              lastTokenRefresh: new Date().toISOString(),
+              tokenSource: 'oauth_flow'
+            }
+          }
+        });
+        console.log('  - Social account updated successfully');
+      } else {
+        console.log('  - Creating new social account...');
+        await prisma.socialAccount.create({
+          data: {
+            userId,
+            platform: 'google_calendar',
+            accountId: 'primary',
+            accessToken: encryptedAccessToken,
+            refreshToken: encryptedRefreshToken,
+            expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+            metadata: {
+              lastTokenRefresh: new Date().toISOString(),
+              tokenSource: 'oauth_flow'
+            }
+          }
+        });
+        console.log('  - New social account created successfully');
+      }
+
+      console.log('✅ Backend: Tokens stored successfully in database');
+      
+      // Verify the storage
+      console.log('  - Verifying token storage...');
+      const storedAccount = await prisma.socialAccount.findUnique({
         where: {
           userId_platform: {
             userId,
             platform: 'google_calendar'
           }
         },
-        update: {
-          accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-          updatedAt: new Date(),
-          metadata: {
-            lastTokenRefresh: new Date().toISOString(),
-            tokenSource: 'oauth_flow'
-          }
-        },
-        create: {
-          userId,
-          platform: 'google_calendar',
-          accountId: 'primary',
-          accessToken: encryptedAccessToken,
-          refreshToken: encryptedRefreshToken,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-          metadata: {
-            lastTokenRefresh: new Date().toISOString(),
-            tokenSource: 'oauth_flow'
-          }
+        select: {
+          id: true,
+          userId: true,
+          platform: true,
+          accountId: true,
+          accessToken: true,
+          refreshToken: true,
+          expiresAt: true,
+          updatedAt: true,
+          metadata: true
         }
       });
+
+      if (storedAccount) {
+        console.log('  - Verification successful:');
+        console.log('    * Account ID:', storedAccount.id);
+        console.log('    * User ID:', storedAccount.userId);
+        console.log('    * Platform:', storedAccount.platform);
+        console.log('    * Has encrypted access token:', !!storedAccount.accessToken);
+        console.log('    * Has encrypted refresh token:', !!storedAccount.refreshToken);
+        console.log('    * Expires at:', storedAccount.expiresAt);
+        console.log('    * Updated at:', storedAccount.updatedAt);
+        console.log('    * Metadata:', storedAccount.metadata);
+      } else {
+        console.log('  - ⚠️ Verification failed: Account not found after storage');
+      }
+
     } catch (error) {
-      console.error('Error storing tokens:', error);
-      throw new Error('Failed to store tokens securely');
+      console.error('❌ Backend: Error storing tokens:', error);
+      console.error('  - Error name:', error.name);
+      console.error('  - Error message:', error.message);
+      console.error('  - Error stack:', error.stack);
+      
+      if (error.code) {
+        console.error('  - Database error code:', error.code);
+      }
+      
+      throw new Error(`Failed to store tokens securely: ${error.message}`);
     }
   }
 

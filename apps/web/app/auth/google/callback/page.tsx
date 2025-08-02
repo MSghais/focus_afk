@@ -10,16 +10,24 @@ export default function GoogleCallbackPage() {
   const { showToast } = useUIStore();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Processing Google Calendar connection...');
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Prevent multiple executions
+      if (hasProcessed) {
+        return;
+      }
+      setHasProcessed(true);
       try {
         // Get the authorization code from URL parameters
         const code = searchParams.get('code');
         const error = searchParams.get('error');
 
-        console.log('code', code);
-        console.log('error', error);
+        console.log('🔍 OAuth Callback Debug:');
+        console.log('  - Code:', code ? `${code.substring(0, 20)}...` : 'null');
+        console.log('  - Error:', error);
+        console.log('  - URL params:', Object.fromEntries(searchParams.entries()));
 
         if (error) {
           console.error('Google OAuth error:', error);
@@ -49,6 +57,26 @@ export default function GoogleCallbackPage() {
           showToast({
             message: 'Google Calendar connection failed',
             description: 'No authorization code received',
+            type: 'error',
+            duration: 5000
+          });
+          
+          setTimeout(() => {
+            if (window.opener) {
+              window.close();
+            }
+          }, 3000);
+          return;
+        }
+
+        // Check if code looks valid (should start with "4/")
+        if (!code.startsWith('4/')) {
+          setStatus('error');
+          setMessage('Invalid authorization code format');
+          
+          showToast({
+            message: 'Google Calendar connection failed',
+            description: 'Invalid authorization code format',
             type: 'error',
             duration: 5000
           });
