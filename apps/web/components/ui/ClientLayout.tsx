@@ -10,6 +10,7 @@ import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 import RightSidebar from "./RightSidebar";
+import OnboardingCheck from "../onboarding/OnboardingCheck";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -62,6 +63,7 @@ export default function ClientLayout({
 
         {/* Mobile Bottom Bar - Fixed at bottom */}
         <BottomBar />
+        <OnboardingCheck />
       </div>
     </Providers>
   );

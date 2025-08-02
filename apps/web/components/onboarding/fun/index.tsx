@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import { ButtonPrimary } from '../../small/buttons';
 import GoalCreate from '../../modules/goals/GoalCreate';

@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react';
 import styles from './OnboardingProcess.module.scss';
+import { logClickedEvent } from '../../../../lib/analytics';
 
 interface OnboardingStep {
   id: string;
@@ -63,6 +64,7 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {
+    logClickedEvent("onboarding_next_step");
     if (currentStep < ONBOARDING_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
       onStepChange?.(currentStep + 1);
@@ -72,13 +74,16 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
   };
 
   const handlePrevious = () => {
+    logClickedEvent("onboarding_previous_step");
     if (currentStep > 0) {
+
       setCurrentStep(currentStep - 1);
       onStepChange?.(currentStep - 1);
     }
   };
 
   const handleSkip = () => {
+    logClickedEvent("onboarding_skip");
     onComplete?.();
   };
 
@@ -157,6 +162,7 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
               Skip
             </button>
           )}
+          
           {!isFirstStep && (
             <button
               className={styles.backButton}
