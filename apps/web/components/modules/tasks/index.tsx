@@ -74,7 +74,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
         if (!editingTask || !editingTask.id) return;
 
         logClickedEvent('task_update');
-        await updateTask(editingTask.id, {
+        const result = await updateTask(editingTask.id, {
             title: editingTask.title,
             description: editingTask.description,
             priority: editingTask.priority,
@@ -82,7 +82,22 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
             dueDate: editingTask.dueDate,
             estimatedMinutes: editingTask.estimatedMinutes
         });
-
+        if (result) {
+            showToast({
+                message: 'Task updated',
+                description: 'Task has been updated',
+                type: 'success',
+                duration: 3000
+            });
+        } else {
+            showToast({
+                message: 'Task update failed',
+                description: 'Please try again',
+                type: 'error',
+                duration: 3000
+            });
+        }
+       
         setEditingTask(null);
     };
 
@@ -115,7 +130,22 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
     const handleDeleteTask = async (id: string | number) => {
         if (confirm('Are you sure you want to delete this task?')) {
             logClickedEvent('task_delete');
-            await deleteTask(id);
+            const result = await deleteTask(id);
+            if (result) {
+                showToast({
+                    message: 'Task deleted',
+                    description: 'Task has been deleted',
+                    type: 'success',
+                    duration: 3000
+                });
+            } else {
+                showToast({
+                    message: 'Task delete failed',
+                    description: 'Please try again',
+                    type: 'error',
+                    duration: 3000
+                });
+            }
         }
     };
 
@@ -250,27 +280,27 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
         );
     }
 
-    const FormEditTask = () => {
+    const FormEditTask = ({ task }: { task: Task | null }) => {
         return (
             <div>
                 <form onSubmit={handleUpdateTask} className="space-y-3">
                     <input
                         type="text"
-                        value={editingTask?.title || ''}
-                        onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                        value={task?.title || ''}
+                        onChange={(e) => setEditingTask({ ...task, title: e.target.value || '' } as Task)}
                         className="w-full p-2 border rounded-md font-medium"
                         required
                     />
                     <textarea
-                        value={editingTask?.description || ''}
-                        onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                        value={task?.description || ''}
+                        onChange={(e) => setEditingTask({ ...task, description: e.target.value || '' } as Task)}
                         className="w-full p-2 border rounded-md text-sm"
                         rows={2}
                     />
                     <div className="flex gap-2">
                         <select
-                            value={editingTask?.priority}
-                            onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                            value={task?.priority}
+                            onChange={(e) => setEditingTask({ ...task, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
                             className="p-2 border rounded-md text-sm"
                         >
                             <option value="low">Low</option>
@@ -279,9 +309,9 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         </select>
                         <input
                             type="text"
-                            value={editingTask?.category || ''}
+                            value={task?.category || ''}
                             onChange={(e) =>
-                                setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                setEditingTask({ ...task, category: e.target.value || '' } as Task)
                             }
                             className="p-2 border rounded-md text-sm"
                             placeholder="Category"
@@ -292,8 +322,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         <label className="block text-sm font-medium mb-1">Due Date</label>
                         <input
                             type="date"
-                            value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
-                            onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                            value={task?.dueDate?.toISOString().split('T')[0] || ''}
+                            onChange={(e) => setEditingTask({ ...task, dueDate: new Date(e.target.value) } as unknown as Task)}
                             className="w-full p-2 border rounded-md"
                         />
                     </div>
@@ -632,8 +662,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                 : 'hover:shadow-md'
                                             }`}
                                     >
-                                        {editingTask?.id === task.id ? (
-                                            <FormEditTask />
+                                        {editingTask?.id === task.id && editingTask ? (
+                                            <FormEditTask task={editingTask} />
                                             // <form onSubmit={handleUpdateTask} className="space-y-3">
                                             //     <input
                                             //         type="text"
@@ -796,7 +826,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                         onClick={() => {
                                                             setEditingTask(task)
                                                             setShowAddForm(false)
-                                                            showModal(  <FormEditTask />)
+                                                            // showModal(  <FormEditTask task={task} />)
                                                         }}
                                                         className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
                                                     >

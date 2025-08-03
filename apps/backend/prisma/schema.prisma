@@ -296,6 +296,8 @@ model Goal {
   completed    Boolean   @default(false)
   progress     Int       @default(0) // 0-100
   category     String?
+  dueDate         DateTime?
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   relatedTaskIds String[] // Array of task IDs as strings (legacy field)
