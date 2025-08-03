@@ -1287,6 +1287,32 @@ class ApiService {
     });
   }
 
+  async getGoogleCalendarStatus(): Promise<ApiResponse<{
+    isConnected: boolean;
+    lastSync?: string;
+    expiresAt?: string;
+    needsRefresh?: boolean;
+  }>> {
+    return this.request<{
+      isConnected: boolean;
+      lastSync?: string;
+      expiresAt?: string;
+      needsRefresh?: boolean;
+    }>('/calendar/google/status');
+  }
+
+  async refreshGoogleCalendarToken(): Promise<ApiResponse> {
+    return this.request('/calendar/google/refresh', {
+      method: 'POST',
+    });
+  }
+
+  async disconnectGoogleCalendar(): Promise<ApiResponse> {
+    return this.request('/calendar/google/disconnect', {
+      method: 'DELETE',
+    });
+  }
+
   async getCalendars(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>('/calendar/calendars');
   }
@@ -1308,13 +1334,27 @@ class ApiService {
     timeMin?: string;
     timeMax?: string;
     maxResults?: number;
+    calendarId?: string;
   }): Promise<ApiResponse<any[]>> {
     const params = new URLSearchParams();
     if (options?.timeMin) params.append('timeMin', options.timeMin);
     if (options?.timeMax) params.append('timeMax', options.timeMax);
     if (options?.maxResults) params.append('maxResults', options.maxResults.toString());
-
+    if (options?.calendarId) params.append('calendarId', options.calendarId);
     return this.request<any[]>(`/calendar/events?${params.toString()}`);
+  }
+
+  async updateCalendarEvent(eventId: string, eventData: any): Promise<ApiResponse<any>> {
+    return this.request<any>(`/calendar/events/${eventId}`, {
+      method: 'PUT',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async deleteCalendarEvent(eventId: string): Promise<ApiResponse> {
+    return this.request(`/calendar/events/${eventId}`, {
+      method: 'DELETE',
+    });
   }
 
   async getFreeBusy(timeMin: string, timeMax: string): Promise<ApiResponse<any>> {

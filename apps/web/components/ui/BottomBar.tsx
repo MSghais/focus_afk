@@ -13,6 +13,7 @@ const BottomBar = () => {
     { id: 'journal', label: 'Journal', icon: '📝' },
     // { id: 'tasks', label: 'Tasks', icon: '📋' },
     { id: 'timer', label: 'Timer', icon: '⏱️' },
+    // { id: 'calendar/manager', label: 'Calendar', icon: '📅' },
     { id: 'mentor', label: 'AI Mentor', icon: '🤖' },
     // { id: 'goals', label: 'Goals', icon: '🎯' },
     // { id: 'settings', label: 'Settings', icon: '⚙️' },

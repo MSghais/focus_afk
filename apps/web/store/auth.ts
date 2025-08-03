@@ -11,6 +11,7 @@ import { initializeAuthFromStorage, saveAuthToStorage, clearAuthFromStorage } fr
   starknetAddress?: string;
   loginType?: "ethereum" | "starknet";
   isAuthenticated: boolean;
+  isGoogleCalendarConnected: boolean;
   setUserConnected: (user: User) => void;
   setToken: (token: string) => void;
   setJwtToken: (token: string) => void;
@@ -18,6 +19,7 @@ import { initializeAuthFromStorage, saveAuthToStorage, clearAuthFromStorage } fr
   setStarknetAddress: (address: string) => void;
   setLoginType: (type: "ethereum" | "starknet") => void;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
+  setIsGoogleCalendarConnected: (isConnected: boolean) => void;
   initializeAuth: () => void;
   logout: () => void;
 }
@@ -30,6 +32,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   starknetAddress: undefined,
   loginType: undefined,
   isAuthenticated: false,
+  isGoogleCalendarConnected: false,
   setUserConnected: (user) => set({ userConnected: user }),
   setToken: (token) => set({ token }),
   setJwtToken: (token) => set({ jwtToken: token }),
@@ -37,7 +40,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setStarknetAddress: (address) => set({ starknetAddress: address }),
   setLoginType: (type) => set({ loginType: type }),
   setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-  
+  setIsGoogleCalendarConnected: (isConnected) => set({ isGoogleCalendarConnected: isConnected }),
   // Initialize auth state from localStorage
   initializeAuth: () => {
     initializeAuthFromStorage();
@@ -54,6 +57,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       starknetAddress: undefined,
       loginType: undefined,
       isAuthenticated: false,
+      isGoogleCalendarConnected: false,
     });
   },
 })); 

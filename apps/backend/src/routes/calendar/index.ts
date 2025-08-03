@@ -23,57 +23,56 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
   // Handle Google Calendar OAuth callback
   fastify.post('/google/callback', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
+      console.log('🔄 Backend: Handling Google OAuth callback...');
+      
       const { code } = request.body as { code: string };
       const userId = request.user?.id;
 
+      console.log('  - Received code:', code ? `${code.substring(0, 20)}...` : 'null');
+      console.log('  - User ID:', userId);
+
       if (!userId) {
+        console.log('  - ❌ User not authenticated');
         return reply.status(401).send({ 
           success: false, 
           error: 'User not authenticated' 
         });
       }
 
+      console.log('  - ✅ User authenticated, exchanging code for tokens...');
+      
       // Exchange code for tokens
       const tokens = await googleCalendarService.getTokensFromCode(code);
+      
+      console.log('  - ✅ Tokens received from Google:');
+      console.log('    * Has access token:', !!tokens.access_token);
+      console.log('    * Has refresh token:', !!tokens.refresh_token);
+      console.log('    * Expiry date:', tokens.expiry_date ? new Date(tokens.expiry_date) : 'No expiry');
+      
+      console.log('  - ✅ Storing tokens in database...');
 
-      // Save or update social account
-      await prisma.socialAccount.upsert({
-        where: {
-          userId_platform: {
-            userId,
-            platform: 'google_calendar'
-          }
-        },
-        update: {
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-          updatedAt: new Date()
-        },
-        create: {
-          userId,
-          platform: 'google_calendar',
-          accountId: 'primary',
-          accessToken: tokens.access_token,
-          refreshToken: tokens.refresh_token,
-          expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null
-        }
-      });
+      // Store tokens securely in database
+      await googleCalendarService.storeTokens(userId, tokens);
+      
+      console.log('  - ✅ Tokens stored successfully, returning success response');
 
       return { 
         success: true, 
         message: 'Google Calendar connected successfully' 
       };
     } catch (error) {
-      console.error('Error handling Google callback:', error);
+      console.error('❌ Backend: Error handling Google callback:', error);
+      console.error('  - Error name:', error.name);
+      console.error('  - Error message:', error.message);
+      
       return reply.status(500).send({ 
         success: false, 
-        error: 'Failed to connect Google Calendar' 
+        error: error.message || 'Failed to connect Google Calendar' 
       });
     }
   });
 
-  // Check connection status
+  // Check connection status with details
   fastify.get('/google/status', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
@@ -84,8 +83,8 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const isConnected = await googleCalendarService.isConnected(userId);
-      return { success: true, data: { isConnected } };
+      const status = await googleCalendarService.getConnectionStatus(userId);
+      return { success: true, data: status };
     } catch (error) {
       console.error('Error checking connection status:', error);
       return reply.status(500).send({ 
@@ -95,7 +94,36 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Disconnect Google Calendar
+  // Refresh access token
+  fastify.post('/google/refresh', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.status(401).send({ 
+          success: false, 
+          error: 'User not authenticated' 
+        });
+      }
+
+      const success = await googleCalendarService.refreshAccessToken(userId);
+      if (success) {
+        return { success: true, message: 'Access token refreshed successfully' };
+      } else {
+        return reply.status(400).send({ 
+          success: false, 
+          error: 'Failed to refresh access token' 
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing access token:', error);
+      return reply.status(500).send({ 
+        success: false, 
+        error: 'Failed to refresh access token' 
+      });
+    }
+  });
+
+  // Delete Google Calendar connection (secure deletion)
   fastify.delete('/google/disconnect', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
@@ -106,7 +134,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const success = await googleCalendarService.disconnect(userId);
+      const success = await googleCalendarService.deleteConnection(userId);
       if (success) {
         return { success: true, message: 'Google Calendar disconnected successfully' };
       } else {
@@ -174,7 +202,7 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
   fastify.get('/events', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     try {
       const userId = request.user?.id;
-      const { timeMin, timeMax, maxResults } = request.query as any;
+      const { timeMin, timeMax, maxResults, calendarId } = request.query as any;
 
       if (!userId) {
         return reply.status(401).send({ 
@@ -186,7 +214,8 @@ export default async function calendarRoutes(fastify: FastifyInstance) {
       const events = await googleCalendarService.getEvents(userId, {
         timeMin,
         timeMax,
-        maxResults: parseInt(maxResults) || 10
+        maxResults: parseInt(maxResults) || 10,
+        calendarId
       });
 
       return { success: true, data: events };

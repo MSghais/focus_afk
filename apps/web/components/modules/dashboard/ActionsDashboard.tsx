@@ -54,7 +54,7 @@ export default function ActionsDashboard() {
                 <div className={styles.actionContent}>
                     <div className={styles.actionInfo}>
                         <p className={styles.actionTitle}>Journal</p>
-                        <p className={styles.actionDescription}>Write in your journal</p>
+                        <p className={styles.actionDescription}>Write in your journal. Reflect, plan, and grow.</p>
                     </div>
                     <span className={styles.actionIcon}>📝</span>
                 </div>
@@ -73,7 +73,7 @@ export default function ActionsDashboard() {
                 <div className={styles.actionContent}>
                     <div className={styles.actionInfo}>
                         <p className={styles.actionTitle}>Set Goal</p>
-                        <p className={styles.actionDescription}>Create a new goal</p>
+                        <p className={styles.actionDescription}>Create a new goal. Track your progress and stay motivated.</p>
                     </div>
                     <span className={styles.actionIcon}>🎯</span>
                 </div>
@@ -90,9 +90,9 @@ export default function ActionsDashboard() {
                 <div className={styles.actionContent}>
                     <div className={styles.actionInfo}>
                         <p className={styles.actionTitle}>Add/Check Task</p>
-                        <p className={styles.actionDescription}>Create a new task</p>
+                        <p className={styles.actionDescription}>Plan, organize, and track your tasks. Synchronize to Google Calendar.</p>
                     </div>
-                    <span className={styles.actionIcon}>➕</span>
+                    <span className={styles.actionIcon}>🗒️</span>
                 </div>
             </button>
 

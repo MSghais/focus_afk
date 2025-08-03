@@ -15,6 +15,7 @@ import { useUIStore } from '../../../store/uiStore';
 import TaskFilter, { TaskFilterOptions } from './TaskFilter';
 import TaskOrderManager from './TaskOrderManager';
 import TaskCalendarEnhanced from './TaskCalendarEnhanced';
+import { api } from '../../../lib/api';
 
 
 interface ITasksOverviewProps {
@@ -196,12 +197,125 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
         return new Date(date).toLocaleDateString();
     };
 
+    const syncTaskToCalendar = async (task: Task) => {
+        if (!task.dueDate) {
+            showToast({
+                message: 'Cannot sync task',
+                description: 'Task must have a due date to sync to calendar',
+                type: 'error',
+                duration: 3000
+            });
+            return;
+        }
+
+        try {
+            const startTime = new Date(task.dueDate);
+            const endTime = new Date(startTime.getTime() + (task.estimatedMinutes || 30) * 60 * 1000);
+
+            await api.createCalendarEvent({
+                summary: task.title,
+                description: task.description || `Task: ${task.title}`,
+                start: {
+                    dateTime: startTime.toISOString(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                },
+                end: {
+                    dateTime: endTime.toISOString(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                }
+            });
+
+            showToast({
+                message: 'Task synced to calendar',
+                description: 'Task has been added to your Google Calendar',
+                type: 'success',
+                duration: 3000
+            });
+        } catch (error) {
+            console.error('Failed to sync task to calendar:', error);
+            showToast({
+                message: 'Failed to sync task',
+                description: 'Please check your Google Calendar connection',
+                type: 'error',
+                duration: 5000
+            });
+        }
+    };
+
     if (loading.tasks) {
         return (
             <div className="w-full h-full flex items-center justify-center">
                 <div className="text-lg">Loading tasks...</div>
             </div>
         );
+    }
+
+    const FormEditTask = () => {
+        return (
+            <div>
+                <form onSubmit={handleUpdateTask} className="space-y-3">
+                    <input
+                        type="text"
+                        value={editingTask?.title || ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                        className="w-full p-2 border rounded-md font-medium"
+                        required
+                    />
+                    <textarea
+                        value={editingTask?.description || ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                        className="w-full p-2 border rounded-md text-sm"
+                        rows={2}
+                    />
+                    <div className="flex gap-2">
+                        <select
+                            value={editingTask?.priority}
+                            onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                            className="p-2 border rounded-md text-sm"
+                        >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                        <input
+                            type="text"
+                            value={editingTask?.category || ''}
+                            onChange={(e) =>
+                                setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                            }
+                            className="p-2 border rounded-md text-sm"
+                            placeholder="Category"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Due Date</label>
+                        <input
+                            type="date"
+                            value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                            onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                            className="w-full p-2 border rounded-md"
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                        >
+                            Save
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setEditingTask(null)}
+                            className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        )
     }
 
     return (
@@ -216,7 +330,10 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                     </div>
 
                 </div>
-                <div className="flex gap-2">
+                <div
+                //  className="flex gap-2"
+                    className="grid grid-cols-3 gap-2"
+                >
 
                     {isViewGoalsRedirect && (
                         <div className="flex flex-col gap-2">
@@ -239,8 +356,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         <button
                             onClick={() => setViewMode('list')}
                             className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'list'
-                                ? 'bg-[var(--brand-primary)] text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-[var(--brand-primary)]'
+                                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             List
@@ -248,8 +365,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         <button
                             onClick={() => setViewMode('calendar')}
                             className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'calendar'
-                                ? 'bg-[var(--brand-primary)] text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-[var(--brand-primary)]'
+                                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             Calendar
@@ -276,7 +393,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 />
                             </div>)
                         }}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
+                        className="flex items-center gap-2 px-2 py-2 rounded-md transition border border-gray-200"
+                        // className="flex items-center gap-2 px-4 py-2 rounded-lg transition border border-gray-200"
                     >
                         <Icon name="filter" />
                     </button>
@@ -319,7 +437,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 title="Refresh tasks from local and API"
                             >
                                 {refreshing ? 'Refreshing...' : 'Refresh'}
-                                <Icon name="refresh" />
+                                {/* <Icon name="refresh" /> */}
 
                                 <span aria-hidden="true">🔄
 
@@ -334,6 +452,13 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                     {syncing ? 'Syncing...' : 'Sync to Backend'}
                                 </button>
                             )}
+                            <Link
+                                href="/calendar/manager"
+                                className="px-4 py-2 flex items-center gap-2 border border-[var(--brand-primary)] text-[var(--brand-primary)] rounded-lg hover:border-[var(--brand-secondary)] transition"
+                            >
+                                {/* <Icon name="calendar" /> */}
+                                Google Calendar
+                            </Link>
                             <button
                                 onClick={() => setShowAddForm(!showAddForm)}
                                 className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
@@ -508,67 +633,69 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                             }`}
                                     >
                                         {editingTask?.id === task.id ? (
-                                            <form onSubmit={handleUpdateTask} className="space-y-3">
-                                                <input
-                                                    type="text"
-                                                    value={editingTask?.title || ''}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
-                                                    className="w-full p-2 border rounded-md font-medium"
-                                                    required
-                                                />
-                                                <textarea
-                                                    value={editingTask?.description || ''}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
-                                                    className="w-full p-2 border rounded-md text-sm"
-                                                    rows={2}
-                                                />
-                                                <div className="flex gap-2">
-                                                    <select
-                                                        value={editingTask?.priority}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
-                                                        className="p-2 border rounded-md text-sm"
-                                                    >
-                                                        <option value="low">Low</option>
-                                                        <option value="medium">Medium</option>
-                                                        <option value="high">High</option>
-                                                    </select>
-                                                    <input
-                                                        type="text"
-                                                        value={editingTask?.category || ''}
-                                                        onChange={(e) =>
-                                                            setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
-                                                        }
-                                                        className="p-2 border rounded-md text-sm"
-                                                        placeholder="Category"
-                                                    />
-                                                </div>
+                                            <FormEditTask />
+                                            // <form onSubmit={handleUpdateTask} className="space-y-3">
+                                            //     <input
+                                            //         type="text"
+                                            //         value={editingTask?.title || ''}
+                                            //         onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                                            //         className="w-full p-2 border rounded-md font-medium"
+                                            //         required
+                                            //     />
+                                            //     <textarea
+                                            //         value={editingTask?.description || ''}
+                                            //         onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                                            //         className="w-full p-2 border rounded-md text-sm"
+                                            //         rows={2}
+                                            //     />
+                                            //     <div className="flex gap-2">
+                                            //         <select
+                                            //             value={editingTask?.priority}
+                                            //             onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                                            //             className="p-2 border rounded-md text-sm"
+                                            //         >
+                                            //             <option value="low">Low</option>
+                                            //             <option value="medium">Medium</option>
+                                            //             <option value="high">High</option>
+                                            //         </select>
+                                            //         <input
+                                            //             type="text"
+                                            //             value={editingTask?.category || ''}
+                                            //             onChange={(e) =>
+                                            //                 setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                            //             }
+                                            //             className="p-2 border rounded-md text-sm"
+                                            //             placeholder="Category"
+                                            //         />
+                                            //     </div>
 
-                                                <div>
-                                                    <label className="block text-sm font-medium mb-1">Due Date</label>
-                                                    <input
-                                                        type="date"
-                                                        value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
-                                                        className="w-full p-2 border rounded-md"
-                                                    />
-                                                </div>
+                                            //     <div>
+                                            //         <label className="block text-sm font-medium mb-1">Due Date</label>
+                                            //         <input
+                                            //             type="date"
+                                            //             value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                                            //             onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                                            //             className="w-full p-2 border rounded-md"
+                                            //         />
+                                            //     </div>
 
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="submit"
-                                                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditingTask(null)}
-                                                        className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
+                                            //     <div className="flex gap-2">
+                                            //         <button
+                                            //             type="submit"
+                                            //             className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                            //         >
+                                            //             Save
+                                            //         </button>
+                                            //         <button
+                                            //             type="button"
+                                            //             onClick={() => setEditingTask(null)}
+                                            //             className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                                            //         >
+                                            //             Cancel
+                                            //         </button>
+                                            //     </div>
+                                            // </form>
+                                            
                                         ) : (
                                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                                 <div className="flex-1">
@@ -664,14 +791,18 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                         <Icon name={task.completed ? "undo" : "check"} />
                                                         {task.completed ? 'Undo' : 'Complete'}
                                                     </button>
-                                                    
+
                                                     <button
-                                                        onClick={() => setEditingTask(task)}
+                                                        onClick={() => {
+                                                            setEditingTask(task)
+                                                            setShowAddForm(false)
+                                                            showModal(  <FormEditTask />)
+                                                        }}
                                                         className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
                                                     >
                                                         ✏️ Edit
                                                     </button>
-                                              
+
 
                                                     <button
                                                         onClick={() => {
@@ -683,6 +814,17 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                     >
                                                         🗑️ Delete
                                                     </button>
+
+                                                    {task.dueDate && (
+                                                        <button
+                                                            onClick={() => syncTaskToCalendar(task)}
+                                                            className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
+                                                            title="Sync to Google Calendar"
+                                                        >
+                                                            📅 Sync
+                                                        </button>
+                                                    )}
+
                                                     <div>
                                                         <button
                                                             className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
