@@ -13,7 +13,9 @@ import { Task } from '../../../types';
 import { Icon } from '../../small/icons';
 import { useUIStore } from '../../../store/uiStore';
 
-export default function CreateTask({ onNext }: { onNext: () => void }) {
+export default function CreateTask({ onNext,
+    isCancelVisible = true,
+}: { onNext: () => void, isCancelVisible?: boolean }) {
     const { showModal, showToast } = useUIStore();
     const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskComplete, syncTasksToBackend, loadTasks } = useFocusAFKStore();
     const [newTask, setNewTask] = useState({
@@ -250,13 +252,15 @@ export default function CreateTask({ onNext }: { onNext: () => void }) {
                     >
                         Add Task
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowAddForm(false)}
+                    {isCancelVisible && (
+                        <button
+                            type="button"
+                            onClick={() => setShowAddForm(false)}
                         className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-                    >
-                        Cancel
-                    </button>
+                        >
+                            Cancel
+                        </button>
+                    )}
                 </div>
             </form>
 

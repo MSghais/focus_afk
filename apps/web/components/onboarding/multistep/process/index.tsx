@@ -161,9 +161,9 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
         <div className={styles.navButtons}>
           {!isLastStep && (
             <button onClick={handleSkip}
-            className="cursor-pointer p-4"
+            className="cursor-pointer p-4 border border-border rounded-lg"
             >
-              Skip
+              Let's go!
             </button>
           )}
           
