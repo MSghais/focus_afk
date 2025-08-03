@@ -25,6 +25,10 @@ interface WebSocketContextType {
   requestStreakQuests: () => void;
   requestNoteQuests: () => void;
   requestGoalTaskSuggestions: () => void;
+  // Conversation methods
+  startConversationSession: (sessionId?: string, metadata?: any) => void;
+  endConversationSession: (sessionId: string) => void;
+  sendConversationMessage: (sessionId: string, message: string, type: 'user' | 'agent') => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType>({
@@ -45,6 +49,9 @@ const WebSocketContext = createContext<WebSocketContextType>({
   requestStreakQuests: () => {},
   requestNoteQuests: () => {},
   requestGoalTaskSuggestions: () => {},
+  startConversationSession: () => {},
+  endConversationSession: () => {},
+  sendConversationMessage: () => {},
 });
 
 export const useWebSocket = () => useContext(WebSocketContext);
@@ -141,6 +148,25 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const requestGoalTaskSuggestions = () => {
     if (authedSocketRef.current) {
       authedSocketRef.current.emit('request_goal_task_suggestions');
+    }
+  };
+
+  // Conversation methods
+  const startConversationSession = (sessionId?: string, metadata?: any) => {
+    if (authedSocketRef.current) {
+      authedSocketRef.current.emit('conversation_start', { sessionId, metadata });
+    }
+  };
+
+  const endConversationSession = (sessionId: string) => {
+    if (authedSocketRef.current) {
+      authedSocketRef.current.emit('conversation_end', { sessionId });
+    }
+  };
+
+  const sendConversationMessage = (sessionId: string, message: string, type: 'user' | 'agent') => {
+    if (authedSocketRef.current) {
+      authedSocketRef.current.emit('conversation_message', { sessionId, message, type });
     }
   };
 
@@ -519,6 +545,47 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       });
 
+      // Handle conversation events
+      authedSocket.on('conversation_started', (data: { sessionId: string; message: string }) => {
+        console.log('Conversation started via WebSocket:', data);
+        showToast({
+          type: 'success',
+          message: data.message,
+          description: 'Conversation Session Started',
+          duration: 3000
+        });
+      });
+
+      authedSocket.on('conversation_ended', (data: { sessionId: string; message: string }) => {
+        console.log('Conversation ended via WebSocket:', data);
+        showToast({
+          type: 'info',
+          message: data.message,
+          description: 'Conversation Session Ended',
+          duration: 3000
+        });
+      });
+
+      authedSocket.on('conversation_error', (data: { message: string; error: string }) => {
+        console.error('Conversation error via WebSocket:', data);
+        showToast({
+          type: 'error',
+          message: data.message,
+          description: data.error,
+          duration: 5000
+        });
+      });
+
+      authedSocket.on('conversation_message_received', (data: { 
+        sessionId: string; 
+        message: string; 
+        type: 'user' | 'agent'; 
+        userId: string 
+      }) => {
+        console.log('Conversation message received via WebSocket:', data);
+        // Handle incoming conversation messages if needed
+      });
+
       // authedSocket.on('disconnect', () => setIsAuthedConnected(false));
       authedSocket.on('connect_error', (err) => {
         setError(err instanceof Error ? err : new Error(String(err)));
@@ -556,6 +623,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         requestStreakQuests,
         requestNoteQuests,
         requestGoalTaskSuggestions,
+        startConversationSession,
+        endConversationSession,
+        sendConversationMessage,
       }}
     >
       {children}

@@ -427,6 +427,70 @@ export const setupWebSocket = (io: Server) => {
               });
             }
           });
+
+          // Add handler for conversation events
+          socket.on('conversation_start', async (data: { sessionId?: string; metadata?: any }) => {
+            try {
+              const userId = socket.data.user?.id;
+              
+              if (userId) {
+                console.log('Conversation started for user:', userId, 'session:', data.sessionId);
+                socket.emit('conversation_started', {
+                  sessionId: data.sessionId || `session_${Date.now()}`,
+                  message: 'Conversation session started successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error starting conversation:', error);
+              socket.emit('conversation_error', {
+                message: 'Failed to start conversation',
+                error: error.message
+              });
+            }
+          });
+
+          socket.on('conversation_end', async (data: { sessionId: string }) => {
+            try {
+              const userId = socket.data.user?.id;
+              
+              if (userId && data.sessionId) {
+                console.log('Conversation ended for user:', userId, 'session:', data.sessionId);
+                socket.emit('conversation_ended', {
+                  sessionId: data.sessionId,
+                  message: 'Conversation session ended successfully'
+                });
+              }
+            } catch (error) {
+              console.error('Error ending conversation:', error);
+              socket.emit('conversation_error', {
+                message: 'Failed to end conversation',
+                error: error.message
+              });
+            }
+          });
+
+          socket.on('conversation_message', async (data: { sessionId: string; message: string; type: 'user' | 'agent' }) => {
+            try {
+              const userId = socket.data.user?.id;
+              
+              if (userId && data.sessionId) {
+                console.log('Conversation message from user:', userId, 'session:', data.sessionId, 'type:', data.type);
+                // Broadcast message to other clients in the same session if needed
+                socket.broadcast.emit('conversation_message_received', {
+                  sessionId: data.sessionId,
+                  message: data.message,
+                  type: data.type,
+                  userId: userId
+                });
+              }
+            } catch (error) {
+              console.error('Error handling conversation message:', error);
+              socket.emit('conversation_error', {
+                message: 'Failed to process conversation message',
+                error: error.message
+              });
+            }
+          });
         }
       } catch (err) {
         console.error('JWT verification failed:', err);
