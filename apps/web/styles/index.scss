@@ -429,21 +429,21 @@ select {
 // COMPONENT-SPECIFIC GRIDS
 // ============================================================================
 
-.dashboard-grid {
-  display: grid;
-  gap: 1.5rem;
-  grid-template-columns: 1fr;
+// .dashboard-grid {
+//   display: grid;
+//   gap: 1.5rem;
+//   grid-template-columns: 1fr;
   
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  }
-}
+//   @media (min-width: 768px) {
+//     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+//   }
+// }
 
-.stats-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-}
+// .stats-grid {
+//   display: grid;
+//   gap: 1rem;
+//   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+// }
 
 // ============================================================================
 // PAGE LAYOUT
