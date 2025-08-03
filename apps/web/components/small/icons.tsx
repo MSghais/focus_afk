@@ -1,6 +1,10 @@
 import React from "react";
 
-type IconName = "add" | "create" | "search" | "user" | "settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" | "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" | "filter" | "sort" | "chevron-up" | "chevron-down" | "drag" | "sort-asc" | "sort-desc" | "chevron-left" | "chevron-right" | "close" | "check" | "edit" | "archive" | "delete" | "copy" | "more" | "tag" | "clock" | "undo" ;
+type IconName = "add" | "create" | "search" | "search-active" | "user" | 
+"settings" | "home" | "login" | "refresh" | "lfg" | "mentoring" | "list" 
+| "questMap" | "badge" | "eye" | "remove" | "lfg-complete" | "calendar" | 
+"filter" | "sort" | "chevron-up" | "chevron-down" | "drag" | "sort-asc" | "sort-desc" | "chevron-left" | "chevron-right" | 
+"close" | "check" | "edit" | "archive" | "delete" | "copy" | "more" | "tag" | "clock" | "undo" ;
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   add: (
@@ -268,7 +272,13 @@ const iconPaths: Record<IconName, React.ReactNode> = {
       <path d="M3 7v6h6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </>
-  )
+  ),
+  "search-active": (
+    <>
+      <path d="M19 11l-7-7-7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="5" y1="11" x2="19" y2="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </>
+  ),
 };
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -278,6 +288,8 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 export function Icon({ name, size = 24, className, ...props }: IconProps) {
+
+
   return (
     <svg
       width={size}

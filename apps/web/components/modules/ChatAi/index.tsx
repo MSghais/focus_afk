@@ -27,13 +27,17 @@ interface ChatAiProps {
     onSendMessage?: (message: string) => void;
     messagesProps?: Message[];
     isLoadingProps?: boolean;
+    isToolsVisible?: boolean;
 }
 
-export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false, chatId, onSendMessage, messagesProps, isLoadingProps }: ChatAiProps) {
+export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = false, chatId, onSendMessage, messagesProps, isLoadingProps, isToolsVisible = true }: ChatAiProps) {
     const router = useRouter();
     const { selectedMentor, mentors, setSelectedMentor, setMentors } = useMentorsStore();
     const params = useParams();
+    const [isToolsAvailable, setIsToolsAvailable] = useState(isToolsVisible);
     const { showToast, showModal } = useUIStore();
+
+    const [isWebsearchActive, setIsWebsearchActive] = useState(false);
     const { tasks, goals, addGoal, updateTask } = useFocusAFKStore();
     const { userConnected } = useAuthStore();
     const apiService = useApi();
@@ -140,7 +144,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 // console.log('Loading messages for chat:', currentChatId);
                 const response = await apiService.getChatMessages(currentChatId, { limit: 50 });
                 // console.log('Chat messages response:', response);
-                
+
                 // Handle both wrapped and direct array responses
                 if (response && response.data && Array.isArray(response.data)) {
                     messagesArray = response.data;
@@ -153,12 +157,12 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                 // Try to find an existing chat for the selected mentor
                 if (selectedMentor?.id) {
                     // console.log('Looking for existing chat for mentor:', selectedMentor.id);
-                    const chatsResponse = await apiService.getChats({ 
-                        mentorId: selectedMentor.id.toString(), 
-                        limit: 1 
+                    const chatsResponse = await apiService.getChats({
+                        mentorId: selectedMentor.id.toString(),
+                        limit: 1
                     });
                     // console.log('Chats response:', chatsResponse);
-                    
+
                     // Handle both wrapped and direct array responses for chats
                     let chats = [];
                     if (chatsResponse && chatsResponse.data && Array.isArray(chatsResponse.data)) {
@@ -166,16 +170,16 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     } else if (Array.isArray(chatsResponse)) {
                         chats = chatsResponse;
                     }
-                    
+
                     if (chats.length > 0) {
                         const chat = chats[0];
                         // console.log('Found existing chat:', chat.id);
                         setCurrentChatId(chat.id);
-                        
+
                         // Load messages from this chat
                         const messagesResponse = await apiService.getChatMessages(chat.id, { limit: 50 });
                         // console.log('Messages response for existing chat:', messagesResponse);
-                        
+
                         // Handle both wrapped and direct array responses for messages
                         if (messagesResponse && messagesResponse.data && Array.isArray(messagesResponse.data)) {
                             messagesArray = messagesResponse.data;
@@ -229,6 +233,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
             const response = await apiService.sendChatMessage({
                 prompt: userMessage,
                 mentorId: selectedMentor?.id?.toString() || undefined,
+                isWebsearchActive: isWebsearchActive
             });
 
             console.log('Send message response:', response);
@@ -239,7 +244,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     console.log('Setting new chat ID:', response.data.chatId);
                     setCurrentChatId(response.data.chatId);
                 }
-                
+
                 // Reload messages to get the updated conversation
                 await loadMessages();
             } else {
@@ -281,9 +286,9 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
 
                     <div className={styles.chatActions + "my-4 gap-8 space-x-8 space-between shadow-sm  rounded-lg p-2"}>
                         {isSelectMentorViewEnabled && (
-                            <button 
+                            <button
                                 onClick={() => {
-                                    logClickedEvent('open_mentor_list_from_chat');   
+                                    logClickedEvent('open_mentor_list_from_chat');
                                     showModal(<MentorList />);
                                 }}
                                 className={styles.actionButton}
@@ -293,7 +298,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                             </button>
                         )}
 
-                        <button 
+                        <button
                             onClick={() => {
                                 loadMessages();
                             }}
@@ -320,7 +325,7 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                                 </p>
                                 <button
                                     onClick={() => {
-                                        logClickedEvent('open_mentor_list_from_chat');   
+                                        logClickedEvent('open_mentor_list_from_chat');
                                         showModal(<MentorList />);
                                     }}
                                     className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
@@ -376,10 +381,22 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     )}
                     <div ref={messagesEndRef} />
                 </div>
-                
+
                 <div className={styles.chatInput}>
-                    <input
+                    {/* <input
                         type="text"
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                        placeholder={selectedMentor ? `Ask ${selectedMentor.name} anything about productivity, focus, or your goals...` : "Select a mentor to start chatting..."}
+                        className={styles.input}
+                        disabled={isLoading || !selectedMentor}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="sentences"
+                    /> */}
+                    <textarea
+                        // type="text"
                         value={chatMessage}
                         onChange={(e) => setChatMessage(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -398,6 +415,29 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
                     >
                         ➤
                     </button>
+                </div>
+
+                <div className={styles.chatTools}>
+
+                    {/* {isToolsAvailable && (
+                        <>
+                            <div className={styles.chatToolsContent}>
+                                <div className={styles.chatToolsHeader}>
+                                    <button className={isWebsearchActive ? "border border-gray-300 dark:border-gray-700 rounded-sm p-2" : ""}
+
+                                        onClick={() => {
+                                            console.log('isWebsearchActive', isWebsearchActive);
+                                            setIsWebsearchActive(!isWebsearchActive);
+                                        }}
+                                    >
+                                        <Icon name={isWebsearchActive ? "search" : "search"} /> {isWebsearchActive ? "Active" : ""}
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </>
+                    )} */}
                 </div>
             </div>
         </div>

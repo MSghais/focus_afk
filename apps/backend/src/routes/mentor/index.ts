@@ -10,13 +10,14 @@ import { buildContextString } from '../../services/helpers/contextHelper';
 import { mentorSchema } from '../../validations/mentor.validation';
 import type { CreateMentorInput, UpdateMentorInput, CreateMessageInput, GetMessagesInput, CreateFundingAccountInput, UpdateFundingAccountInput } from '../../validations/mentor.validation';
 import { DEFAULT_MENTOR_SYSTEM_PROMPT } from '../../types/prompts';
+import { ExaService } from '../../services/exa-js';
 dotenv.config();
 
 async function mentorRoutes(fastify: FastifyInstance) {
   const aiService = new AiService();
   const enhancedAiService = new EnhancedAiService(fastify.prisma);
   const chatService = new ChatService(fastify.prisma);
-
+  const exaService = new ExaService();
   // Check if the plugin is already registered
   if (!fastify.hasContentTypeParser('multipart/form-data')) {
     fastify.register(fastifyMultipart);
@@ -143,7 +144,9 @@ async function mentorRoutes(fastify: FastifyInstance) {
             }
           },
           systemPrompt: { type: 'string' },
-          extraData: { type: 'object' }
+          extraData: { type: 'object' },
+          isToolsAvailable: { type: 'boolean' },
+          isWebsearchActive: { type: 'boolean' }
         },
       },
     },
@@ -158,7 +161,9 @@ async function mentorRoutes(fastify: FastifyInstance) {
         enableMemory = true,
         contextSources = ['tasks', 'goals', 'sessions', 'profile', 'mentor'],
         // systemPrompt,
-        extraData
+        extraData,
+        isToolsAvailable = true,
+        isWebsearchActive = false
       } = request.body as any;
 
 
@@ -180,34 +185,86 @@ async function mentorRoutes(fastify: FastifyInstance) {
       // `;
 
 
+
+
+
+
       let systemPrompt = DEFAULT_MENTOR_SYSTEM_PROMPT;
 
       if (!prompt) {
         return reply.code(400).send({ message: 'Prompt is required' });
       }
 
-      let memory = await enhancedAiService.getMemoryContext(userId, mentorId, sessionId);
-      // If extraData is provided, merge it into the context
-      if (enableMemory && extraData && memory) {
-        // Merge extraData into the userContext
-        const updatedMemory = await enhancedAiService.memoryManager.updateMemory(
-          sessionId || `${userId}_${mentorId || 'default'}`,
-          { userContext: { ...memory.userContext, ...extraData } }
-        );
-        if (updatedMemory) {
-          memory = updatedMemory;
-        }
-      }
+
 
       // Use the context helper to build the context string
       let enhancedPrompt = prompt;
-      if (enableMemory && memory) {
-        const contextString = buildContextString(memory, contextSources);
-        enhancedPrompt = `${contextString}\n\nCurrent User Message: ${prompt}\n\nPlease respond as the AI mentor, taking into account the user's current context and conversation history. Provide personalized, actionable advice.`;
+
+
+
+      console.log('isWebsearchActive', isWebsearchActive);
+      if (isWebsearchActive) {
+
+        console.log('isWebsearchActive', isWebsearchActive);
+        const websearch = await exaService.searchAndContents(prompt, {
+          model: 'gpt-4o-mini',
+          max_tokens: 1000,
+          temperature: 0.5,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0,
+        });
+
+        console.log('exa websearch', websearch);
+        enhancedPrompt += `\n\n
+        Websearch Results: ${websearch.results.map((result: any) => {
+          return `
+          ${result?.title}
+          ${result?.content}
+          ${result?.publishedDate}
+
+          `;
+        }).join('\n')}
+        
+        `;
       }
 
 
       enhancedPrompt += DEFAULT_MENTOR_SYSTEM_PROMPT;
+
+      let exaAnswer;
+      if (isWebsearchActive) {
+        exaAnswer = await exaService.answer(prompt, {
+          model: 'exa',
+          max_tokens: 1000,
+        });
+        console.log('exaAnswer', exaAnswer);
+        enhancedPrompt += `\n\n
+        Exa Answer: ${exaAnswer}
+        `;
+      } else {
+        let memory = await enhancedAiService.getMemoryContext(userId, mentorId, sessionId);
+        // If extraData is provided, merge it into the context
+        if (enableMemory && extraData && memory) {
+          // Merge extraData into the userContext
+          const updatedMemory = await enhancedAiService.memoryManager.updateMemory(
+            sessionId || `${userId}_${mentorId || 'default'}`,
+            { userContext: { ...memory.userContext, ...extraData } }
+          );
+          if (updatedMemory) {
+            memory = updatedMemory;
+          }
+        }
+        if (enableMemory && memory) {
+          const contextString = buildContextString(memory, contextSources);
+          enhancedPrompt = `${contextString}\n\nCurrent User Message: ${prompt}\n\nPlease respond as the AI mentor, taking into account the user's current context and conversation history. Provide personalized, actionable advice.`;
+        }
+      }
+
+      console.log('enhancedPrompt', enhancedPrompt);
+
+
+      console.log("try to generate text");
       // Generate response using the enhanced AI service
       const response = await enhancedAiService.generateTextWithMemory({
         model,
@@ -220,6 +277,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
         contextSources
       });
 
+      console.log('response', response);
       if (!response) {
         return reply.code(500).send({ message: 'Failed to generate response' });
       }
@@ -233,7 +291,7 @@ async function mentorRoutes(fastify: FastifyInstance) {
         chat = await chatService.createChat(userId, {
           title: 'General Chat',
           metadata: {
-            sessionId: response.memory.sessionId,
+            sessionId: response?.memory?.sessionId,
             enableMemory,
             contextSources,
           }
@@ -276,6 +334,106 @@ async function mentorRoutes(fastify: FastifyInstance) {
           usage: response.usage,
           originalPrompt: prompt,
           enhancedPrompt: enhancedPrompt
+        }
+      });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ message: 'Internal Server Error' });
+    }
+  });
+
+  // Chat endpoint with message saving and context/memory support
+  fastify.post('/chat/search', {
+    preHandler: [fastify.authenticate],
+    schema: {
+      body: {
+        type: 'object',
+        required: ['prompt'],
+        properties: {
+          prompt: { type: 'string', minLength: 1 },
+          model: { type: 'string' },
+          mentorId: { type: 'string' },
+          sessionId: { type: 'string' },
+          enableMemory: { type: 'boolean' },
+          contextSources: {
+            type: 'array',
+            items: {
+              type: 'string',
+              enum: ['tasks', 'goals', 'sessions', 'profile', 'mentor', 'badges', 'quests', 'settings']
+            }
+          },
+          systemPrompt: { type: 'string' },
+          extraData: { type: 'object' },
+          isToolsAvailable: { type: 'boolean' },
+          isWebsearchActive: { type: 'boolean' }
+        },
+      },
+    },
+  }, async (request, reply) => {
+    try {
+      const userId = request.user.id;
+      const {
+        prompt,
+        model = DEFAULT_MODEL,
+        mentorId,
+        sessionId,
+        enableMemory = true,
+        contextSources = ['tasks', 'goals', 'sessions', 'profile', 'mentor'],
+        // systemPrompt,
+        extraData,
+        isToolsAvailable = true,
+        isWebsearchActive = false
+      } = request.body as any;
+
+
+
+      if (!prompt) {
+        return reply.code(400).send({ message: 'Prompt is required' });
+      }
+
+
+
+      console.log('isWebsearchActive', isWebsearchActive);
+      const websearch = await exaService.searchAndContents(prompt, {
+        model: 'gpt-4o-mini',
+        max_tokens: 1000,
+        temperature: 0.5,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      });
+
+      console.log("try to generate text");
+      
+
+      // Save the conversation to the chat
+      const conversation = await chatService.saveConversation(
+        'search',
+        userId,
+        prompt,
+        websearch.results.map((result: any) => {
+          return `
+          ${result?.title}
+          ${result?.content}
+          ${result?.publishedDate}
+
+          `;
+        }).join('\n'),
+        {
+          model: 'exa',
+          mentorId: mentorId || undefined,
+          metadata: {
+            websearch: websearch,
+          }
+        }
+      );
+      console.log(`Saved conversation with user message ID: ${conversation?.userMessage?.id}, assistant message ID: ${conversation?.assistantMessage?.id}`);
+
+      return reply.code(200).send({
+        success: true,
+        data: {
+          websearch: websearch,
+          conversation: conversation,
         }
       });
     } catch (error) {
