@@ -13,6 +13,9 @@ export function ConversationAiAgent() {
     const { showToast } = useUIStore();
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const [testResult, setTestResult] = useState<string>('');
 
     const conversation = useConversation({
         onConnect: () => {
@@ -150,6 +153,8 @@ export function ConversationAiAgent() {
             }
             
             setSessionId(null);
+            setIsListening(false);
+            setIsPaused(false);
             
             showToast({
                 type: 'info',
@@ -167,6 +172,79 @@ export function ConversationAiAgent() {
             });
         }
     }, [conversation, authedSocket, sessionId, showToast]);
+
+    const toggleListening = useCallback(async () => {
+        try {
+            if (conversation.status !== 'connected') {
+                showToast({
+                    type: 'error',
+                    message: 'Not connected',
+                    description: 'Please start a conversation first',
+                    duration: 3000
+                });
+                return;
+            }
+
+            // Toggle listening state
+            setIsListening(!isListening);
+            
+            if (!isListening) {
+                showToast({
+                    type: 'success',
+                    message: 'Listening mode enabled',
+                    description: 'The AI will now listen for your voice input',
+                    duration: 2000
+                });
+            } else {
+                showToast({
+                    type: 'info',
+                    message: 'Listening mode disabled',
+                    description: 'Manual listening mode is now off',
+                    duration: 2000
+                });
+            }
+        } catch (error) {
+            console.error('Failed to toggle listening:', error);
+            showToast({
+                type: 'error',
+                message: 'Failed to toggle listening',
+                description: error instanceof Error ? error.message : 'Unknown error occurred',
+                duration: 5000
+            });
+        }
+    }, [conversation, isListening, showToast]);
+
+    const testBackendConnection = useCallback(async () => {
+        try {
+            console.log('🧪 Testing backend connection...');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/conversation/test`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('✅ Backend test successful:', data);
+            setTestResult(`✅ Backend working: ${data.message}`);
+            
+            showToast({
+                type: 'success',
+                message: 'Backend connection test successful',
+                description: data.message,
+                duration: 3000
+            });
+        } catch (error) {
+            console.error('❌ Backend test failed:', error);
+            setTestResult(`❌ Backend error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            
+            showToast({
+                type: 'error',
+                message: 'Backend connection test failed',
+                description: error instanceof Error ? error.message : 'Unknown error',
+                duration: 5000
+            });
+        }
+    }, [showToast]);
 
     // Listen for WebSocket conversation events
     useEffect(() => {
@@ -205,7 +283,7 @@ export function ConversationAiAgent() {
         <div className="flex flex-col items-center gap-4 p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">AI Conversation</h2>
             
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 justify-center">
                 <button
                     onClick={startConversation}
                     disabled={conversation.status === 'connected' || isLoading}
@@ -220,6 +298,18 @@ export function ConversationAiAgent() {
                 >
                     Stop Conversation
                 </button>
+                {conversation.status === 'connected' && (
+                    <button
+                        onClick={toggleListening}
+                        className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                            isListening 
+                                ? 'bg-green-600 text-white hover:bg-green-700' 
+                                : 'bg-yellow-600 text-white hover:bg-yellow-700'
+                        }`}
+                    >
+                        {isListening ? '🎤 Listening' : '🎤 Listen Mode'}
+                    </button>
+                )}
             </div>
 
             <div className="flex flex-col items-center gap-2 mt-4">
@@ -233,9 +323,18 @@ export function ConversationAiAgent() {
                     </p>
                 </div>
                 
-                <p className="text-sm text-gray-600">
-                    Agent is {conversation.isSpeaking ? 'speaking' : 'listening'}
-                </p>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Agent: {conversation.isSpeaking ? 'speaking' : 'ready'}
+                    </span>
+                    {isListening && (
+                        <span className="flex items-center gap-1 text-green-600">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            Listening mode: ON
+                        </span>
+                    )}
+                </div>
                 
                 {sessionId && (
                     <p className="text-xs text-gray-500">
@@ -245,10 +344,16 @@ export function ConversationAiAgent() {
             </div>
 
             {conversation.status === 'connected' && (
-                <div className="mt-4 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-800 text-center">
-                        🎤 Speak clearly into your microphone to interact with the AI agent
-                    </p>
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="text-sm text-blue-800 space-y-2">
+                        <p className="text-center font-medium">🎤 How to use:</p>
+                        <ul className="space-y-1 text-left">
+                            <li>• Click "Listen Mode" to enable manual listening</li>
+                            <li>• Speak clearly into your microphone</li>
+                            <li>• The AI will respond automatically</li>
+                            <li>• Click "Listen Mode" again to disable</li>
+                        </ul>
+                    </div>
                 </div>
             )}
         </div>

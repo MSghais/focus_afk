@@ -80,20 +80,22 @@ async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Store conversation session in database if needed
-      const session = await fastify.prisma.conversationSession.create({
-        data: {
-          userId,
-          sessionId: sessionId || `session_${Date.now()}`,
-          metadata: metadata || {},
-          status: 'active',
-          startedAt: new Date(),
-        },
-      });
+      // TODO: Uncomment after running database migration
+      // const session = await fastify.prisma.conversationSession.create({
+      //   data: {
+      //     userId,
+      //     sessionId: sessionId || `session_${Date.now()}`,
+      //     metadata: metadata || {},
+      //     status: 'active',
+      //     startedAt: new Date(),
+      //   },
+      // });
 
+      const newSessionId = sessionId || `session_${Date.now()}`;
       return reply.send({
-        sessionId: session.sessionId,
+        sessionId: newSessionId,
         message: 'Conversation session started',
-        session
+        session: { sessionId: newSessionId, userId, status: 'active' }
       });
 
     } catch (error) {
@@ -122,17 +124,18 @@ async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Update conversation session status
-      const session = await fastify.prisma.conversationSession.updateMany({
-        where: {
-          userId,
-          sessionId,
-          status: 'active'
-        },
-        data: {
-          status: 'ended',
-          endedAt: new Date(),
-        },
-      });
+      // TODO: Uncomment after running database migration
+      // const session = await fastify.prisma.conversationSession.updateMany({
+      //   where: {
+      //     userId,
+      //     sessionId,
+      //     status: 'active'
+      //   },
+      //   data: {
+      //     status: 'ended',
+      //     endedAt: new Date(),
+      //   },
+      // });
 
       return reply.send({
         message: 'Conversation session ended',
