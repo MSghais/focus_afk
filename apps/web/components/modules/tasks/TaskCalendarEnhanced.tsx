@@ -8,12 +8,14 @@ import { useFocusAFKStore } from '../../../store/store';
 import styles from '../../../styles/components/task-calendar.module.scss';
 import CreateTaskEnhanced from './CreateTaskEnhanced';
 import TaskCard from './TaskCard';
+import Link from 'next/link';
 
 interface TaskCalendarEnhancedProps {
   tasks: Task[];
   onTaskClick?: (task: Task) => void;
   onTaskDrop?: (taskId: string, newDate: Date) => void;
   className?: string;
+  isViewGoogleCalendar?: boolean;
 }
 
 interface CalendarDay {
@@ -24,7 +26,7 @@ interface CalendarDay {
   tasks: Task[];
 }
 
-export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, className = '' }: TaskCalendarEnhancedProps) {
+export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, className = '', isViewGoogleCalendar = true }: TaskCalendarEnhancedProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
@@ -283,6 +285,7 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
             >
               Today
             </button>
+         
           </div>
           
           <button
@@ -293,6 +296,16 @@ export default function TaskCalendarEnhanced({ tasks, onTaskClick, onTaskDrop, c
             <Icon name="chevron-right" />
           </button>
         </div>
+
+        {isViewGoogleCalendar && (
+              <Link
+                href="/calendar/manager"
+                className={styles.googleCalendarButton + " flex items-center gap-2 px-2 py-2 rounded-md transition border border-gray-200"}
+              >
+                <Icon name="calendar" />
+                Google Calendar
+              </Link>
+            )}
 
         {/* <div className={styles.viewToggle}>
           <button

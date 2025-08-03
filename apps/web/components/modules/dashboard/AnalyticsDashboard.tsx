@@ -187,6 +187,9 @@ export default function AnalyticsDashboard() {
     const recentGoals = goals.slice(0, 3);
     const recentSessions = timerSessions.slice(0, 5);
 
+
+    const productivityScore = getProductivityScore();
+
     return (
         <div>
 
@@ -270,7 +273,19 @@ export default function AnalyticsDashboard() {
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
                             <p className={styles.statLabel}>Productivity</p>
-                            <p className={styles.statValue} style={{ color: '#F59E0B' }}>{getProductivityScore()}%</p>
+                            <p className={styles.statValue} style={{ color: '#F59E0B' }}>
+
+                                {productivityScore > 10 ? (
+                                    <span className="text-xs italic font-bold text-gray-500">{productivityScore}</span>
+                                ) : (
+                                    <span className="text-xs italic font-bold text-gray-500">Time to improve</span>
+                                )}
+
+
+                                {productivityScore > 10 && (
+                                    <span className="text-xs italic font-bold text-gray-500">%</span>
+                                )}
+                            </p>
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #F59E0B, #D97706)' }}>
                             <span style={{ color: 'white', fontSize: '1.25rem' }}>📈</span>

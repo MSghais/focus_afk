@@ -86,7 +86,7 @@ export default function Dashboard() {
         };
 
         loadStats();
-        
+
         // Check authentication status
         setSyncStatus(prev => ({
             ...prev,
@@ -96,7 +96,7 @@ export default function Dashboard() {
 
     const handleSyncToBackend = async () => {
         if (!syncStatus.isAuthenticated) return;
-        
+
         setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
         try {
             const result = await syncTimerSessionsToBackend();
@@ -117,7 +117,7 @@ export default function Dashboard() {
 
     const handleLoadFromBackend = async () => {
         if (!syncStatus.isAuthenticated) return;
-        
+
         setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
         try {
             const result = await loadTimerSessionsFromBackend();
@@ -138,7 +138,7 @@ export default function Dashboard() {
 
     const handleMergeSessions = async () => {
         if (!syncStatus.isAuthenticated) return;
-        
+
         setSyncStatus(prev => ({ ...prev, isSyncing: true, syncError: null }));
         try {
             const result = await mergeTimerSessionsFromLocalAndBackend();
@@ -196,7 +196,7 @@ export default function Dashboard() {
     return (
         <div className={styles.dashboard}>
 
-            <div className="flex justify-between items-center">  
+            <div className="flex justify-between items-center">
                 <h1 className={styles.title}>Dashboard</h1>
                 <div className="flex items-center gap-2">
                     <AvatarIcon avatar={'🦸'} />
@@ -342,6 +342,16 @@ export default function Dashboard() {
                     <div className={styles.statContent}>
                         <div className={styles.statInfo}>
                             <p className={styles.statLabel}>Productivity</p>
+                            {/* {getProductivityScore() > 10 ? (
+                                    <span className="text-xs italic font-bold text-gray-500"
+                                    style={{ color: '#F59E0B' }}
+                                    >{getProductivityScore()} %</span>
+                                ) : (
+                                    <span className="text-xs italic font-bold text-gray-500"
+                                    style={{ color: '#F59E0B' }}
+                                    >Time to improve</span>
+                                )} */}
+
                             <p className={styles.statValue} style={{ color: '#F59E0B' }}>{getProductivityScore()}%</p>
                         </div>
                         <div className={styles.statIcon} style={{ background: 'linear-gradient(to right, #F59E0B, #D97706)' }}>

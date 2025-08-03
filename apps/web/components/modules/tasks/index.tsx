@@ -330,7 +330,10 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                     </div>
 
                 </div>
-                <div className="flex gap-2">
+                <div
+                //  className="flex gap-2"
+                    className="grid grid-cols-3 gap-2"
+                >
 
                     {isViewGoalsRedirect && (
                         <div className="flex flex-col gap-2">
@@ -353,8 +356,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         <button
                             onClick={() => setViewMode('list')}
                             className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'list'
-                                ? 'bg-[var(--brand-primary)] text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-[var(--brand-primary)]'
+                                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             List
@@ -362,8 +365,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                         <button
                             onClick={() => setViewMode('calendar')}
                             className={`px-3 py-2 text-sm font-medium transition ${viewMode === 'calendar'
-                                ? 'bg-[var(--brand-primary)] text-white'
-                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                ? 'bg-[var(--brand-primary)]'
+                                : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             Calendar
@@ -390,7 +393,8 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 />
                             </div>)
                         }}
-                        className="flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition border border-gray-200"
+                        className="flex items-center gap-2 px-2 py-2 rounded-md transition border border-gray-200"
+                        // className="flex items-center gap-2 px-4 py-2 rounded-lg transition border border-gray-200"
                     >
                         <Icon name="filter" />
                     </button>
@@ -433,7 +437,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                 title="Refresh tasks from local and API"
                             >
                                 {refreshing ? 'Refreshing...' : 'Refresh'}
-                                <Icon name="refresh" />
+                                {/* <Icon name="refresh" /> */}
 
                                 <span aria-hidden="true">🔄
 
@@ -448,6 +452,13 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                     {syncing ? 'Syncing...' : 'Sync to Backend'}
                                 </button>
                             )}
+                            <Link
+                                href="/calendar/manager"
+                                className="px-4 py-2 flex items-center gap-2 border border-[var(--brand-primary)] text-[var(--brand-primary)] rounded-lg hover:border-[var(--brand-secondary)] transition"
+                            >
+                                {/* <Icon name="calendar" /> */}
+                                Google Calendar
+                            </Link>
                             <button
                                 onClick={() => setShowAddForm(!showAddForm)}
                                 className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition"
