@@ -45,7 +45,7 @@ export default function MentorPageComponent({ isSetupEnabled = false, isEnhanced
   const [isViewChatAi, setIsViewChatAi] = useState(false);
   const [isViewEnhancedChat, setIsViewEnhancedChat] = useState(false);
 
-  console.log("isEnhancedChatEnabled", isEnhancedChatEnabled);
+  // console.log("isEnhancedChatEnabled", isEnhancedChatEnabled);
   useEffect(() => {
     loadMentors();
 
@@ -127,15 +127,7 @@ export default function MentorPageComponent({ isSetupEnabled = false, isEnhanced
       {isEnhancedChatEnabled && (
 
         <div className='flex flex-row gap-2'>
-          <ButtonSimple
-            onClick={() => {
-              setIsViewEnhancedChat(!isViewEnhancedChat)
-              setIsViewChatAi(false)
-            }}
-            className={styles.simpleToggleButton}
-          >
-            {isViewEnhancedChat ? "Hide Enhanced Chat" : "Show Enhanced Chat"}
-          </ButtonSimple>
+      
 
           <ButtonSimple
             onClick={() => {
@@ -145,6 +137,16 @@ export default function MentorPageComponent({ isSetupEnabled = false, isEnhanced
             className={styles.simpleToggleButton}
           >
             {isViewChatAi ? "Hide Chat" : "Show Chat"}
+          </ButtonSimple>
+
+          <ButtonSimple
+            onClick={() => {
+              setIsViewEnhancedChat(!isViewEnhancedChat)
+              setIsViewChatAi(false)
+            }}
+            className={styles.simpleToggleButton}
+          >
+            {isViewEnhancedChat ? "Hide Enhanced Chat" : "Show Enhanced Chat"}
           </ButtonSimple>
         </div>
 

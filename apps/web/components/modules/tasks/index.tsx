@@ -250,6 +250,74 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
         );
     }
 
+    const FormEditTask = () => {
+        return (
+            <div>
+                <form onSubmit={handleUpdateTask} className="space-y-3">
+                    <input
+                        type="text"
+                        value={editingTask?.title || ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                        className="w-full p-2 border rounded-md font-medium"
+                        required
+                    />
+                    <textarea
+                        value={editingTask?.description || ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                        className="w-full p-2 border rounded-md text-sm"
+                        rows={2}
+                    />
+                    <div className="flex gap-2">
+                        <select
+                            value={editingTask?.priority}
+                            onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                            className="p-2 border rounded-md text-sm"
+                        >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                        <input
+                            type="text"
+                            value={editingTask?.category || ''}
+                            onChange={(e) =>
+                                setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                            }
+                            className="p-2 border rounded-md text-sm"
+                            placeholder="Category"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Due Date</label>
+                        <input
+                            type="date"
+                            value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                            onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                            className="w-full p-2 border rounded-md"
+                        />
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button
+                            type="submit"
+                            className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                        >
+                            Save
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setEditingTask(null)}
+                            className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        )
+    }
+
     return (
         <div className="w-full h-full flex flex-col p-2 md:p-6">
             <div className="flex flex-col sm:flex-col sm:justify-between sm:items-center gap-2 mb-6">
@@ -554,67 +622,69 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                             }`}
                                     >
                                         {editingTask?.id === task.id ? (
-                                            <form onSubmit={handleUpdateTask} className="space-y-3">
-                                                <input
-                                                    type="text"
-                                                    value={editingTask?.title || ''}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
-                                                    className="w-full p-2 border rounded-md font-medium"
-                                                    required
-                                                />
-                                                <textarea
-                                                    value={editingTask?.description || ''}
-                                                    onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
-                                                    className="w-full p-2 border rounded-md text-sm"
-                                                    rows={2}
-                                                />
-                                                <div className="flex gap-2">
-                                                    <select
-                                                        value={editingTask?.priority}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
-                                                        className="p-2 border rounded-md text-sm"
-                                                    >
-                                                        <option value="low">Low</option>
-                                                        <option value="medium">Medium</option>
-                                                        <option value="high">High</option>
-                                                    </select>
-                                                    <input
-                                                        type="text"
-                                                        value={editingTask?.category || ''}
-                                                        onChange={(e) =>
-                                                            setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
-                                                        }
-                                                        className="p-2 border rounded-md text-sm"
-                                                        placeholder="Category"
-                                                    />
-                                                </div>
+                                            <FormEditTask />
+                                            // <form onSubmit={handleUpdateTask} className="space-y-3">
+                                            //     <input
+                                            //         type="text"
+                                            //         value={editingTask?.title || ''}
+                                            //         onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value || '' } as Task)}
+                                            //         className="w-full p-2 border rounded-md font-medium"
+                                            //         required
+                                            //     />
+                                            //     <textarea
+                                            //         value={editingTask?.description || ''}
+                                            //         onChange={(e) => setEditingTask({ ...editingTask, description: e.target.value || '' } as Task)}
+                                            //         className="w-full p-2 border rounded-md text-sm"
+                                            //         rows={2}
+                                            //     />
+                                            //     <div className="flex gap-2">
+                                            //         <select
+                                            //             value={editingTask?.priority}
+                                            //             onChange={(e) => setEditingTask({ ...editingTask, priority: e.target.value as Task['priority'] || 'medium' } as Task)}
+                                            //             className="p-2 border rounded-md text-sm"
+                                            //         >
+                                            //             <option value="low">Low</option>
+                                            //             <option value="medium">Medium</option>
+                                            //             <option value="high">High</option>
+                                            //         </select>
+                                            //         <input
+                                            //             type="text"
+                                            //             value={editingTask?.category || ''}
+                                            //             onChange={(e) =>
+                                            //                 setEditingTask({ ...editingTask, category: e.target.value || '' } as Task)
+                                            //             }
+                                            //             className="p-2 border rounded-md text-sm"
+                                            //             placeholder="Category"
+                                            //         />
+                                            //     </div>
 
-                                                <div>
-                                                    <label className="block text-sm font-medium mb-1">Due Date</label>
-                                                    <input
-                                                        type="date"
-                                                        value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
-                                                        onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
-                                                        className="w-full p-2 border rounded-md"
-                                                    />
-                                                </div>
+                                            //     <div>
+                                            //         <label className="block text-sm font-medium mb-1">Due Date</label>
+                                            //         <input
+                                            //             type="date"
+                                            //             value={editingTask?.dueDate?.toISOString().split('T')[0] || ''}
+                                            //             onChange={(e) => setEditingTask({ ...editingTask, dueDate: new Date(e.target.value) } as unknown as Task)}
+                                            //             className="w-full p-2 border rounded-md"
+                                            //         />
+                                            //     </div>
 
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        type="submit"
-                                                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditingTask(null)}
-                                                        className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            </form>
+                                            //     <div className="flex gap-2">
+                                            //         <button
+                                            //             type="submit"
+                                            //             className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                                            //         >
+                                            //             Save
+                                            //         </button>
+                                            //         <button
+                                            //             type="button"
+                                            //             onClick={() => setEditingTask(null)}
+                                            //             className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600"
+                                            //         >
+                                            //             Cancel
+                                            //         </button>
+                                            //     </div>
+                                            // </form>
+                                            
                                         ) : (
                                             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                                                 <div className="flex-1">
@@ -710,14 +780,18 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                         <Icon name={task.completed ? "undo" : "check"} />
                                                         {task.completed ? 'Undo' : 'Complete'}
                                                     </button>
-                                                    
+
                                                     <button
-                                                        onClick={() => setEditingTask(task)}
+                                                        onClick={() => {
+                                                            setEditingTask(task)
+                                                            setShowAddForm(false)
+                                                            showModal(  <FormEditTask />)
+                                                        }}
                                                         className="flex items-center gap-2 px-2 py-1 hover:bg-blue-50 rounded text-sm"
                                                     >
                                                         ✏️ Edit
                                                     </button>
-                                              
+
 
                                                     <button
                                                         onClick={() => {
@@ -729,7 +803,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                     >
                                                         🗑️ Delete
                                                     </button>
-                                                    
+
                                                     {task.dueDate && (
                                                         <button
                                                             onClick={() => syncTaskToCalendar(task)}
@@ -739,7 +813,7 @@ export default function Tasks({ isViewGoalsRedirect = false }: ITasksOverviewPro
                                                             📅 Sync
                                                         </button>
                                                     )}
-                                                    
+
                                                     <div>
                                                         <button
                                                             className="flex items-center gap-2 px-2 py-1 hover:bg-red-50 rounded text-sm"
