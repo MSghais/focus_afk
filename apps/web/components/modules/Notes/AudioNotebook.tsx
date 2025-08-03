@@ -9,6 +9,8 @@ import { ButtonSecondary } from "../../small/buttons";
 import { logClickedEvent } from "../../../lib/analytics";
 import { api } from "../../../lib/api";
 
+import { ConversationAiAgent } from "../Conversation/ConversationAiAgent";
+
 interface AudioNotebookProps {
     note: Note;
     notesSources: NoteSource[];
@@ -22,8 +24,9 @@ export default function AudioNotebook({
 
     const { showToast } = useUIStore();
 
-        const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-    const [audioData, setAudioData] = useState<Blob | null>(null);      
+    const [isConversationOpen, setIsConversationOpen] = useState(false);
+    const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+    const [audioData, setAudioData] = useState<Blob | null>(null);
     const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
     const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -86,11 +89,11 @@ export default function AudioNotebook({
 
         console.log("handleGenerateSummaryAudio");
         logClickedEvent("studio_notebook_generate_summary_audio");
-        
+
         setIsGeneratingAudio(true);
         setAudioLoadError(null);
         setHasAudioData(false);
-        
+
         showToast({
             message: 'Generating audio summary',
             description: 'Please wait while we generate the summary audio',
@@ -105,52 +108,52 @@ export default function AudioNotebook({
             console.log('Audio blob received:', audioBlob);
             console.log('Audio blob size:', audioBlob.size);
             console.log('Audio blob type:', audioBlob.type);
-            
+
             // Validate the audio blob
             if (!audioBlob || audioBlob.size === 0) {
                 throw new Error('Received empty audio data');
             }
-            
+
             // Clean up previous audio URL if it exists
             if (currentAudioUrl) {
                 URL.revokeObjectURL(currentAudioUrl);
             }
-            
+
             const audioUrl = URL.createObjectURL(audioBlob);
             console.log('Audio URL created:', audioUrl);
-            
+
             // Set audio data immediately so the player shows up
             setAudioData(audioBlob);
             setHasAudioData(true);
             setCurrentAudioUrl(audioUrl);
-            
+
             // Set the audio source and load it
             if (aiAudioRef.current) {
                 console.log('Setting audio source:', audioUrl);
-                
+
                 // Reset audio element state
                 aiAudioRef.current.pause();
                 aiAudioRef.current.currentTime = 0;
                 aiAudioRef.current.src = audioUrl;
-                
+
                 // Verify the src was set
                 console.log('Audio src after setting:', aiAudioRef.current.src);
-                
+
                 // Load the audio
                 aiAudioRef.current.load();
-                
+
                 // Add event listeners to track loading
                 const audio = aiAudioRef.current;
                 const handleLoadStart = () => console.log('Audio load started');
                 const handleCanPlay = () => console.log('Audio can play');
                 const handleLoadedData = () => console.log('Audio data loaded');
                 const handleLoadedMetadata = () => console.log('Audio metadata loaded');
-                
+
                 audio.addEventListener('loadstart', handleLoadStart);
                 audio.addEventListener('canplay', handleCanPlay);
                 audio.addEventListener('loadeddata', handleLoadedData);
                 audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-                
+
                 // Try to play the audio after a short delay to ensure it's loaded
                 setTimeout(async () => {
                     try {
@@ -259,7 +262,7 @@ export default function AudioNotebook({
         if (aiAudioRef.current) {
             console.log('Play/Pause clicked. Current src:', aiAudioRef.current.src);
             console.log('Current audio URL state:', currentAudioUrl);
-            
+
             if (isAudioPlaying) {
                 aiAudioRef.current.pause();
             } else {
@@ -269,7 +272,7 @@ export default function AudioNotebook({
                     aiAudioRef.current.src = currentAudioUrl;
                     aiAudioRef.current.load();
                 }
-                
+
                 // Check if audio is ready to play
                 if (aiAudioRef.current.readyState >= 2) { // HAVE_CURRENT_DATA or higher
                     aiAudioRef.current.play().catch(err => {
@@ -372,13 +375,12 @@ export default function AudioNotebook({
 
             {/* Generate Button */}
             <div className="mb-6">
-                <ButtonSecondary 
-                    className={`w-full py-4 px-6 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${
-                        isGeneratingAudio 
-                            ? 'bg-gray-400 cursor-not-allowed' 
+                <ButtonSecondary
+                    className={`w-full py-4 px-6 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 ${isGeneratingAudio
+                            ? 'bg-gray-400 cursor-not-allowed'
                             : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                    }`}
-                    onClick={handleGenerateSummaryAudio} 
+                        }`}
+                    onClick={handleGenerateSummaryAudio}
                     disabled={!note.id || isGeneratingAudio}
                 >
                     <div className="flex items-center justify-center gap-3">
@@ -445,13 +447,13 @@ export default function AudioNotebook({
                                 </div>
                             </div>
                         )}
-                        
+
                         {/* Progress Bar */}
-                        <div 
+                        <div
                             className="w-full h-2 rounded-full cursor-pointer overflow-hidden bg-gray-200 dark:bg-gray-700"
                             onClick={handleSeek}
                         >
-                            <div 
+                            <div
                                 className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full transition-all duration-300"
                                 style={{ width: `${audioDuration > 0 ? (audioProgress / audioDuration) * 100 : 0}%` }}
                             />
@@ -463,11 +465,10 @@ export default function AudioNotebook({
                                 <button
                                     onClick={handlePlayPause}
                                     disabled={isGeneratingAudio}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-200 shadow-lg ${
-                                        isGeneratingAudio 
-                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-200 shadow-lg ${isGeneratingAudio
+                                            ? 'bg-gray-400 cursor-not-allowed'
                                             : 'bg-blue-600 hover:bg-blue-700'
-                                    }`}
+                                        }`}
                                 >
                                     {isGeneratingAudio ? (
                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -507,8 +508,8 @@ export default function AudioNotebook({
                     </div>
 
                     {/* Hidden audio element for actual playback */}
-                    <audio 
-                        ref={aiAudioRef} 
+                    <audio
+                        ref={aiAudioRef}
                         onPlay={handleAudioPlay}
                         onPause={handleAudioPause}
                         onTimeUpdate={handleAudioTimeUpdate}
@@ -519,6 +520,11 @@ export default function AudioNotebook({
                 </div>
             )}
 
+
+
+            <button onClick={() => setIsConversationOpen(!isConversationOpen)}>Open Conversation</button>
+
+            {isConversationOpen && <ConversationAiAgent />}
             {/* Info Section */}
             {/* <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex items-start gap-3">
