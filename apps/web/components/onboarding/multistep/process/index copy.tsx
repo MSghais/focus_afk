@@ -8,7 +8,6 @@ interface OnboardingStep {
   title: string;
   subtitle: string;
   description: string;
-  summary?: string;
   image: string;
   actionText: string;
 }
@@ -19,7 +18,6 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     title: 'Welcome to Focus AFK',
     subtitle: 'Your Journey to Focused Success',
     description: 'Transform your productivity with AI-powered focus tools, goal tracking, and gamified achievements.',
-    summary: 'Set goals, track progress, and stay motivated with personalized settings that adapt to your unique workflow.',
     image: '/circles.svg',
     actionText: 'Get Started'
   },
@@ -28,26 +26,25 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     title: 'Focus Modes',
     subtitle: 'Block Distractions, Boost Productivity',
     description: 'Focus Modes help you stay on track by blocking distracting apps and websites during your work sessions.',
-    summary: 'Set goals, track progress, and stay motivated with personalized settings that adapt to your unique workflow.',
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop',
     actionText: 'Next'
   },
-  // {
-  //   id: 'personalize',
-  //   title: 'Personalize Your Focus',
-  //   subtitle: 'Tailor Your Experience',
-  //   description: 'Set goals, track progress, and stay motivated with personalized settings that adapt to your unique workflow.',
-  //   image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop',
-  //   actionText: 'Next'
-  // },
-  // {
-  //   id: 'goals',
-  //   title: 'Set Your Goals',
-  //   subtitle: 'Define What Matters Most',
-  //   description: 'Create meaningful goals and break them down into actionable tasks. Track your progress and celebrate achievements.',
-  //   image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
-  //   actionText: 'Create Goals'
-  // },
+  {
+    id: 'personalize',
+    title: 'Personalize Your Focus',
+    subtitle: 'Tailor Your Experience',
+    description: 'Set goals, track progress, and stay motivated with personalized settings that adapt to your unique workflow.',
+    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop',
+    actionText: 'Next'
+  },
+  {
+    id: 'goals',
+    title: 'Set Your Goals',
+    subtitle: 'Define What Matters Most',
+    description: 'Create meaningful goals and break them down into actionable tasks. Track your progress and celebrate achievements.',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
+    actionText: 'Create Goals'
+  },
   {
     id: 'ready',
     title: "You're All Set!",
@@ -151,7 +148,6 @@ export default function OnboardingProcess({ onComplete, onStepChange }: Onboardi
             <h1 className={styles.title}>{currentStepData.title}</h1>
             <h2 className={styles.subtitle}>{currentStepData.subtitle}</h2>
             <p className={styles.description}>{currentStepData.description}</p>
-            <p className={styles.summary}>{currentStepData.summary}</p>
           </div>
         </div>
       </div>
