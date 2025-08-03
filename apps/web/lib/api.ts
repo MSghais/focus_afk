@@ -1363,6 +1363,25 @@ class ApiService {
       body: JSON.stringify({ timeMin, timeMax }),
     });
   }
+
+  // ElevenLabs conversation methods
+  async getConversationSignedUrl(): Promise<ApiResponse<{ signedUrl: string }>> {
+    return this.request<{ signedUrl: string }>('/conversation/signed-url');
+  }
+
+  async startConversationSession(data: { sessionId?: string; metadata?: any }): Promise<ApiResponse<{ sessionId: string; session: any }>> {
+    return this.request<{ sessionId: string; session: any }>('/conversation/start-session', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async endConversationSession(data: { sessionId: string }): Promise<ApiResponse<{ message: string; sessionId: string }>> {
+    return this.request<{ message: string; sessionId: string }>('/conversation/end-session', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiService();

@@ -173,68 +173,6 @@ export default function FormMultistep({
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className={styles.content}>
-        <div className={styles.stepContent}>
-          {/* Step Header */}
-          <div className={styles.stepHeader}>
-            <h1 className={styles.title}>{currentStepData?.title}</h1>
-            <p className={styles.description}>{currentStepData?.description}</p>
-          </div>
-
-          {/* Step Component */}
-
-          <div className={styles.stepComponent}>
-            {currentStep === 1 && (
-              <div>
-                <ProfileUser isLoggoutViewActive={true} />
-                <button onClick={() => {
-                  logClickedEvent('onboarding_skip_login');
-                  handleNext();
-                }}>Skip</button>
-              </div>
-            )}
-            {currentStep === 2 && (
-              <GoalCreate
-                onNext={handleNext}
-                tasks={tasks.map((task) => ({
-                  id: task.id || '',
-                  title: task.title || ''
-                }))}
-                onCreate={handleCreateGoal}
-              />
-            )}
-
-            {currentStep === 3 && (
-              <CreateTask onNext={() => {
-                logClickedEvent('onboarding_create_task');
-                handleNext();
-              }} />
-            )}
-
-            {currentStep === 4 && (
-              <div className={styles.completionStep}>
-                <div className={styles.completionIcon}>
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                </div>
-                <h2 className={styles.completionTitle}>You're All Set!</h2>
-                <p className={styles.completionDescription}>
-                  Your focus environment is ready. Start your first focused session and begin your journey to success.
-                </p>
-                <button
-                  className={styles.completionButton}
-                  onClick={handleOnboardEnd}
-                >
-                  Start Focusing
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Navigation */}
       <div className={styles.navigation}>
@@ -289,6 +227,84 @@ export default function FormMultistep({
           ))}
         </div>
       </div>
+
+      {/* Main Content */}
+      <div className={styles.content}>
+        <div className={styles.stepContent}>
+          {/* Step Header */}
+          <div className={styles.stepHeader}>
+            <h1 className={styles.title}>{currentStepData?.title}</h1>
+            <p className={styles.description}>{currentStepData?.description}</p>
+          </div>
+
+          {/* Step Component */}
+
+          <div className={styles.stepComponent}>
+            {currentStep === 1 && (
+              <div>
+                <ProfileUser isLoggoutViewActive={true} />
+
+                <div className="items-center gap-2 mt-4 justify-end flex flex-col">
+
+                    <button
+                      className="cursor-pointer p-4 border border-border rounded-lg"
+                      onClick={() => {
+                        logClickedEvent('onboarding_skip_login');
+                        handleNext();
+                      }}>Skip login </button>
+                    <p className="text-sm text-muted-foreground">
+                      (you can do it later) or used it offline/locally
+                    </p>
+                </div>
+
+              </div>
+            )}
+            {currentStep === 2 && (
+              <GoalCreate
+                onNext={handleNext}
+                tasks={tasks.map((task) => ({
+                  id: task.id || '',
+                  title: task.title || ''
+                }))}
+                onCreate={handleCreateGoal}
+                isCancelVisible={false}
+              />
+            )}
+
+            {currentStep === 3 && (
+              <CreateTask onNext={() => {
+                logClickedEvent('onboarding_create_task');
+                handleNext();
+              }} 
+              isCancelVisible={false}
+              />
+            )}
+
+            {currentStep === 4 && (
+              <div className={styles.completionStep}>
+                <div className={styles.completionIcon}>
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                </div>
+                <h2 className={styles.completionTitle}>You're All Set!</h2>
+                <p className={styles.completionDescription}>
+                  Your focus environment is ready. Start your first focused session and begin your journey to success.
+                </p>
+                <button
+                  className={styles.completionButton}
+                  onClick={handleOnboardEnd}
+                >
+                  Start Focusing
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+
     </div>
   );
 }   

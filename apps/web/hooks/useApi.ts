@@ -91,7 +91,7 @@ export function useApi() {
         if (filters?.chatId) params.append('chatId', filters.chatId);
         return authenticatedApiService.request(`/mentor/messages?${params.toString()}`);
       },
-      sendChatMessage: async (messageData: { prompt: string; model?: string; mentorId?: string }) => {
+      sendChatMessage: async (messageData: { prompt: string; model?: string; mentorId?: string; isWebsearchActive?: boolean }) => {
         return authenticatedApiService.request('/mentor/chat', {
           method: 'POST',
           body: JSON.stringify(messageData),

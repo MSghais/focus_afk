@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.7.0",
+    "@elevenlabs/react": "^0.4.5",
     "@privy-io/react-auth": "^2.19.0",
     "@repo/ui": "workspace:*",
     "classnames": "^2.5.1",

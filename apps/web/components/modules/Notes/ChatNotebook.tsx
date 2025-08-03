@@ -263,9 +263,9 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
         <div className="flex items-center justify-between p-4">
           <div>
             {/* <h2 className="text-lg font-semibold">Note Assistant</h2> */}
-            <p className="text-sm text-muted-foreground">
+            {/* <p className="text-sm text-muted-foreground">
               Chat and analyze your note with {note.noteSources?.length || 0} sources
-            </p>
+            </p> */}
           </div>
           <div className="flex items-center space-x-2">
             {/* <button
@@ -278,13 +278,13 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
             >
               🛠️ Tools
             </button> */}
-            <button
+            {/* <button
               onClick={loadChatMessages}
               disabled={isLoadingMessages}
               className="px-3 py-1 text-sm bg-muted rounded-lg hover:bg-muted/80 disabled:opacity-50"
             >
               {isLoadingMessages ? '🔄' : '🔄'}
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -326,6 +326,13 @@ export default function ChatNotebook({ note, onUpdate, onBack }: ChatNotebookPro
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' && (
           <div className="flex flex-col h-full">
+            <button
+              onClick={loadChatMessages}
+              disabled={isLoadingMessages}
+              className="px-3 py-1 text-sm bg-muted rounded-lg hover:bg-muted/80 disabled:opacity-50"
+            >
+              {isLoadingMessages ? '🔄' : '🔄'}
+            </button>
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[350px] sm:max-h-[450px] overflow-y-auto scrollbar-hide">
               {isLoadingMessages ? (

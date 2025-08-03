@@ -21,6 +21,7 @@ export interface GoalCreateProps {
   onCreate?: (goal: Goal) => void;
   onCancel?: () => void;
   onNext?: () => void;
+  isCancelVisible?: boolean;
 }
 
 // export interface GoalFormData {
@@ -33,7 +34,10 @@ export interface GoalCreateProps {
 
 const GOAL_TYPES = ["Goal", "KPI", "Aim"];
 
-export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext }: GoalCreateProps) {
+export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext,
+  isCancelVisible = true,
+
+}: GoalCreateProps) {
   const [name, setName] = useState<string>("");
   const [type, setType] = useState<string>(GOAL_TYPES[0] || "");
   const [description, setDescription] = useState<string>("");
@@ -63,18 +67,18 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext }: G
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md p-4 rounded-lg shadow flex flex-col gap-4 mx-auto">
+    <form onSubmit={handleSubmit} className="w-full p-4 rounded-lg shadow flex flex-col gap-4 mx-auto">
       <h2 className="text-xl font-bold mb-2">Create Goal / KPI / Aim</h2>
       <div>
         <label className="block text-sm font-medium mb-1">Name *</label>
         <input type="text" className="w-full p-2 border rounded-md" value={name} onChange={e => setName(e.target.value)} required />
       </div>
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium mb-1">Type</label>
         <select className="w-full p-2 border rounded-md" value={type} onChange={e => setType(e.target.value)}>
           {GOAL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
-      </div>
+      </div> */}
       <div>
         <label className="block text-sm font-medium mb-1">Description</label>
         <textarea className="w-full p-2 border rounded-md" value={description} onChange={e => setDescription(e.target.value)} rows={2} />
@@ -107,7 +111,9 @@ export default function GoalCreate({ tasks = [], onCreate, onCancel, onNext }: G
       </div>
       <div className="flex gap-2 mt-4">
         <button type="submit" className="px-4 py-2 bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-secondary)] transition flex-1">Create</button>
-        <button type="button" className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex-1" onClick={onCancel}>Cancel</button>
+        {isCancelVisible && (
+          <button type="button" className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition flex-1" onClick={onCancel}>Cancel</button>
+        )}
       </div>
     </form>
   );
