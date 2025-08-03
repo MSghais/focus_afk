@@ -87,6 +87,10 @@ export default function ChatAi({ taskId, mentorId, isSelectMentorViewEnabled = f
         setIsLoadingMessagesInitial(true);
     }, []);
 
+    useEffect(() => {
+        loadMessages()
+    }, [mentorId]);
+
     // Load mentors on mount
     useEffect(() => {
         if (userConnected && (!mentors || mentors.length === 0)) {

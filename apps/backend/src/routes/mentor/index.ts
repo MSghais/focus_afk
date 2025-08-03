@@ -9,6 +9,7 @@ import { ChatService } from '../../services/chat/chat.service';
 import { buildContextString } from '../../services/helpers/contextHelper';
 import { mentorSchema } from '../../validations/mentor.validation';
 import type { CreateMentorInput, UpdateMentorInput, CreateMessageInput, GetMessagesInput, CreateFundingAccountInput, UpdateFundingAccountInput } from '../../validations/mentor.validation';
+import { DEFAULT_MENTOR_SYSTEM_PROMPT } from '../../types/prompts';
 dotenv.config();
 
 async function mentorRoutes(fastify: FastifyInstance) {
@@ -161,19 +162,25 @@ async function mentorRoutes(fastify: FastifyInstance) {
       } = request.body as any;
 
 
-      let systemPrompt = `
-      You are a mentor.
-      You are given a prompt and a list of tasks, goals, sessions, profile, mentor, badges, quests, settings.
-      You need to respond to the prompt based on the context and conversation history.
-      Be friendly and engaging.
-      Be helpful and informative.
-      Be professional and respectful.
-      Be concise and to the point.
-      Be friendly and engaging.
-      Be helpful and informative.
-      Be short and concise, conversational.
-      If need to ask questions, ask them in a friendly and engaging way.
-      `;
+      // let systemPrompt = `
+      // You are a mentor.
+      // Create concice and short response very simple and easy to understand.
+      // Ask questions if needed to get more information.
+      // You are given a prompt and a list of tasks, goals, sessions, profile, mentor, badges, quests, settings.
+      // You need to respond to the prompt based on the context and conversation history.
+      // Be friendly and engaging.
+      // Be helpful and informative.
+      // Be professional and respectful.
+      // Be concise and to the point.
+      // Be friendly and engaging.
+      // Be helpful and informative.
+      // Be short and concise, conversational.
+      // If need to ask questions, ask them in a friendly and engaging way.
+      // Short sentences, conversation, friendly.
+      // `;
+
+
+      let systemPrompt = DEFAULT_MENTOR_SYSTEM_PROMPT;
 
       if (!prompt) {
         return reply.code(400).send({ message: 'Prompt is required' });
@@ -199,11 +206,13 @@ async function mentorRoutes(fastify: FastifyInstance) {
         enhancedPrompt = `${contextString}\n\nCurrent User Message: ${prompt}\n\nPlease respond as the AI mentor, taking into account the user's current context and conversation history. Provide personalized, actionable advice.`;
       }
 
+
+      enhancedPrompt += DEFAULT_MENTOR_SYSTEM_PROMPT;
       // Generate response using the enhanced AI service
       const response = await enhancedAiService.generateTextWithMemory({
         model,
         systemPrompt,
-        prompt,
+        prompt: enhancedPrompt,
         userId,
         mentorId,
         sessionId,
