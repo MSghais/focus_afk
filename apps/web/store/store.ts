@@ -55,8 +55,8 @@ interface FocusAFKStore {
 
   // Actions - Tasks
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<Task | null | undefined>;
-  updateTask: (id: string | number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
-  deleteTask: (id: string | number) => Promise<void>;
+  updateTask: (id: string | number, updates: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<Task | null | undefined>;
+  deleteTask: (id: string | number) => Promise<boolean>;
   toggleTaskComplete: (id: string | number, completed: boolean) => Promise<boolean | undefined>;
   loadTasks: () => Promise<void>;
   getTask: (id: string | number) => Promise<Task | null>;
@@ -258,6 +258,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
           console.error('❌ Failed to sync task update to backend:', err);
         }
       }
+      return get().tasks.find((task) => task.id === id);
     },
 
     deleteTask: async (id) => {
@@ -289,6 +290,7 @@ export const useFocusAFKStore = create<FocusAFKStore>()(
       } else if (isUserAuthenticated() && typeof id === 'number') {
         console.log('ℹ️ Local-only task deleted (no backend sync needed):', id);
       }
+      return true;
     },
 
     toggleTaskComplete: async (id, completed) => {

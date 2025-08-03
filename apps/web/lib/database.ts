@@ -44,22 +44,25 @@ export const dbUtils = {
     });
   },
 
-  async deleteTask(id: string | number): Promise<void> {
+  async deleteTask(id: string | number): Promise<boolean> {
     // Handle both string and number IDs
     if (typeof id === 'string') {
       // If it's a string ID (CUID from backend), try to parse it as a number
-      const parsedId = parseInt(id);
-      if (isNaN(parsedId)) {
+      // const parsedId = parseInt(id);
+      // console.log('parsedId', parsedId);
+      // if (isNaN(parsedId)) {
         // If it's a CUID (not a number), we can't delete it from local storage
         // This is expected for backend-only tasks
-        console.log('Cannot delete backend task from local storage:', id);
-        return;
-      }
-      await db.tasks.delete(parsedId);
+        // console.log('Cannot delete backend task from local storage:', id);
+        // return false;
+      // }
+      await db.tasks.delete(id);
     } else {
+      console.log('id', id);
       // It's already a number, delete directly
       await db.tasks.delete(id);
     }
+    return true;
   },
 
   async getTasks(filters?: {
