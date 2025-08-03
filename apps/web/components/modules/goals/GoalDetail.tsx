@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
-import GoalCreate, { GoalFormData, Task as CreateTask } from './GoalCreate';
 import GoalEdit from './GoalEdit';
 import { useFocusAFKStore } from '../../../store/store';
 import { ButtonPrimary, ButtonSimple } from '../../small/buttons';
@@ -25,7 +24,7 @@ export interface GoalDetailProps {
 
 export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }: GoalDetailProps) {
   const [showCreate, setShowCreate] = useState<boolean>(false);
-  const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal, addTask } = useFocusAFKStore();
+  const { goals, tasks, addGoal, loadGoals, loadTasks, selectedGoal, setSelectedGoal, addTask, updateGoal } = useFocusAFKStore();
 
   const { showToast, showModal, hideModal } = useUIStore();
   const { setTasksRecommendations, tasksRecommendations } = useRecommendersStore();
@@ -34,6 +33,10 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   const [error, setError] = useState<string | null>(null);
   const [dataSource, setDataSource] = useState<'backend' | 'local' | null>(null);
 
+
+  const [isSuggestionsTasksAdded, setIsSuggestionsTasksAdded] = useState<boolean>(false);
+
+  const [tasksAdded, setTasksAdded] = useState<Task[]>([]);
   let { id } = useParams();
   let goalId = goalIdProps || id;
 
@@ -43,13 +46,13 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
   // Get related tasks for the current goal
   const relatedTasks = useMemo(() => {
     if (!goal || !tasks.length) return [];
-    
+
     // Handle both relatedTasks (number[]) and relatedTaskIds (string[])
     const taskIds = goal.relatedTasks || goal.relatedTaskIds || [];
-    
+
     return tasks.filter(task => {
       if (!task.id) return false;
-      return taskIds.some(id => 
+      return taskIds.some(id =>
         task.id?.toString() === id.toString()
       );
     });
@@ -76,7 +79,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
         try {
           console.log('🔄 Attempting to load goal from backend...');
           const response = await api.getGoal(goalId as string);
-          
+
           if (response.success && response.data) {
             console.log('✅ Goal loaded from backend');
             setGoal(response.data);
@@ -97,7 +100,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       try {
         console.log('🔄 Attempting to load goal from local database...');
         const localGoal = await dbUtils.getGoal(goalId as string);
-        
+
         if (localGoal) {
           console.log('✅ Goal loaded from local database');
           setGoal(localGoal);
@@ -146,7 +149,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     try {
       setIsLoadingRecommendations(true);
       const response = await api.getGoalRecommendations(goalId as string);
-      
+
       if (response.success && response.data) {
         setRecommendations(response.data as any[]);
         setTasksRecommendations(response.data as any[]);
@@ -174,9 +177,11 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
       if (response) {
         showToast({ message: "Task added successfully", type: "success", duration: 3000 });
+        setTasksAdded([...tasksAdded, response]);
       } else {
         showToast({ message: "Failed to add task", type: "error", duration: 3000 });
       }
+      return response;
     } catch (error: any) {
       console.error("Error adding task:", error);
       showToast({ message: `Failed to add task: ${error.message}`, type: "error", duration: 3000 });
@@ -185,7 +190,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
   const handleEditGoal = () => {
     if (!goal) return;
-    
+
     showModal(
       <GoalEdit
         goal={goal}
@@ -219,7 +224,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     return (
       <div className="w-full max-w-2xl mx-auto p-4">
         <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
-                     <Icon name="search" className="w-12 h-12 text-red-500 mb-4" />
+          <Icon name="search" className="w-12 h-12 text-red-500 mb-4" />
           <h2 className="text-xl font-bold text-gray-800 mb-2">Goal Not Found</h2>
           <p className="text-gray-600">No goal ID was provided in the URL.</p>
         </div>
@@ -244,7 +249,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
     return (
       <div className="w-full max-w-2xl mx-auto p-4">
         <div className="flex flex-col items-center justify-center min-h-[200px] text-center">
-                     <Icon name="search" className="w-12 h-12 text-red-500 mb-4" />
+          <Icon name="search" className="w-12 h-12 text-red-500 mb-4" />
           <h2 className="text-xl font-bold text-gray-800 mb-2">Error Loading Goal</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <ButtonPrimary onClick={loadGoalData}>
@@ -266,6 +271,50 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
         </div>
       </div>
     );
+  }
+
+  const handleAddTaskRecommendations = () => {
+    const res = tasksRecommendations.map(async (task) => {
+      const response = await handleAddTask(task);
+      console.log("response", response);
+      if (response) {
+        setTasksAdded([...tasksAdded, response]);
+      }
+
+      setGoal({
+        ...goal,
+        relatedTasks: [...(goal.relatedTasks || []), Number(response?.id || 0)],
+      });
+      //  if (response) {
+      //   handleLinkedToGoal(response);
+      //  }
+    });
+
+    if (res.length > 0) {
+      showToast({ message: "Tasks added successfully", type: "success", duration: 3000 });
+      setIsSuggestionsTasksAdded(true);
+    } else {
+      showToast({ message: "Failed to add tasks", type: "error", duration: 3000 });
+    }
+  }
+
+  const handleLinkedToGoal = async () => {
+    console.log("tasksAdded", tasksAdded);
+    console.log("goal", goal);
+    if (!goal) return;
+
+    tasksAdded.forEach(async (task) => {
+      const response = await updateGoal(goal.id?.toString() || "", {
+        relatedTasks: [...(goal.relatedTasks || []), Number(task.id || 0)],
+      });
+
+      if (response) {
+        console.log("response", response);
+        showToast({ message: "Task linked to goal successfully", type: "success", duration: 3000 });
+      } else {
+        showToast({ message: "Failed to link task to goal", type: "error", duration: 3000 });
+      }
+    });
   }
 
   return (
@@ -335,10 +384,10 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
         </div>
         {relatedTasks.length > 0 && (
           <div className="w-full rounded-full h-2 dark:bg-gray-700">
-            <div 
+            <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ 
-                width: `${(relatedTasks.filter(t => t.completed).length / relatedTasks.length) * 100}%` 
+              style={{
+                width: `${(relatedTasks.filter(t => t.completed).length / relatedTasks.length) * 100}%`
               }}
             ></div>
           </div>
@@ -354,21 +403,19 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                      <span className={`px-2 py-1 rounded-full ${
-                        task.completed 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full ${task.completed
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        }`}>
                         {task.completed ? 'Completed' : 'Pending'}
                       </span>
                       {task.priority && (
-                        <span className={`px-2 py-1 rounded-full ${
-                          task.priority === 'high' 
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            : task.priority === 'medium'
+                        <span className={`px-2 py-1 rounded-full ${task.priority === 'high'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          : task.priority === 'medium'
                             ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                             : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        }`}>
+                          }`}>
                           {task.priority}
                         </span>
                       )}
@@ -380,7 +427,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
-                    <Link 
+                    <Link
                       href={`/tasks`}
                       className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                     >
@@ -390,9 +437,9 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
                       <button
                         onClick={() => {
                           // TODO: Add task completion toggle functionality
-                          showToast({ 
-                            message: `Marking "${task.title}" as completed`, 
-                            type: "info" 
+                          showToast({
+                            message: `Marking "${task.title}" as completed`,
+                            type: "info"
                           });
                         }}
                         className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition"
@@ -415,8 +462,8 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       </div>
 
       <div className="flex flex-col gap-2 mt-6">
-        <ButtonPrimary 
-          onClick={getRecommendations} 
+        <ButtonPrimary
+          onClick={getRecommendations}
           disabled={isLoadingRecommendations}
         >
           {isLoadingRecommendations ? (
@@ -427,18 +474,27 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
           ) : (
             "Get Recommendations"
           )}
-        </ButtonPrimary>  
+        </ButtonPrimary>
       </div>
+
+      {tasksRecommendations?.length > 0 && (
+        <div className="flex flex-row gap-2 mt-6 justify-end">
+          <ButtonSimple onClick={handleAddTaskRecommendations}>Add task recommendations</ButtonSimple>
+          <ButtonSimple onClick={handleLinkedToGoal}>Link to goal</ButtonSimple>
+        </div>
+      )}
+
+ 
 
       {tasksRecommendations.length > 0 && (
         <div className="flex flex-col gap-2 mt-6">
           <h2 className="text-lg font-bold">💡 Recommendations</h2>
           {tasksRecommendations.map((recommendation, index) => (
-              <GoalTaskRecommended key={index} recommendation={recommendation} 
-                onClose={onClose}
-                onDelete={onDelete}
-                goalProps={goal}
-              />
+            <GoalTaskRecommended key={index} recommendation={recommendation}
+              onClose={onClose}
+              onDelete={onDelete}
+              goalProps={goal}
+            />
           ))}
         </div>
       )}
