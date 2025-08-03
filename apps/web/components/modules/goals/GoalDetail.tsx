@@ -283,7 +283,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
       setGoal({
         ...goal,
-        relatedTasks: [...(goal.relatedTasks || []), Number(response?.id || 0)],
+        relatedTaskIds: [...(goal.relatedTaskIds || []), response?.id?.toString() || ""],
       });
       //  if (response) {
       //   handleLinkedToGoal(response);
@@ -305,7 +305,7 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
 
     tasksAdded.forEach(async (task) => {
       const response = await updateGoal(goal.id?.toString() || "", {
-        relatedTasks: [...(goal.relatedTasks || []), Number(task.id || 0)],
+        relatedTaskIds: [...(goal.relatedTaskIds || []), task.id?.toString() || ""],
       });
 
       if (response) {
@@ -316,6 +316,22 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
       }
     });
   }
+
+  const handleUnlinkTask = async (taskId: string) => {
+    const response = await updateGoal(goal.id?.toString() || "", {
+      relatedTaskIds: [...(goal.relatedTaskIds || []).filter(id => id !== taskId)],
+    });
+
+    if (response) {
+      showToast({ message: "Task unlinked from goal successfully", type: "success", duration: 3000 });
+      setGoal({
+        ...goal,
+        relatedTaskIds: [...(goal.relatedTaskIds || []).filter(id => id !== taskId)],
+      });
+    } else {
+      showToast({ message: "Failed to unlink task from goal", type: "error", duration: 3000 });
+    }
+  } 
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
@@ -433,6 +449,16 @@ export default function GoalDetail({ goalIdProps, goalProps, onClose, onDelete }
                     >
                       View Task
                     </Link>
+                    {task.id && (
+                      <button
+                        onClick={() => {
+                          handleUnlinkTask(task.id?.toString() || "");
+                        }}
+                        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"
+                      >
+                        Unlink
+                      </button>
+                    )}
                     {!task.completed && (
                       <button
                         onClick={() => {
