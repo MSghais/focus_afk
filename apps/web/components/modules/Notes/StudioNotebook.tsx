@@ -1,13 +1,8 @@
 "use client"
 
-import { useNotesStore } from "../../../store/notes";
 import { Note, NoteSource } from "../../../types";
-import SourceCard from "./SourceCard";
-import { useUIStore } from "../../../store/uiStore";
-import { useRef, useState, useEffect } from "react";
-import { ButtonSecondary, ButtonSimple } from "../../small/buttons";
-import { logClickedEvent } from "../../../lib/analytics";
-import { api } from "../../../lib/api";
+import { useState } from "react";
+import { ButtonSimple } from "../../small/buttons";
 import AudioNotebook from "./AudioNotebook";
 
 interface StudioNotebookProps {
@@ -19,71 +14,8 @@ export default function StudioNotebook({
     note,
     notesSources
 }: StudioNotebookProps) {
-    const { notes, setNoteSources, selectedNote, setSelectedNote, selectedNoteSource, setSelectedNoteSource } = useNotesStore();
-
-    const { showToast } = useUIStore();
-
-
     const [activeTab, setActiveTab] = useState<"audio" | "video" | "conversation">("audio");
     
-        const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-    const [audioData, setAudioData] = useState<Blob | null>(null);      
-    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-    const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
-    const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-    const [audioDuration, setAudioDuration] = useState<number>(0);
-    const [audioProgress, setAudioProgress] = useState<number>(0);
-    const [audioLoadError, setAudioLoadError] = useState<string | null>(null);
-    const [hasAudioData, setHasAudioData] = useState<boolean>(false);
-
-    const aiAudioRef = useRef<HTMLAudioElement>(null);
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const userAudioRef = useRef<HTMLAudioElement>(null);
-
-
-    const formatTime = (time: number) => {
-        if (isNaN(time)) return '0:00';
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (aiAudioRef.current && audioDuration > 0) {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const percentage = clickX / rect.width;
-            const newTime = percentage * audioDuration;
-            aiAudioRef.current.currentTime = newTime;
-            setAudioProgress(newTime);
-        }
-    };
-
-
-    const handleRetry = () => {
-        setAudioLoadError(null);
-        setHasAudioData(false);
-        handleGenerateSummaryAudio();
-    };
-
-    // Configure audio element when URL changes
-    useEffect(() => {
-        if (currentAudioUrl && aiAudioRef.current) {
-            console.log('useEffect: Setting audio src to:', currentAudioUrl);
-            aiAudioRef.current.src = currentAudioUrl;
-            aiAudioRef.current.load();
-        }
-    }, [currentAudioUrl]);
-
-    // Cleanup audio URL on unmount
-    useEffect(() => {
-        return () => {
-            if (currentAudioUrl) {
-                URL.revokeObjectURL(currentAudioUrl);
-            }
-        };
-    }, [currentAudioUrl]);
-
     return (
         <div className="rounded-xl p-1 shadow-lg">
             {/* Header */}
