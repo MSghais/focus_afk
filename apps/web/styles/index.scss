@@ -13,12 +13,23 @@
   --brand-accent: #FF2EC4;
   
   // Light Theme
-  --background: #F9F9F9;
+
+  // --background: #F9F9F9;
+  // --foreground: #0E0E0E;
+  // --border: #E5E7EB;
+  // --card-bg: #FFFFFF;
+  // --hover-bg: #F3F4F6;
+  // --card-border: #E5E7EB;
+
+
+  --background: #ffffff;
+  --background: #e2dede;
   --foreground: #0E0E0E;
   --border: #E5E7EB;
-  --card-bg: #FFFFFF;
-  --card-border: #E5E7EB;
-  --hover-bg: #F3F4F6;
+  --card-bg: #d6d0d0;
+  --contrast-background: #FFFFFF;
+  --card-border: #d7dbe4;
+  --hover-bg: #e7ebf1;
   
   // Shadows
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
