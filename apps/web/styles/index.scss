@@ -420,6 +420,11 @@ textarea:focus {
   // outline-offset: 2px;
 }
 
+select {
+  background: var(--background);
+  color: var(--text-primary);
+}
+
 // ============================================================================
 // COMPONENT-SPECIFIC GRIDS
 // ============================================================================
